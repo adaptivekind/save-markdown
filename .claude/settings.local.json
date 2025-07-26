@@ -18,7 +18,9 @@
       "Bash(npm run lint)",
       "Bash(npm run prettier:fix:*)",
       "Bash(git add:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(npm test)",
+      "Bash(npm run test:ci:*)"
     ],
     "deny": []
   }
