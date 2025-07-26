@@ -81,12 +81,15 @@ export function generateDownloadPath(
 }
 
 /**
- * Sanitizes a title for use in filenames
+ * Sanitizes a title for use in filenames using kebab-case
  */
 function sanitizeTitle(title: string): string {
   return title
+    .toLowerCase() // Convert to lowercase
     .replace(/[^\w\s-]/g, '') // Remove non-word characters except spaces and hyphens
-    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
     .trim();
 }
 

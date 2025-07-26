@@ -25,7 +25,7 @@ describe('filename utilities', () => {
       const variables = createFilenameVariables(title, url);
 
       expect(variables).toEqual({
-        title: 'Test_Page_Title',
+        title: 'test-page-title',
         timestamp: '2024-01-15T10-30-45-123Z',
         domain: 'example.com',
         date: '2024-01-15',
@@ -38,7 +38,7 @@ describe('filename utilities', () => {
 
       const variables = createFilenameVariables(title, url);
 
-      expect(variables.title).toBe('Test_Page_With_Special_Characters');
+      expect(variables.title).toBe('test-page-with-special-characters');
     });
 
     it('should handle URLs with www prefix', () => {
@@ -80,7 +80,7 @@ describe('filename utilities', () => {
 
       const filename = generateFilename(options);
 
-      expect(filename).toBe('My_Test_Page_2024-01-15T10-30-45-123Z.md');
+      expect(filename).toBe('my-test-page_2024-01-15T10-30-45-123Z.md');
     });
 
     it('should handle all template variables', () => {
@@ -93,7 +93,7 @@ describe('filename utilities', () => {
       const filename = generateFilename(options);
 
       expect(filename).toBe(
-        '2024-01-15_example.com_Page_Title_2024-01-15T10-30-45-123Z.md',
+        '2024-01-15_example.com_page-title_2024-01-15T10-30-45-123Z.md',
       );
     });
 
@@ -107,7 +107,7 @@ describe('filename utilities', () => {
 
       const filename = generateFilename(options);
 
-      expect(filename).toBe('This_is_a_.md');
+      expect(filename).toBe('this-is-a-.md');
     });
 
     it('should use default maxTitleLength of 50', () => {
@@ -144,7 +144,7 @@ describe('filename utilities', () => {
 
       const filename = generateFilename(options);
 
-      expect(filename).toBe('Test-Test-Test.md');
+      expect(filename).toBe('test-test-test.md');
     });
   });
 
@@ -218,7 +218,7 @@ describe('filename utilities', () => {
       );
 
       expect(downloadPath).toBe(
-        'Documents/captures/GitHub_-_Example_Repository_2024-01-15T10-30-45-123Z.md',
+        'Documents/captures/github-example-repository_2024-01-15T10-30-45-123Z.md',
       );
     });
 
@@ -237,7 +237,7 @@ describe('filename utilities', () => {
       );
 
       expect(downloadPath).toBe(
-        'markdown-captures/very-long-subdomain.example.com_2024-01-15_Special_Characters_i.md',
+        'markdown-captures/very-long-subdomain.example.com_2024-01-15_special-characters-i.md',
       );
     });
   });
@@ -252,7 +252,7 @@ describe('filename utilities', () => {
 
       const filename = generateFilename(options);
 
-      expect(filename).toBe('unknown-domain_Test.md');
+      expect(filename).toBe('unknown-domain_test.md');
     });
 
     it('should handle URLs without protocol', () => {
@@ -264,7 +264,7 @@ describe('filename utilities', () => {
 
       const filename = generateFilename(options);
 
-      expect(filename).toBe('unknown-domain_Test.md');
+      expect(filename).toBe('unknown-domain_test.md');
     });
   });
 });
