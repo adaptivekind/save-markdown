@@ -126,7 +126,23 @@ npm run watch
 
 # Clean build output
 npm run clean
+
+# Linting and formatting
+npm run lint          # Check code style and lint errors
+npm run lint:fix      # Auto-fix formatting and linting issues
+npm run prettier      # Check Prettier formatting
+npm run prettier:fix  # Apply Prettier formatting
 ```
+
+### Continuous Integration
+
+This project uses GitHub Actions for automated testing and building:
+
+- **CI Pipeline**: Runs on every push and pull request
+- **Node.js versions**: Tests against Node.js 20.x and 22.x
+- **Checks**: Linting, building, and testing
+- **Artifacts**: Extension build files are uploaded for the latest Node.js version
+- **Pre-commit hooks**: Husky ensures code quality before commits
 
 ### File Structure
 

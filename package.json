@@ -1,6 +1,6 @@
 {
   "name": "markdown-capture",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Chrome extension to capture HTML elements as markdown",
   "scripts": {
     "build": "tsc",
