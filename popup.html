@@ -1,98 +1,107 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body {
-      width: 300px;
-      padding: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .button {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border: none;
-      border-radius: 6px;
-      background: #007cba;
-      color: white;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .button:hover {
-      background: #005a87;
-    }
-    .button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-    .config-section {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
-    }
-    .form-group {
-      margin-bottom: 12px;
-    }
-    label {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-    input {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
-    .status {
-      padding: 8px;
-      border-radius: 4px;
-      margin: 8px 0;
-      font-size: 12px;
-      text-align: center;
-    }
-    .success {
-      background: #d4edda;
-      color: #155724;
-    }
-    .error {
-      background: #f8d7da;
-      color: #721c24;
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h2>Markdown Capture</h2>
-    <p>Select HTML elements and save as markdown</p>
-  </div>
-  
-  <button id="startSelection" class="button">Start Element Selection</button>
-  <button id="stopSelection" class="button" disabled>Stop Selection</button>
-  
-  <div id="status" class="status" style="display: none;"></div>
-  
-  <div class="config-section">
-    <h3>Configuration</h3>
-    <div class="form-group">
-      <label for="saveDirectory">Save Directory:</label>
-      <input type="text" id="saveDirectory" placeholder="e.g., ~/Documents/captures">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        width: 300px;
+        padding: 20px;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .button {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 6px;
+        background: #007cba;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .button:hover {
+        background: #005a87;
+      }
+      .button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .config-section {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+      }
+      .form-group {
+        margin-bottom: 12px;
+      }
+      label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+      .status {
+        padding: 8px;
+        border-radius: 4px;
+        margin: 8px 0;
+        font-size: 12px;
+        text-align: center;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h2>Markdown Capture</h2>
+      <p>Select HTML elements and save as markdown</p>
     </div>
-    <div class="form-group">
-      <label for="filenameTemplate">Filename Template:</label>
-      <input type="text" id="filenameTemplate" placeholder="e.g., {title}_{timestamp}.md">
+
+    <button id="startSelection" class="button">Start Element Selection</button>
+    <button id="stopSelection" class="button" disabled>Stop Selection</button>
+
+    <div id="status" class="status" style="display: none"></div>
+
+    <div class="config-section">
+      <h3>Configuration</h3>
+      <div class="form-group">
+        <label for="saveDirectory">Save Directory:</label>
+        <input
+          type="text"
+          id="saveDirectory"
+          placeholder="e.g., ~/Documents/captures"
+        />
+      </div>
+      <div class="form-group">
+        <label for="filenameTemplate">Filename Template:</label>
+        <input
+          type="text"
+          id="filenameTemplate"
+          placeholder="e.g., {title}_{timestamp}.md"
+        />
+      </div>
+      <button id="saveConfig" class="button">Save Configuration</button>
     </div>
-    <button id="saveConfig" class="button">Save Configuration</button>
-  </div>
-  
-  <script src="dist/popup.js"></script>
-</body>
+
+    <script src="dist/popup.js"></script>
+  </body>
 </html>

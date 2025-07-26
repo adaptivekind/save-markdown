@@ -1,0 +1,29 @@
+{
+  "name": "markdown-capture",
+  "version": "1.0.0",
+  "description": "Chrome extension to capture HTML elements as markdown",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "eslint": "eslint src --ext .ts",
+    "eslint:fix": "eslint --fix src --ext .ts",
+    "lint": "npm run prettier && npm run eslint",
+    "lint:fix": "npm run prettier:fix && npm run eslint:fix",
+    "prettier": "prettier --check .",
+    "prettier:fix": "prettier --write .",
+    "test": "npm run build",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "@typescript-eslint/eslint-plugin": "^6.18.1",
+    "@typescript-eslint/parser": "^6.18.1",
+    "eslint": "^8.56.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.0"
+  },
+  "private": true
+}

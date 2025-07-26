@@ -20,6 +20,7 @@ A Chrome extension that allows you to select any HTML element on a webpage and s
 ## Local Installation
 
 1. **Download and Build the Extension**
+
    ```bash
    git clone <repository-url>
    cd markdown-capture
@@ -56,6 +57,7 @@ A Chrome extension that allows you to select any HTML element on a webpage and s
 ## Configuration
 
 ### Save Directory
+
 - Default: `~/Downloads`
 - **Important**: Chrome extensions can only save files to subdirectories within your Downloads folder
 - Examples:
@@ -64,6 +66,7 @@ A Chrome extension that allows you to select any HTML element on a webpage and s
   - For true custom directories, manually move files after download
 
 ### Filename Template
+
 - Default: `{title}_{timestamp}.md`
 - Available variables:
   - `{title}` - Page title (sanitized)
@@ -102,6 +105,7 @@ To enable seamless automatic downloads without Chrome asking "Save as" every tim
 ## Development
 
 The extension is built with TypeScript and uses Manifest V3:
+
 - **TypeScript** for type safety and better development experience
 - **Service worker** for background processing
 - **Content scripts** for page interaction
