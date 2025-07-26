@@ -1,6 +1,7 @@
 console.log('Loading background.ts');
 
 import { generateFilename, generateDownloadPath } from './filename';
+import { wrapWithMetadata } from './htmlToMarkdown';
 
 interface SaveMarkdownMessage {
   action: 'saveMarkdown';
@@ -141,16 +142,10 @@ async function saveMarkdownFile(
     const filename = generateDownloadPath(directory, baseFilename);
 
     // Add metadata to content
-    const fullContent = `<!-- Captured from: ${url} -->
-<!-- Date: ${new Date().toISOString()} -->
-<!-- Title: ${title} -->
-
-# ${title}
-
-${content}
-
----
-*Captured with Markdown Capture extension*`;
+    const fullContent = wrapWithMetadata(content, {
+      url,
+      title,
+    });
 
     // Create data URL for download (works in service workers)
     const dataUrl =
