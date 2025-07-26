@@ -88,6 +88,16 @@
         color: #ffb3b3;
         border: 1px solid #7c4a4a;
       }
+      .debug {
+        background: #3d3d3d;
+        color: #ffff99;
+        border: 1px solid #666666;
+        font-family: monospace;
+        font-size: 10px;
+        white-space: pre-wrap;
+        max-height: 150px;
+        overflow-y: auto;
+      }
     </style>
   </head>
   <body>
@@ -100,6 +110,7 @@
     <button id="stopSelection" class="button" disabled>Stop Selection</button>
 
     <div id="status" class="status" style="display: none"></div>
+    <div id="debug" class="debug" style="display: none"></div>
 
     <div class="bottom-menu">
       <a href="#" id="settingsLink" class="menu-link">

@@ -5,6 +5,7 @@ interface ExtensionOptions {
   metadataTemplate: string;
   preserveFormatting: boolean;
   autoDownload: boolean;
+  debugMode: boolean;
 }
 
 const defaultOptions: ExtensionOptions = {
@@ -20,6 +21,7 @@ Title: {title}
 `,
   preserveFormatting: true,
   autoDownload: true,
+  debugMode: true,
 };
 
 class OptionsManager {
@@ -81,6 +83,9 @@ class OptionsManager {
       String(options.preserveFormatting);
     (document.getElementById('autoDownload') as HTMLSelectElement).value =
       String(options.autoDownload);
+    (document.getElementById('debugMode') as HTMLSelectElement).value = String(
+      options.debugMode,
+    );
   }
 
   private getFormData(): ExtensionOptions {
@@ -102,6 +107,9 @@ class OptionsManager {
           .value === 'true',
       autoDownload:
         (document.getElementById('autoDownload') as HTMLSelectElement).value ===
+        'true',
+      debugMode:
+        (document.getElementById('debugMode') as HTMLSelectElement).value ===
         'true',
     };
   }
@@ -187,7 +195,8 @@ class OptionsManager {
       typeof opt.includeMetadata === 'boolean' &&
       typeof opt.metadataTemplate === 'string' &&
       typeof opt.preserveFormatting === 'boolean' &&
-      typeof opt.autoDownload === 'boolean'
+      typeof opt.autoDownload === 'boolean' &&
+      typeof opt.debugMode === 'boolean'
     );
   }
 
