@@ -1,5 +1,7 @@
 console.log('Loading background.ts');
 
+import { generateFilename, generateDownloadPath } from './filename';
+
 interface SaveMarkdownMessage {
   action: 'saveMarkdown';
   content: string;
@@ -130,8 +132,13 @@ async function saveMarkdownFile(
     const template = config.filenameTemplate || '{title}_{timestamp}.md';
 
     // Generate filename with directory path
-    const baseFilename = generateFilename(template, title, url);
-    const filename = generateFullPath(directory, baseFilename);
+    const baseFilename = generateFilename({
+      template,
+      title,
+      url,
+      maxTitleLength: 50,
+    });
+    const filename = generateDownloadPath(directory, baseFilename);
 
     // Add metadata to content
     const fullContent = `<!-- Captured from: ${url} -->
@@ -175,46 +182,6 @@ ${content}
     console.error('Error saving markdown:', error);
     notifyCapture(tabId, 'captureError', (error as Error).message);
   }
-}
-
-function generateFilename(
-  template: string,
-  title: string,
-  url: string,
-): string {
-  const now = new Date();
-  const timestamp = now.toISOString().replace(/[:.]/g, '-');
-  const dateString = now.toISOString().split('T')[0]!;
-  const cleanTitle = title
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '_')
-    .substring(0, 50);
-  const domain = new URL(url).hostname.replace('www.', '');
-
-  return template
-    .replace(/\{title\}/g, cleanTitle)
-    .replace(/\{timestamp\}/g, timestamp)
-    .replace(/\{domain\}/g, domain)
-    .replace(/\{date\}/g, dateString);
-}
-
-function generateFullPath(directory: string, filename: string): string {
-  // Chrome downloads API has limitations with custom paths
-  // We can only suggest a relative path from the default download directory
-  if (directory === '~/Downloads' || directory === '') {
-    return filename;
-  }
-
-  // Convert directory path to relative path format
-  let relativePath = directory
-    .replace(/^~\/Downloads\//, '') // Remove ~/Downloads/ prefix
-    .replace(/^~\//, '') // Remove ~/ prefix
-    .replace(/\/$/, ''); // Remove trailing slash
-
-  // Ensure the path is safe (no .. or absolute paths)
-  relativePath = relativePath.replace(/\.\./g, '').replace(/^\//, '');
-
-  return relativePath ? `${relativePath}/${filename}` : filename;
 }
 
 function notifyCapture(

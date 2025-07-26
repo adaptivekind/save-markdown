@@ -4,18 +4,41 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Chrome Browser Extension (Manifest V3) built with TypeScript that captures HTML elements from web pages and converts them to markdown format. The extension uses TypeScript for type safety and has no external runtime dependencies.
+This is a Chrome Browser Extension (Manifest V3) built with TypeScript that captures HTML elements from web pages and converts them to markdown format. The extension uses TypeScript for type safety and has no external runtime dependencies. The project includes comprehensive development tooling with Husky pre-commit hooks, ESLint, Prettier, and GitHub Actions CI/CD.
 
 ## Development Commands
 
-This Chrome extension uses TypeScript with a build system:
+This Chrome extension uses TypeScript with a comprehensive build and quality system:
+
+### Core Build Commands
 
 - **Build**: `npm run build` - Compiles TypeScript files to `dist/` directory
 - **Watch**: `npm run watch` - Automatically rebuilds on file changes
 - **Clean**: `npm run clean` - Removes compiled output
+- **Test**: `npm test` - Runs test suite (currently build validation)
+
+### Code Quality Commands
+
+- **Lint**: `npm run lint` - Runs Prettier formatting check + ESLint
+- **Lint Fix**: `npm run lint:fix` - Auto-fixes formatting and linting issues
+- **Prettier**: `npm run prettier` - Check code formatting
+- **Prettier Fix**: `npm run prettier:fix` - Apply code formatting
+- **ESLint**: `npm run eslint` - TypeScript linting only
+- **ESLint Fix**: `npm run eslint:fix` - Auto-fix TypeScript linting issues
+
+### Extension Development
+
 - **Install Extension**: Load unpacked extension in Chrome Developer Mode at `chrome://extensions/`
 - **Test Changes**: Run `npm run build` then reload the extension in Chrome
 - **Debug**: Use Chrome DevTools Console for popup/content script debugging, and Extension Service Worker inspector for background script
+
+### Pre-commit Hooks (Husky)
+
+- Automatically runs on every `git commit`
+- Blocks commits with untracked files (encourages proper git hygiene)
+- Runs `lint-staged` to format and lint only staged files
+- Runs full build to ensure TypeScript compiles
+- Runs test suite to validate functionality
 
 ## Architecture
 

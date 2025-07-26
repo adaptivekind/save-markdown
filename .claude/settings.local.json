@@ -17,7 +17,8 @@
       "Bash(npx husky:*)",
       "Bash(npm run lint)",
       "Bash(npm run prettier:fix:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }
