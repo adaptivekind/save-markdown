@@ -47,4 +47,3 @@ jobs:
             content.css
             icons/
           retention-days: 30
-
