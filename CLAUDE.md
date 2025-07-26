@@ -8,14 +8,15 @@ This is a Chrome Browser Extension (Manifest V3) built with TypeScript that capt
 
 ## Development Commands
 
-This Chrome extension uses TypeScript with a comprehensive build and quality system:
+This Chrome extension uses CRXJS with Vite for modern development workflow:
 
 ### Core Build Commands
 
-- **Build**: `npm run build` - Compiles TypeScript files to `dist/` directory
-- **Watch**: `npm run watch` - Automatically rebuilds on file changes
+- **Build**: `npm run build` - Builds extension using Vite and CRXJS
+- **Dev**: `npm run dev` - Starts Vite development server with hot reload
+- **Watch**: `npm run watch` - Watches for changes and rebuilds automatically
 - **Clean**: `npm run clean` - Removes compiled output
-- **Test**: `npm test` - Runs test suite (currently build validation)
+- **Test**: `npm test` - Runs test suite with Jest
 
 ### Code Quality Commands
 
@@ -28,8 +29,9 @@ This Chrome extension uses TypeScript with a comprehensive build and quality sys
 
 ### Extension Development
 
-- **Install Extension**: Load unpacked extension in Chrome Developer Mode at `chrome://extensions/`
-- **Test Changes**: Run `npm run build` then reload the extension in Chrome
+- **Development**: Run `npm run dev` for hot reload development mode
+- **Install Extension**: Load unpacked extension from `dist/` directory in Chrome Developer Mode at `chrome://extensions/`
+- **Test Changes**: Build automatically reloads in development mode, or run `npm run build` for production build
 - **Debug**: Use Chrome DevTools Console for popup/content script debugging, and Extension Service Worker inspector for background script
 
 ### Pre-commit Hooks (Husky)
@@ -64,14 +66,21 @@ Popup (popup.ts) ←→ Content Script (content.ts) ←→ Background Worker (ba
 - Background worker uses Chrome Downloads API to save markdown files
 - Background worker imports filename utilities for path generation
 
-### TypeScript Architecture
+### TypeScript Architecture with CRXJS
 
-All source files are in `src/` and compile to `dist/`:
+All source files are in `src/` and built by Vite with CRXJS:
 
-- `src/background.ts` → `dist/background.js`
-- `src/content.ts` → `dist/content.js`
-- `src/popup.ts` → `dist/popup.js`
-- `src/filename.ts` → `dist/filename.js` (utility module)
+- `src/background.ts` → Background service worker (built by CRXJS)
+- `src/content.ts` → Content script (built by CRXJS)
+- `src/popup.ts` → Popup script (built by CRXJS)
+- `src/options.ts` → Options page script (built by CRXJS)
+- `src/devtools.ts` → DevTools extension script (built by CRXJS)
+- `src/devtools-panel.ts` → DevTools panel script (built by CRXJS)
+- `src/filename.ts` → Utility module (imported as needed)
+- `popup.html` → Popup HTML with TypeScript module import
+- `options.html` → Options page HTML with TypeScript module import
+- `devtools.html` → DevTools entry point HTML
+- `devtools-panel.html` → DevTools panel HTML with TypeScript module import
 
 ## Core Functionality
 
@@ -117,6 +126,10 @@ Extension settings are stored via `chrome.storage.sync`:
 
 ### Configuration Files
 
+- `manifest.config.ts` - Dynamic manifest configuration using CRXJS defineManifest
+- `vite.config.ts` - Vite build configuration with CRXJS plugin
+- `tsconfig.json` - TypeScript configuration optimized for Vite
+- `jest.config.cjs` - Jest testing configuration (CommonJS format for ES modules)
 - `.eslintrc.json` - TypeScript linting rules
 - `.prettierrc.json` - Code formatting preferences
 - `.lintstagedrc.json` - Pre-commit staging rules
@@ -131,12 +144,37 @@ Extension settings are stored via `chrome.storage.sync`:
 - `createFilenameVariables()` - Template variable creation
 - Pure functions with TypeScript interfaces for type safety
 
-## Chrome Extension Permissions
+## Chrome Extension Features
+
+### Core Functionality
+
+- Element selection and markdown conversion via popup and content scripts
+- Configurable file saving with template-based naming
+- Context menu integration for quick access
+
+### Options Page
+
+- Comprehensive settings management at `chrome://extensions` → Extension Details → Extension options
+- File settings: save directory and filename templates with variables
+- Markdown settings: metadata inclusion and formatting options
+- Advanced settings: formatting preservation and auto-download behavior
+- Settings import/export functionality
+
+### DevTools Integration
+
+- Custom panel in Chrome DevTools for advanced element capture
+- Elements panel sidebar with capture options for selected elements
+- Real-time markdown preview
+- Capture history tracking
+- Keyboard shortcuts for quick access
+
+### Permissions
 
 - `activeTab`: Access current tab content
 - `storage`: Save configuration settings
 - `downloads`: Save captured markdown files
 - `contextMenus`: Add right-click menu option
+- `devtools` (optional): Enable DevTools panel functionality
 - `<all_urls>`: Work on any website (required for content script injection)
 
 ## Icon Generation

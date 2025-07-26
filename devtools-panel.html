@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Markdown Capture Panel</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #fff;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      .header {
+        background: #f0f0f0;
+        padding: 15px;
+        margin: -20px -20px 20px -20px;
+        border-bottom: 1px solid #ddd;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 16px;
+        color: #333;
+      }
+      .section {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+      }
+      .section h2 {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        color: #444;
+      }
+      .button {
+        background: #007cba;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        margin: 4px 4px 4px 0;
+      }
+      .button:hover {
+        background: #005a87;
+      }
+      .button.secondary {
+        background: #666;
+      }
+      .button.secondary:hover {
+        background: #555;
+      }
+      .status {
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin: 10px 0;
+        font-size: 11px;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .info {
+        background: #e2e3e5;
+        color: #383d41;
+        border: 1px solid #d6d8db;
+      }
+      .element-info {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 11px;
+        margin: 10px 0;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .capture-history {
+        max-height: 150px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+      }
+      .capture-item {
+        padding: 5px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 11px;
+      }
+      .capture-item:last-child {
+        border-bottom: none;
+      }
+      .shortcuts {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        font-size: 11px;
+      }
+      .shortcuts h3 {
+        margin: 0 0 8px 0;
+        font-size: 12px;
+      }
+      .shortcuts ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Markdown Capture DevTools</h1>
+    </div>
+
+    <div id="status" class="status info" style="display: none"></div>
+
+    <div class="section">
+      <h2>Quick Actions</h2>
+      <button id="captureSelected" class="button">
+        Capture Selected Element
+      </button>
+      <button id="captureWithChildren" class="button">
+        Capture with Children
+      </button>
+      <button id="previewMarkdown" class="button secondary">
+        Preview Markdown
+      </button>
+      <button id="refreshPanel" class="button secondary">Refresh</button>
+    </div>
+
+    <div class="section">
+      <h2>Selected Element</h2>
+      <div id="elementInfo" class="element-info">
+        Select an element in the Elements panel to see details here.
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Capture Options</h2>
+      <label>
+        <input type="checkbox" id="includeStyles" checked /> Include inline
+        styles </label
+      ><br />
+      <label>
+        <input type="checkbox" id="includeClasses" checked /> Include CSS
+        classes </label
+      ><br />
+      <label>
+        <input type="checkbox" id="includeAttributes" /> Include all attributes </label
+      ><br />
+      <label>
+        <input type="checkbox" id="prettifyMarkdown" checked /> Prettify
+        markdown output
+      </label>
+    </div>
+
+    <div class="section">
+      <h2>Recent Captures</h2>
+      <div id="captureHistory" class="capture-history">
+        <div class="capture-item">
+          No captures yet. Start by selecting an element and clicking "Capture
+          Selected Element".
+        </div>
+      </div>
+      <button id="clearHistory" class="button secondary">Clear History</button>
+    </div>
+
+    <div class="shortcuts">
+      <h3>Keyboard Shortcuts</h3>
+      <ul>
+        <li><strong>Ctrl+Shift+C</strong> - Capture selected element</li>
+        <li><strong>Ctrl+Shift+V</strong> - Preview markdown</li>
+        <li><strong>Ctrl+Shift+R</strong> - Refresh panel</li>
+      </ul>
+    </div>
+
+    <script src="src/devtools-panel.ts" type="module"></script>
+  </body>
+</html>

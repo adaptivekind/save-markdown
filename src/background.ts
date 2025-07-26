@@ -28,59 +28,39 @@ interface Config {
   filenameTemplate?: string;
 }
 
-// Create context menu when extension starts
-chrome.runtime.onInstalled.addListener(() => {
-  console.log('Creating context menu...');
-  chrome.contextMenus.create(
-    {
-      id: 'markdown-capture-start',
-      title: 'Start Markdown Selection',
-      contexts: ['page'],
-    },
-    () => {
-      if (chrome.runtime.lastError) {
-        console.error(
-          'Context menu creation failed:',
-          chrome.runtime.lastError,
-        );
-      } else {
-        console.log('Context menu created successfully');
-      }
-    },
-  );
-});
-
-// Also create context menu on startup (not just install)
-chrome.runtime.onStartup.addListener(() => {
-  console.log('Extension startup - ensuring context menu exists');
+// Function to create context menu
+function createContextMenu(): void {
   chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({
-      id: 'markdown-capture-start',
-      title: 'Start Markdown Selection',
-      contexts: ['page'],
-    });
+    chrome.contextMenus.create(
+      {
+        id: 'markdown-capture-start',
+        title: 'Start Markdown Selection',
+        contexts: ['page'],
+      },
+      () => {
+        if (chrome.runtime.lastError) {
+          console.error(
+            'Context menu creation failed:',
+            chrome.runtime.lastError,
+          );
+        } else {
+          console.log('Context menu created successfully');
+        }
+      },
+    );
   });
+}
+
+// Create context menu when extension is installed or updated
+chrome.runtime.onInstalled.addListener(() => {
+  console.log('Extension installed/updated - creating context menu');
+  createContextMenu();
 });
 
-// Create context menu immediately when background script loads
-chrome.contextMenus.removeAll(() => {
-  chrome.contextMenus.create(
-    {
-      id: 'markdown-capture-start',
-      title: 'Start Markdown Selection',
-      contexts: ['page'],
-    },
-    () => {
-      if (chrome.runtime.lastError) {
-        console.error(
-          'Context menu creation failed:',
-          chrome.runtime.lastError,
-        );
-      } else {
-        console.log('Context menu created on script load');
-      }
-    },
-  );
+// Create context menu when extension starts up
+chrome.runtime.onStartup.addListener(() => {
+  console.log('Extension startup - creating context menu');
+  createContextMenu();
 });
 
 // Handle context menu clicks

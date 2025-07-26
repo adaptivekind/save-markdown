@@ -1,10 +1,12 @@
 {
   "name": "markdown-capture",
   "version": "0.0.1",
+  "type": "module",
   "description": "Chrome extension to capture HTML elements as markdown",
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc --watch",
+    "build": "vite build",
+    "dev": "vite",
+    "watch": "vite build --watch",
     "clean": "rm -rf dist",
     "eslint": "eslint src --ext .ts",
     "eslint:fix": "eslint --fix src --ext .ts",
@@ -19,6 +21,7 @@
     "prepare": "husky"
   },
   "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.3",
     "@types/chrome": "^0.0.268",
     "@types/jest": "^29.5.8",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
@@ -29,7 +32,8 @@
     "lint-staged": "^15.2.0",
     "prettier": "^3.1.1",
     "ts-jest": "^29.1.1",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0"
   },
   "private": true
 }
