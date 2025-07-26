@@ -55,7 +55,11 @@ A Chrome extension that allows you to select any HTML element on a webpage and s
 
 ### Save Directory
 - Default: `~/Downloads`
-- Supports paths like `~/Documents/captures` or absolute paths
+- **Important**: Chrome extensions can only save files to subdirectories within your Downloads folder
+- Examples:
+  - `~/Downloads/markdown` → saves to `Downloads/markdown/`
+  - `~/Documents/captures` → saves to `Downloads/Documents/captures/`
+  - For true custom directories, manually move files after download
 
 ### Filename Template
 - Default: `{title}_{timestamp}.md`
@@ -64,6 +68,20 @@ A Chrome extension that allows you to select any HTML element on a webpage and s
   - `{timestamp}` - ISO timestamp
   - `{domain}` - Website domain
   - `{date}` - Date in YYYY-MM-DD format
+
+### Disable Download Confirmation
+
+To enable seamless automatic downloads without Chrome asking "Save as" every time:
+
+1. **Method 1: Global Chrome Setting**
+   - Go to Chrome Settings (`chrome://settings/`)
+   - Click "Advanced" → "Downloads"
+   - Turn OFF "Ask where to save each file before downloading"
+
+2. **Method 2: Extension-Specific Permission**
+   - When the extension first tries to download, Chrome will show a notification
+   - Click "Allow" to permit automatic downloads for this extension
+   - This only needs to be done once per extension
 
 ## Files Structure
 
@@ -91,4 +109,6 @@ The extension uses Manifest V3 and includes:
 
 - **Extension not loading**: Ensure all files are in the same directory and manifest.json is valid
 - **Selection not working**: Check if the page allows content scripts (some internal Chrome pages block them)
-- **Files not saving**: Verify Chrome has download permissions and the specified directory exists
+- **Files not saving**: Verify Chrome has download permissions and check the Console for errors
+- **Save confirmation appearing**: Follow the "Disable Download Confirmation" steps above
+- **Files saving to wrong location**: Remember Chrome extensions can only save to subdirectories within Downloads

@@ -3,7 +3,7 @@
   "name": "Markdown Capture",
   "version": "1.0.0",
   "description": "Select HTML elements and save them as markdown to a configured directory",
-  "permissions": ["activeTab", "storage", "downloads"],
+  "permissions": ["activeTab", "storage", "downloads", "contextMenus"],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",
