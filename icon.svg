@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-  <!-- Blue down arrow - maximized to fill the box -->
-  <polygon points="64,120 8,64 32,64 32,8 96,8 96,64 120,64" fill="#007cba"/>
+  <!-- Blue down arrow - squeezed into bottom 25% -->
+  <polygon points="64,120 20,104 38,104 38,96 90,96 90,104 108,104" fill="#007cba"/>
   
-  <!-- White M for Markdown -->
-  <text x="64" y="50" font-family="Arial, sans-serif" font-size="32" font-weight="bold" 
-        text-anchor="middle" fill="white">M</text>
+  <!-- Black M for Markdown - filling the whole box -->
+  <text x="64" y="90" font-family="Arial, sans-serif" font-size="100" font-weight="bold" 
+        text-anchor="middle" fill="black">M</text>
 </svg>
