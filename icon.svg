@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blue down arrow -->
+  <polygon points="64,100 30,66 46,66 46,28 82,28 82,66 98,66" fill="#007cba"/>
+  
+  <!-- White M for Markdown -->
+  <text x="64" y="55" font-family="Arial, sans-serif" font-size="24" font-weight="bold" 
+        text-anchor="middle" fill="white">M</text>
+</svg>
