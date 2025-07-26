@@ -27,7 +27,7 @@ describe('filename utilities', () => {
       expect(variables).toEqual({
         title: 'test-page-title',
         timestamp: '2024-01-15T10-30-45-123Z',
-        domain: 'example.com',
+        domain: 'example-com',
         date: '2024-01-15',
       });
     });
@@ -47,7 +47,7 @@ describe('filename utilities', () => {
 
       const variables = createFilenameVariables(title, url);
 
-      expect(variables.domain).toBe('subdomain.example.com');
+      expect(variables.domain).toBe('subdomain-example-com');
     });
 
     it('should handle empty titles gracefully', () => {
@@ -93,7 +93,7 @@ describe('filename utilities', () => {
       const filename = generateFilename(options);
 
       expect(filename).toBe(
-        '2024-01-15_example.com_page-title_2024-01-15T10-30-45-123Z.md',
+        '2024-01-15_example-com_page-title_2024-01-15T10-30-45-123Z.md',
       );
     });
 
@@ -237,7 +237,7 @@ describe('filename utilities', () => {
       );
 
       expect(downloadPath).toBe(
-        'markdown-captures/very-long-subdomain.example.com_2024-01-15_special-characters-i.md',
+        'markdown-captures/very-long-subdomain-example-com_2024-01-15_special-characters-i.md',
       );
     });
   });

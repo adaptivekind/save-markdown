@@ -94,11 +94,11 @@ function sanitizeTitle(title: string): string {
 }
 
 /**
- * Extracts domain from URL, removing www prefix
+ * Extracts domain from URL, removing www prefix and replacing dots with hyphens
  */
 function extractDomain(url: string): string {
   try {
-    return new URL(url).hostname.replace('www.', '');
+    return new URL(url).hostname.replace('www.', '').replace(/\./g, '-');
   } catch {
     return 'unknown-domain';
   }
