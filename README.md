@@ -19,10 +19,12 @@ A Chrome extension that allows you to select any HTML element on a webpage and s
 
 ## Local Installation
 
-1. **Download the Extension**
+1. **Download and Build the Extension**
    ```bash
    git clone <repository-url>
    cd markdown-capture
+   npm install
+   npm run build
    ```
 
 2. **Open Chrome Extensions Page**
@@ -99,11 +101,42 @@ To enable seamless automatic downloads without Chrome asking "Save as" every tim
 
 ## Development
 
-The extension uses Manifest V3 and includes:
-- Service worker for background processing
-- Content scripts for page interaction
-- Chrome storage API for configuration
-- Chrome downloads API for file saving
+The extension is built with TypeScript and uses Manifest V3:
+- **TypeScript** for type safety and better development experience
+- **Service worker** for background processing
+- **Content scripts** for page interaction
+- **Chrome storage API** for configuration
+- **Chrome downloads API** for file saving
+
+### Development Commands
+
+```bash
+# Install dependencies
+npm install
+
+# Build TypeScript files
+npm run build
+
+# Watch for changes and rebuild automatically
+npm run watch
+
+# Clean build output
+npm run clean
+```
+
+### File Structure
+
+```
+src/
+├── background.ts    # Service worker (background script)
+├── content.ts       # Content script for page interaction
+└── popup.ts         # Popup interface logic
+
+dist/                # Compiled JavaScript output
+├── background.js
+├── content.js
+└── popup.js
+```
 
 ## Troubleshooting
 

@@ -4,14 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Chrome Browser Extension (Manifest V3) that captures HTML elements from web pages and converts them to markdown format. The extension uses a pure vanilla JavaScript approach with no external dependencies or build system.
+This is a Chrome Browser Extension (Manifest V3) built with TypeScript that captures HTML elements from web pages and converts them to markdown format. The extension uses TypeScript for type safety and has no external runtime dependencies.
 
 ## Development Commands
 
-Since this is a Chrome extension without a build system, development follows Chrome extension patterns:
+This Chrome extension uses TypeScript with a build system:
 
+- **Build**: `npm run build` - Compiles TypeScript files to `dist/` directory
+- **Watch**: `npm run watch` - Automatically rebuilds on file changes  
+- **Clean**: `npm run clean` - Removes compiled output
 - **Install Extension**: Load unpacked extension in Chrome Developer Mode at `chrome://extensions/`
-- **Test Changes**: Reload the extension in Chrome after file modifications
+- **Test Changes**: Run `npm run build` then reload the extension in Chrome
 - **Debug**: Use Chrome DevTools Console for popup/content script debugging, and Extension Service Worker inspector for background script
 
 ## Architecture

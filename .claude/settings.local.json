@@ -9,7 +9,9 @@
       "Bash(rm:*)",
       "Bash(magick:*)",
       "Bash(chmod:*)",
-      "Bash(./generate-icons.sh:*)"
+      "Bash(./generate-icons.sh:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }
