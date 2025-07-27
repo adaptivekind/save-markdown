@@ -47,7 +47,7 @@ function createContextMenu(): void {
         } else {
           console.log('Parent context menu created successfully');
 
-          // Create child menu item
+          // Create start selection menu item
           chrome.contextMenus.create(
             {
               id: 'markdown-capture-start',
@@ -58,11 +58,31 @@ function createContextMenu(): void {
             () => {
               if (chrome.runtime.lastError) {
                 console.error(
-                  'Child context menu creation failed:',
+                  'Start selection menu creation failed:',
                   chrome.runtime.lastError,
                 );
               } else {
-                console.log('Child context menu created successfully');
+                console.log('Start selection menu created successfully');
+              }
+            },
+          );
+
+          // Create stop selection menu item
+          chrome.contextMenus.create(
+            {
+              id: 'markdown-capture-stop',
+              parentId: 'markdown-capture-parent',
+              title: 'Stop Selection',
+              contexts: ['page', 'selection', 'link', 'image'],
+            },
+            () => {
+              if (chrome.runtime.lastError) {
+                console.error(
+                  'Stop selection menu creation failed:',
+                  chrome.runtime.lastError,
+                );
+              } else {
+                console.log('Stop selection menu created successfully');
               }
             },
           );
@@ -91,6 +111,9 @@ chrome.contextMenus.onClicked.addListener(
     if (info.menuItemId === 'markdown-capture-start' && tab?.id) {
       console.log('Starting selection from context menu');
       chrome.tabs.sendMessage(tab.id, { action: 'startSelection' });
+    } else if (info.menuItemId === 'markdown-capture-stop' && tab?.id) {
+      console.log('Stopping selection from context menu');
+      chrome.tabs.sendMessage(tab.id, { action: 'stopSelection' });
     }
   },
 );

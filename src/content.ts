@@ -186,7 +186,7 @@ function createDebugOverlay(): void {
   debugOverlay.id = 'markdown-capture-debug-overlay';
   debugOverlay.style.cssText = `
     position: fixed;
-    top: 10px;
+    bottom: 10px;
     right: 10px;
     width: 300px;
     max-height: 200px;
