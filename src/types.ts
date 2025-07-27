@@ -7,4 +7,5 @@ export interface ExtensionOptions {
   preserveFormatting: boolean;
   autoDownload: boolean;
   debugMode: boolean;
+  enableAutoCapture: boolean;
 }

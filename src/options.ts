@@ -1,4 +1,9 @@
 import { ExtensionOptions } from './types';
+import {
+  getAutoCaptureRules,
+  removeAutoCaptureRule,
+  AutoCaptureRule,
+} from './autoCaptureRules';
 
 const defaultOptions: ExtensionOptions = {
   saveDirectory: '~/Downloads',
@@ -15,6 +20,7 @@ Title: {title}
   preserveFormatting: true,
   autoDownload: true,
   debugMode: true,
+  enableAutoCapture: true,
 };
 
 class OptionsManager {
@@ -29,6 +35,7 @@ class OptionsManager {
     await this.loadOptions();
     this.setupEventListeners();
     this.updateFilenamePreview();
+    await this.loadAutoCaptureRules();
   }
 
   private setupEventListeners(): void {
@@ -81,6 +88,8 @@ class OptionsManager {
     (document.getElementById('debugMode') as HTMLSelectElement).value = String(
       options.debugMode,
     );
+    (document.getElementById('enableAutoCapture') as HTMLSelectElement).value =
+      String(options.enableAutoCapture);
   }
 
   private getFormData(): ExtensionOptions {
@@ -109,6 +118,9 @@ class OptionsManager {
       debugMode:
         (document.getElementById('debugMode') as HTMLSelectElement).value ===
         'true',
+      enableAutoCapture:
+        (document.getElementById('enableAutoCapture') as HTMLSelectElement)
+          .value === 'true',
     };
   }
 
@@ -195,7 +207,8 @@ class OptionsManager {
       typeof opt.metadataTemplate === 'string' &&
       typeof opt.preserveFormatting === 'boolean' &&
       typeof opt.autoDownload === 'boolean' &&
-      typeof opt.debugMode === 'boolean'
+      typeof opt.debugMode === 'boolean' &&
+      typeof opt.enableAutoCapture === 'boolean'
     );
   }
 
@@ -230,6 +243,69 @@ class OptionsManager {
     setTimeout(() => {
       this.statusElement.style.display = 'none';
     }, 3000);
+  }
+
+  private async loadAutoCaptureRules(): Promise<void> {
+    try {
+      const rules = await getAutoCaptureRules();
+      this.displayAutoCaptureRules(rules);
+    } catch (error) {
+      console.error('Failed to load auto capture rules:', error);
+    }
+  }
+
+  private displayAutoCaptureRules(rules: AutoCaptureRule[]): void {
+    const container = document.getElementById('autoCaptureRules');
+    const noRulesMessage = document.getElementById('noRulesMessage');
+
+    if (!container || !noRulesMessage) return;
+
+    if (rules.length === 0) {
+      container.style.display = 'none';
+      noRulesMessage.style.display = 'block';
+      return;
+    }
+
+    container.style.display = 'block';
+    noRulesMessage.style.display = 'none';
+
+    container.innerHTML = rules.map(rule => this.createRuleHTML(rule)).join('');
+
+    // Add delete button event listeners
+    rules.forEach(rule => {
+      const deleteButton = document.getElementById(`delete-${rule.id}`);
+      deleteButton?.addEventListener('click', () => this.deleteRule(rule.id));
+    });
+  }
+
+  private createRuleHTML(rule: AutoCaptureRule): string {
+    const date = new Date(rule.created).toLocaleDateString();
+    return `
+      <div class="auto-capture-rule">
+        <div class="rule-header">
+          <div class="rule-name">${rule.name}</div>
+          <button id="delete-${rule.id}" class="delete-rule">Delete</button>
+        </div>
+        <div class="rule-domain">${rule.domain}</div>
+        <div class="rule-xpath">${rule.xpath}</div>
+        <div class="rule-date">Created: ${date}</div>
+      </div>
+    `;
+  }
+
+  private async deleteRule(id: string): Promise<void> {
+    if (!confirm('Are you sure you want to delete this auto capture rule?')) {
+      return;
+    }
+
+    try {
+      await removeAutoCaptureRule(id);
+      await this.loadAutoCaptureRules();
+      this.showStatus('Auto capture rule deleted successfully', 'success');
+    } catch (error) {
+      console.error('Failed to delete rule:', error);
+      this.showStatus('Failed to delete auto capture rule', 'error');
+    }
   }
 }
 

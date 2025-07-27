@@ -29,6 +29,9 @@ interface Config {
   useDomainSubfolder?: boolean;
 }
 
+// Track selection state for context menu updates
+let isSelectionActive = false;
+
 // Function to create context menu
 function createContextMenu(): void {
   chrome.contextMenus.removeAll(() => {
@@ -87,6 +90,27 @@ function createContextMenu(): void {
               }
             },
           );
+
+          // Create auto capture menu item (only visible during selection)
+          chrome.contextMenus.create(
+            {
+              id: 'markdown-capture-auto',
+              parentId: 'markdown-capture-parent',
+              title: 'Auto Capture',
+              contexts: ['page', 'selection', 'link', 'image'],
+              visible: false, // Initially hidden
+            },
+            () => {
+              if (chrome.runtime.lastError) {
+                console.error(
+                  'Auto capture menu creation failed:',
+                  chrome.runtime.lastError,
+                );
+              } else {
+                console.log('Auto capture menu created successfully');
+              }
+            },
+          );
         }
       },
     );
@@ -111,13 +135,27 @@ chrome.contextMenus.onClicked.addListener(
     console.log('Context menu clicked:', info.menuItemId);
     if (info.menuItemId === 'markdown-capture-start' && tab?.id) {
       console.log('Starting selection from context menu');
+      isSelectionActive = true;
+      updateAutoCapturMenuVisibility();
       chrome.tabs.sendMessage(tab.id, { action: 'startSelection' });
     } else if (info.menuItemId === 'markdown-capture-stop' && tab?.id) {
       console.log('Stopping selection from context menu');
+      isSelectionActive = false;
+      updateAutoCapturMenuVisibility();
       chrome.tabs.sendMessage(tab.id, { action: 'stopSelection' });
+    } else if (info.menuItemId === 'markdown-capture-auto' && tab?.id) {
+      console.log('Auto capture from context menu');
+      chrome.tabs.sendMessage(tab.id, { action: 'autoCapture' });
     }
   },
 );
+
+// Function to update auto capture menu visibility
+function updateAutoCapturMenuVisibility(): void {
+  chrome.contextMenus.update('markdown-capture-auto', {
+    visible: isSelectionActive,
+  });
+}
 
 // Background script for handling file saving
 chrome.runtime.onMessage.addListener(

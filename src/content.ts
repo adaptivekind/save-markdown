@@ -6,13 +6,19 @@ import {
   getElementDebugBoxElement,
 } from './elementDebugBox';
 import { generateXPath } from './xpathGenerator';
+import {
+  createRuleFromElement,
+  findAutoCaptureElements,
+} from './autoCaptureRules';
 
 let isSelectionActive = false;
 let overlay: HTMLElement | null = null;
 let selectedElement: HTMLElement | null = null;
+let autoCaptureElements: HTMLElement[] = [];
+let lastHoveredElement: HTMLElement | null = null;
 
 interface TabMessage {
-  action: 'startSelection' | 'stopSelection' | 'showDebug';
+  action: 'startSelection' | 'stopSelection' | 'showDebug' | 'autoCapture';
   message?: string;
 }
 
@@ -30,6 +36,9 @@ interface RuntimeMessage {
 
 // Initialize page debug box
 initializePageDebugBox();
+
+// Initialize auto capture on page load
+initializeAutoCapture();
 
 // Listen for messages from popup and background
 chrome.runtime.onMessage.addListener(
@@ -69,6 +78,17 @@ chrome.runtime.onMessage.addListener(
     } else if (request.action === 'captureError') {
       showPageDebug(`Capture error: ${request.error || 'Unknown error'}`);
       return false;
+    } else if (request.action === 'autoCapture') {
+      try {
+        handleAutoCapture();
+        sendResponse({ success: true, message: 'Auto capture rule created' });
+      } catch (error) {
+        showPageDebug(
+          `Error creating auto capture rule: ${(error as Error).message}`,
+        );
+        sendResponse({ success: false, error: (error as Error).message });
+      }
+      return true;
     }
 
     // Return false for unhandled messages
@@ -132,6 +152,8 @@ function handleMouseOver(e: MouseEvent): void {
   const element = e.target as HTMLElement;
   if (element === overlay || element === getElementDebugBoxElement()) return;
 
+  lastHoveredElement = element;
+
   const rect = element.getBoundingClientRect();
   overlay.style.display = 'block';
   overlay.style.left = rect.left + window.scrollX + 'px';
@@ -176,6 +198,64 @@ function captureElement(element: HTMLElement): void {
   const xpath = generateXPath(element);
   showPageDebug(
     `Captured element: ${element.tagName} (${markdown.length} chars)\nXPath: ${xpath}`,
+  );
+
+  // Send to background script for saving
+  const message: SaveMarkdownMessage = {
+    action: 'saveMarkdown',
+    content: markdown,
+    url: window.location.href,
+    title: document.title,
+  };
+  chrome.runtime.sendMessage(message);
+}
+
+// Auto capture functions
+async function initializeAutoCapture(): Promise<void> {
+  try {
+    const matches = await findAutoCaptureElements();
+    autoCaptureElements = matches.map(match => match.element);
+
+    // Highlight auto capture elements
+    highlightAutoCaptureElements();
+
+    // Auto capture elements on page load
+    for (const match of matches) {
+      showPageDebug(`Auto capturing: ${match.rule.name}`);
+      await autoCapture(match.element);
+    }
+  } catch (error) {
+    console.error('Failed to initialize auto capture:', error);
+  }
+}
+
+function highlightAutoCaptureElements(): void {
+  autoCaptureElements.forEach(element => {
+    element.style.outline = '2px solid #007cba';
+    element.style.outlineOffset = '2px';
+    element.setAttribute('data-markdown-auto-capture', 'true');
+  });
+}
+
+async function handleAutoCapture(): Promise<void> {
+  if (!lastHoveredElement) {
+    throw new Error('No element selected for auto capture');
+  }
+
+  await createRuleFromElement(lastHoveredElement);
+  showPageDebug(
+    `Auto capture rule created for ${lastHoveredElement.tagName.toLowerCase()}`,
+  );
+
+  // Refresh auto capture elements
+  await initializeAutoCapture();
+}
+
+async function autoCapture(element: HTMLElement): Promise<void> {
+  const markdown = htmlToMarkdown(element);
+
+  showPageDebug(
+    `Auto captured element: ${element.tagName} (${markdown.length} chars)`,
   );
 
   // Send to background script for saving
