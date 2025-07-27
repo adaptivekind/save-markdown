@@ -4,7 +4,7 @@ let isSelectionActive = false;
 let overlay: HTMLElement | null = null;
 let selectedElement: HTMLElement | null = null;
 let debugOverlay: HTMLElement | null = null;
-let debugMode = false;
+let debugMode = true;
 
 interface TabMessage {
   action: 'startSelection' | 'stopSelection' | 'showDebug';
@@ -25,8 +25,10 @@ interface RuntimeMessage {
 
 // Initialize debug overlay and load settings
 chrome.storage.sync.get(['debugMode'], (result: { [key: string]: boolean }) => {
-  debugMode = result.debugMode || false;
+  console.log('storage debugMode', result);
+  debugMode = result.debugMode === undefined ? true : result.debugMode;
   if (debugMode) {
+    console.log('Showing debug overlay');
     createDebugOverlay();
     showDebug('Debug mode enabled on page load');
   }
@@ -202,30 +204,11 @@ function createDebugOverlay(): void {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   `;
 
-  // Add close button
-  const closeButton = document.createElement('div');
-  closeButton.style.cssText = `
-    position: absolute;
-    top: 2px;
-    right: 6px;
-    cursor: pointer;
-    color: #ff6666;
-    font-weight: bold;
-    font-size: 12px;
-  `;
-  closeButton.textContent = '×';
-  closeButton.onclick = () => {
-    if (debugOverlay) {
-      debugOverlay.remove();
-      debugOverlay = null;
-    }
-  };
-
-  debugOverlay.appendChild(closeButton);
   document.body.appendChild(debugOverlay);
 }
 
 function showDebug(message: string): void {
+  console.log('debug mode', debugMode);
   if (!debugMode) return;
 
   if (!debugOverlay) {
@@ -244,28 +227,6 @@ function showDebug(message: string): void {
     const lines = debugOverlay.textContent.split('\n');
     if (lines.length > 20) {
       debugOverlay.textContent = lines.slice(0, 20).join('\n');
-    }
-
-    // Re-add close button if it was overwritten
-    if (!debugOverlay.querySelector('div')) {
-      const closeButton = document.createElement('div');
-      closeButton.style.cssText = `
-        position: absolute;
-        top: 2px;
-        right: 6px;
-        cursor: pointer;
-        color: #ff6666;
-        font-weight: bold;
-        font-size: 12px;
-      `;
-      closeButton.textContent = '×';
-      closeButton.onclick = () => {
-        if (debugOverlay) {
-          debugOverlay.remove();
-          debugOverlay = null;
-        }
-      };
-      debugOverlay.appendChild(closeButton);
     }
   }
 }
