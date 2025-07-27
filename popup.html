@@ -88,6 +88,53 @@
         color: #ffb3b3;
         border: 1px solid #7c4a4a;
       }
+      .toggle-section {
+        margin: 16px 0;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
+        border: 1px solid #555555;
+      }
+      .toggle-label {
+        font-size: 13px;
+        color: #cccccc;
+        margin-bottom: 8px;
+        display: block;
+      }
+      .toggle-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .toggle-text {
+        font-size: 14px;
+        color: #ffffff;
+      }
+      .toggle-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        background: #555555;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      .toggle-switch.active {
+        background: #007cba;
+      }
+      .toggle-slider {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+      }
+      .toggle-switch.active .toggle-slider {
+        transform: translateX(20px);
+      }
     </style>
   </head>
   <body>
@@ -98,6 +145,16 @@
 
     <button id="startSelection" class="button">Start Element Selection</button>
     <button id="stopSelection" class="button" disabled>Stop Selection</button>
+
+    <div class="toggle-section">
+      <label class="toggle-label">Auto Capture Settings</label>
+      <div class="toggle-container">
+        <span class="toggle-text">Auto Capture</span>
+        <div id="autoCaptureToggle" class="toggle-switch">
+          <div class="toggle-slider"></div>
+        </div>
+      </div>
+    </div>
 
     <div id="status" class="status" style="display: none"></div>
 

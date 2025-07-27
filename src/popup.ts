@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', function () {
   ) as HTMLAnchorElement;
   const helpLink = document.getElementById('helpLink') as HTMLAnchorElement;
   const statusDiv = document.getElementById('status') as HTMLDivElement;
+  const autoCaptureToggle = document.getElementById(
+    'autoCaptureToggle',
+  ) as HTMLDivElement;
 
   startButton.addEventListener('click', function () {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -109,6 +112,36 @@ document.addEventListener('DOMContentLoaded', function () {
       url: 'https://github.com/ianhomer/markdown-capture',
     });
   });
+
+  // Load current auto capture setting and set toggle state
+  chrome.storage.sync.get(['enableAutoCapture'], function (result) {
+    const isEnabled = result.enableAutoCapture !== false; // Default to true
+    updateToggleState(isEnabled);
+  });
+
+  // Handle auto capture toggle click
+  autoCaptureToggle.addEventListener('click', function () {
+    chrome.storage.sync.get(['enableAutoCapture'], function (result) {
+      const currentState = result.enableAutoCapture !== false; // Default to true
+      const newState = !currentState;
+
+      chrome.storage.sync.set({ enableAutoCapture: newState }, function () {
+        updateToggleState(newState);
+        showStatus(
+          `Auto capture ${newState ? 'enabled' : 'disabled'}`,
+          'success',
+        );
+      });
+    });
+  });
+
+  function updateToggleState(isEnabled: boolean): void {
+    if (isEnabled) {
+      autoCaptureToggle.classList.add('active');
+    } else {
+      autoCaptureToggle.classList.remove('active');
+    }
+  }
 
   function showStatus(message: string, type: 'success' | 'error'): void {
     statusDiv.textContent = message;

@@ -324,6 +324,15 @@ async function createAutoCaptureRule(element: HTMLElement): Promise<void> {
 // Auto capture functions
 async function initializeAutoCapture(): Promise<void> {
   try {
+    // Check if auto capture is enabled
+    const settings = await chrome.storage.sync.get(['enableAutoCapture']);
+    const isEnabled = settings.enableAutoCapture !== false; // Default to true
+
+    if (!isEnabled) {
+      showPageDebug('Auto capture is disabled');
+      return;
+    }
+
     const matches = await findAutoCaptureElements();
     autoCaptureElements = matches.map(match => match.element);
 
