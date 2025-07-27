@@ -133,6 +133,19 @@
       </div>
 
       <div class="form-group">
+        <label for="useDomainSubfolder">Organize by Domain:</label>
+        <select id="useDomainSubfolder">
+          <option value="true">
+            Yes - Save files in domain-named subfolders
+          </option>
+          <option value="false">No - Save files in main directory</option>
+        </select>
+        <div class="help-text">
+          When enabled, files are saved in subfolders named after the domain (e.g., example-com/).
+        </div>
+      </div>
+
+      <div class="form-group">
         <label for="filenameTemplate">Filename Template:</label>
         <input
           type="text"

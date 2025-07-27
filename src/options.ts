@@ -3,6 +3,7 @@ import { ExtensionOptions } from './types';
 const defaultOptions: ExtensionOptions = {
   saveDirectory: '~/Downloads',
   filenameTemplate: '{title}_{timestamp}.md',
+  useDomainSubfolder: true,
   includeMetadata: true,
   metadataTemplate: `---
 Source: {url}
@@ -67,6 +68,8 @@ class OptionsManager {
       options.saveDirectory;
     (document.getElementById('filenameTemplate') as HTMLInputElement).value =
       options.filenameTemplate;
+    (document.getElementById('useDomainSubfolder') as HTMLSelectElement).value =
+      String(options.useDomainSubfolder);
     (document.getElementById('includeMetadata') as HTMLSelectElement).value =
       String(options.includeMetadata);
     (document.getElementById('metadataTemplate') as HTMLTextAreaElement).value =
@@ -88,6 +91,9 @@ class OptionsManager {
       filenameTemplate: (
         document.getElementById('filenameTemplate') as HTMLInputElement
       ).value,
+      useDomainSubfolder:
+        (document.getElementById('useDomainSubfolder') as HTMLSelectElement)
+          .value === 'true',
       includeMetadata:
         (document.getElementById('includeMetadata') as HTMLSelectElement)
           .value === 'true',
@@ -184,6 +190,7 @@ class OptionsManager {
     return (
       typeof opt.saveDirectory === 'string' &&
       typeof opt.filenameTemplate === 'string' &&
+      typeof opt.useDomainSubfolder === 'boolean' &&
       typeof opt.includeMetadata === 'boolean' &&
       typeof opt.metadataTemplate === 'string' &&
       typeof opt.preserveFormatting === 'boolean' &&

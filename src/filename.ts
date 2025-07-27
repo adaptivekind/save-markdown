@@ -61,11 +61,12 @@ export function generateFilename(options: FilenameOptions): string {
 export function generateDownloadPath(
   directory: string,
   filename: string,
+  domainSubfolder?: string,
 ): string {
   // Chrome downloads API has limitations with custom paths
   // We can only suggest a relative path from the default download directory
   if (directory === '~/Downloads' || directory === '') {
-    return filename;
+    return domainSubfolder ? `${domainSubfolder}/${filename}` : filename;
   }
 
   // Convert directory path to relative path format
@@ -76,6 +77,13 @@ export function generateDownloadPath(
 
   // Ensure the path is safe (no .. or absolute paths)
   relativePath = sanitizePath(relativePath);
+
+  // Add domain subfolder if provided
+  if (domainSubfolder) {
+    relativePath = relativePath
+      ? `${relativePath}/${domainSubfolder}`
+      : domainSubfolder;
+  }
 
   return relativePath ? `${relativePath}/${filename}` : filename;
 }

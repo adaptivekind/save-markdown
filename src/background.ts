@@ -26,6 +26,7 @@ type Message =
 interface Config {
   saveDirectory?: string;
   filenameTemplate?: string;
+  useDomainSubfolder?: boolean;
 }
 
 // Function to create context menu
@@ -152,9 +153,11 @@ async function saveMarkdownFile(
     const config = (await chrome.storage.sync.get([
       'saveDirectory',
       'filenameTemplate',
+      'useDomainSubfolder',
     ])) as Config;
     const directory = config.saveDirectory || '~/Downloads';
     const template = config.filenameTemplate || '{title}_{timestamp}.md';
+    const useDomainSubfolder = config.useDomainSubfolder !== false; // Default to true
 
     // Generate filename with directory path
     const baseFilename = generateFilename({
@@ -163,7 +166,17 @@ async function saveMarkdownFile(
       url,
       maxTitleLength: 50,
     });
-    const filename = generateDownloadPath(directory, baseFilename);
+
+    // Extract domain for subfolder if enabled
+    const domainSubfolder = useDomainSubfolder
+      ? new URL(url).hostname.replace('www.', '').replace(/\./g, '-')
+      : undefined;
+
+    const filename = generateDownloadPath(
+      directory,
+      baseFilename,
+      domainSubfolder,
+    );
 
     // Add metadata to content
     const fullContent = wrapWithMetadata(content, {
