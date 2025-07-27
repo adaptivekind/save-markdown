@@ -53,7 +53,7 @@ function createContextMenu(): void {
             {
               id: 'markdown-capture-auto',
               parentId: 'markdown-capture-parent',
-              title: 'Select Capture',
+              title: 'Auto Save',
               contexts: ['page', 'selection', 'link', 'image'],
               visible: true, // Always visible
             },

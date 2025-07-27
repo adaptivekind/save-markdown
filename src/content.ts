@@ -433,7 +433,7 @@ function addAutoCaptureLabel(element: HTMLElement, rule: CaptureRule): void {
 
   // Create text
   const text = document.createElement('span');
-  text.textContent = rule.enabled ? 'CAPTURE AUTO' : 'CAPTURE MANUAL';
+  text.textContent = rule.enabled ? 'AUTO SAVE' : 'MANUAL SAVE';
 
   // Create manual capture button (only shown when rule is disabled)
   const manualCaptureButton = document.createElement('div');
@@ -468,7 +468,7 @@ function addAutoCaptureLabel(element: HTMLElement, rule: CaptureRule): void {
       toggle.style.background = newState ? '#28a745' : '#dc3545';
       toggleSlider.style.left = newState ? '7px' : '1px';
       label.style.background = newState ? '#007cba' : '#666666';
-      text.textContent = newState ? 'CAPTURE AUTO' : 'CAPTURE MANUAL';
+      text.textContent = newState ? 'AUTO SAVE' : 'MANUAL SAVE';
       manualCaptureButton.style.display = newState ? 'none' : 'block';
 
       // Update rule object
