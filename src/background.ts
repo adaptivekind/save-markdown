@@ -99,13 +99,61 @@ function createContextMenu(): void {
 chrome.runtime.onInstalled.addListener(() => {
   console.log('Extension installed/updated - creating context menu');
   createContextMenu();
+  updateIcon();
 });
 
 // Create context menu when extension starts up
 chrome.runtime.onStartup.addListener(() => {
   console.log('Extension startup - creating context menu');
   createContextMenu();
+  updateIcon();
 });
+
+// Update icon based on auto capture state
+async function updateIcon(): Promise<void> {
+  try {
+    const settings = await chrome.storage.sync.get(['enableAutoCapture']);
+    const isEnabled = settings.enableAutoCapture !== false; // Default to true
+
+    console.log('Updating icon based on auto capture state:', isEnabled);
+
+    const iconPath = isEnabled
+      ? {
+          16: 'icons/icon16.png',
+          48: 'icons/icon48.png',
+          128: 'icons/icon128.png',
+        }
+      : {
+          16: 'icons/icon16-disabled.png',
+          48: 'icons/icon48-disabled.png',
+          128: 'icons/icon128-disabled.png',
+        };
+
+    console.log('Setting icon paths:', iconPath);
+
+    if (chrome.action && chrome.action.setIcon) {
+      await chrome.action.setIcon({ path: iconPath });
+      console.log(
+        `Icon updated successfully: ${isEnabled ? 'enabled' : 'disabled'} state`,
+      );
+    } else {
+      console.error('chrome.action.setIcon is not available');
+    }
+  } catch (error) {
+    console.error('Failed to update icon:', error);
+  }
+}
+
+// Listen for storage changes to update icon
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'sync' && changes.enableAutoCapture) {
+    console.log('Auto capture setting changed, updating icon');
+    updateIcon();
+  }
+});
+
+// Initialize icon immediately when script loads
+updateIcon();
 
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(

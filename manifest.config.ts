@@ -25,6 +25,11 @@ export default defineManifest(async env => ({
   action: {
     default_popup: 'popup.html',
     default_title: 'Markdown Capture',
+    default_icon: {
+      16: 'icons/icon16.png',
+      48: 'icons/icon48.png',
+      128: 'icons/icon128.png',
+    },
   },
   options_page: 'options.html',
   content_scripts: [
