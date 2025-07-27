@@ -218,7 +218,7 @@ async function saveMarkdownFile(
         url: dataUrl,
         filename: filename,
         saveAs: false,
-        conflictAction: 'uniquify',
+        conflictAction: 'overwrite',
       },
       (downloadId?: number) => {
         if (chrome.runtime.lastError) {
