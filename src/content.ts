@@ -10,13 +10,14 @@ import {
   AutoCaptureRule,
   createRuleFromElement,
   findAutoCaptureElements,
+  findAllAutoCaptureElements,
+  toggleAutoCaptureRule,
 } from './autoCaptureRules';
 
 let isSelectionActive = false;
 let isAutoCaptureActive = false;
 let overlay: HTMLElement | null = null;
 let selectedElement: HTMLElement | null = null;
-let autoCaptureElements: HTMLElement[] = [];
 let lastHoveredElement: HTMLElement | null = null;
 
 interface TabMessage {
@@ -333,19 +334,19 @@ async function initializeAutoCapture(): Promise<void> {
       return;
     }
 
-    const matches = await findAutoCaptureElements();
-    autoCaptureElements = matches.map(match => match.element);
+    const enabledMatches = await findAutoCaptureElements();
+    const allMatches = await findAllAutoCaptureElements();
 
     // Show notification if auto capture rules are active
-    if (matches.length > 0) {
-      showAutoCaptureNotification(matches);
+    if (enabledMatches.length > 0) {
+      showAutoCaptureNotification(enabledMatches);
     }
 
-    // Highlight auto capture elements
-    highlightAutoCaptureElements();
+    // Highlight all auto capture elements (enabled and disabled)
+    highlightAutoCaptureElements(allMatches);
 
-    // Auto capture elements on page load
-    for (const match of matches) {
+    // Auto capture only enabled elements on page load
+    for (const match of enabledMatches) {
       showPageDebug(`Auto capturing: ${match.rule.name}`);
       await autoCapture(match.element);
     }
@@ -354,27 +355,32 @@ async function initializeAutoCapture(): Promise<void> {
   }
 }
 
-function highlightAutoCaptureElements(): void {
-  autoCaptureElements.forEach(element => {
+function highlightAutoCaptureElements(
+  matches: { element: HTMLElement; rule: AutoCaptureRule }[],
+): void {
+  matches.forEach(({ element, rule }) => {
     element.style.outline = '2px solid #007cba';
     element.style.outlineOffset = '2px';
     element.setAttribute('data-markdown-auto-capture', 'true');
+    element.setAttribute('data-rule-id', rule.id);
 
     // Add label div to top-right of element
-    addAutoCaptureLabel(element);
+    addAutoCaptureLabel(element, rule);
   });
 }
 
-function addAutoCaptureLabel(element: HTMLElement): void {
-  // Create label element
+function addAutoCaptureLabel(
+  element: HTMLElement,
+  rule: AutoCaptureRule,
+): void {
+  // Create label container
   const label = document.createElement('div');
   label.className = 'markdown-capture-label';
-  label.textContent = 'MARKDOWN AUTO CAPTURE';
   label.style.cssText = `
     position: absolute;
     top: -2px;
     right: -2px;
-    background: #007cba;
+    background: ${rule.enabled ? '#007cba' : '#666666'};
     color: white;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 9px;
@@ -382,11 +388,75 @@ function addAutoCaptureLabel(element: HTMLElement): void {
     padding: 2px 6px;
     border-radius: 0 0 0 4px;
     z-index: 10001;
-    pointer-events: none;
     white-space: nowrap;
     letter-spacing: 0.5px;
     text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    pointer-events: auto;
   `;
+
+  // Create toggle switch
+  const toggle = document.createElement('div');
+  toggle.className = 'capture-toggle';
+  toggle.style.cssText = `
+    width: 16px;
+    height: 10px;
+    background: ${rule.enabled ? '#28a745' : '#dc3545'};
+    border-radius: 5px;
+    position: relative;
+    transition: background-color 0.2s ease;
+  `;
+
+  const toggleSlider = document.createElement('div');
+  toggleSlider.style.cssText = `
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 1px;
+    left: ${rule.enabled ? '7px' : '1px'};
+    transition: left 0.2s ease;
+  `;
+  toggle.appendChild(toggleSlider);
+
+  // Create text
+  const text = document.createElement('span');
+  text.textContent = rule.enabled ? 'CAPTURE ON' : 'CAPTURE OFF';
+
+  // Add click handler for toggle
+  label.addEventListener('click', async e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      const newState = await toggleAutoCaptureRule(rule.id);
+
+      // Update visual state
+      toggle.style.background = newState ? '#28a745' : '#dc3545';
+      toggleSlider.style.left = newState ? '7px' : '1px';
+      label.style.background = newState ? '#007cba' : '#666666';
+      text.textContent = newState ? 'CAPTURE ON' : 'CAPTURE OFF';
+
+      // Update rule object
+      rule.enabled = newState;
+
+      showPageDebug(
+        `Capture rule ${newState ? 'enabled' : 'disabled'}: ${rule.name}`,
+      );
+    } catch (error) {
+      showPageDebug(
+        `Failed to toggle capture rule: ${(error as Error).message}`,
+      );
+    }
+  });
+
+  // Assemble label
+  label.appendChild(toggle);
+  label.appendChild(text);
 
   // Make sure the parent element has relative positioning
   const originalPosition = element.style.position;

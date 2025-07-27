@@ -10,6 +10,7 @@ export interface AutoCaptureRule {
   xpath: string;
   name: string;
   created: string;
+  enabled: boolean;
 }
 
 const STORAGE_KEY = 'autoCaptureRules';
@@ -53,6 +54,7 @@ export async function addAutoCaptureRule(
       xpath,
       name,
       created: new Date().toISOString(),
+      enabled: true,
     };
 
     rules.push(newRule);
@@ -101,6 +103,27 @@ export async function updateAutoCaptureRule(
 }
 
 /**
+ * Toggles the enabled state of an auto capture rule
+ */
+export async function toggleAutoCaptureRule(id: string): Promise<boolean> {
+  try {
+    const rules = await getAutoCaptureRules();
+    const rule = rules.find(rule => rule.id === id);
+
+    if (!rule) {
+      throw new Error(`Rule with id ${id} not found`);
+    }
+
+    const newEnabledState = !rule.enabled;
+    await updateAutoCaptureRule(id, { enabled: newEnabledState });
+    return newEnabledState;
+  } catch (error) {
+    console.error('Failed to toggle auto capture rule:', error);
+    throw error;
+  }
+}
+
+/**
  * Creates an auto capture rule from an element
  */
 export async function createRuleFromElement(
@@ -121,6 +144,31 @@ export async function createRuleFromElement(
  * Finds elements on the current page that match auto capture rules
  */
 export async function findAutoCaptureElements(): Promise<
+  { element: HTMLElement; rule: AutoCaptureRule }[]
+> {
+  const domain = window.location.hostname.replace('www.', '');
+  const rules = await getAutoCaptureRulesForDomain(domain);
+  const matches: { element: HTMLElement; rule: AutoCaptureRule }[] = [];
+
+  for (const rule of rules) {
+    // Only process enabled rules for automatic capture
+    if (!rule.enabled) {
+      continue;
+    }
+
+    const element = getElementByXPath(rule.xpath);
+    if (element) {
+      matches.push({ element, rule });
+    }
+  }
+
+  return matches;
+}
+
+/**
+ * Finds all elements (enabled and disabled) that match auto capture rules for display
+ */
+export async function findAllAutoCaptureElements(): Promise<
   { element: HTMLElement; rule: AutoCaptureRule }[]
 > {
   const domain = window.location.hostname.replace('www.', '');
