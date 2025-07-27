@@ -7,12 +7,12 @@ import {
 } from './elementDebugBox';
 import { generateXPath } from './xpathGenerator';
 import {
-  AutoCaptureRule,
+  CaptureRule,
   createRuleFromElement,
-  findAutoCaptureElements,
-  findAllAutoCaptureElements,
-  toggleAutoCaptureRule,
-} from './autoCaptureRules';
+  findCaptureElements,
+  findAllCaptureElements,
+  toggleCaptureRule,
+} from './captureRules';
 
 let isSelectionActive = false;
 let isAutoCaptureActive = false;
@@ -25,7 +25,7 @@ interface TabMessage {
     | 'startSelection'
     | 'stopSelection'
     | 'showDebug'
-    | 'autoCapture'
+    | 'capture'
     | 'startAutoCapture'
     | 'stopAutoCapture';
   message?: string;
@@ -101,7 +101,7 @@ chrome.runtime.onMessage.addListener(
     } else if (request.action === 'captureError') {
       showPageDebug(`Capture error: ${request.error || 'Unknown error'}`);
       return false;
-    } else if (request.action === 'autoCapture') {
+    } else if (request.action === 'capture') {
       try {
         handleAutoCapture(request);
         sendResponse({ success: true, message: 'Auto capture rule created' });
@@ -114,7 +114,7 @@ chrome.runtime.onMessage.addListener(
       return true;
     } else if (request.action === 'startAutoCapture') {
       try {
-        startAutoCapture();
+        startSelectCapture();
         showPageDebug('Auto capture mode started');
         sendResponse({ success: true, message: 'Auto capture mode started' });
       } catch (error) {
@@ -192,16 +192,16 @@ function stopElementSelection(): void {
   document.removeEventListener('keydown', handleKeyDown);
 }
 
-function startAutoCapture(): void {
+function startSelectCapture(): void {
   if (isAutoCaptureActive) return;
-  console.log('Starting Auto Capture Mode');
+  console.log('Starting Select Capture Mode');
 
   isAutoCaptureActive = true;
   document.body.style.cursor = 'copy';
 
-  // Create overlay with different styling for auto capture
+  // Create overlay with different styling for select capture
   overlay = document.createElement('div');
-  overlay.id = 'markdown-auto-capture-overlay';
+  overlay.id = 'markdown-select-capture-overlay';
   overlay.style.cssText = `
     position: absolute;
     border: 2px dashed #28a745;
@@ -281,7 +281,7 @@ function handleClick(e: MouseEvent): void {
     stopElementSelection();
   } else if (isAutoCaptureActive) {
     // Auto capture mode - create rule instead of capturing
-    createAutoCaptureRule(selectedElement);
+    createCaptureRule(selectedElement);
     stopAutoCapture();
   }
 }
@@ -316,7 +316,7 @@ function captureElement(element: HTMLElement): void {
   chrome.runtime.sendMessage(message);
 }
 
-async function createAutoCaptureRule(element: HTMLElement): Promise<void> {
+async function createCaptureRule(element: HTMLElement): Promise<void> {
   // Generate and show XPath before creating the rule
   const xpath = generateXPath(element);
   showPageDebug(
@@ -341,29 +341,29 @@ async function initializeAutoCapture(): Promise<void> {
       return;
     }
 
-    const enabledMatches = await findAutoCaptureElements();
-    const allMatches = await findAllAutoCaptureElements();
+    const enabledMatches = await findCaptureElements();
+    const allMatches = await findAllCaptureElements();
 
     // Highlight all auto capture elements (enabled and disabled)
-    highlightAutoCaptureElements(allMatches);
+    highlightCaptureElements(allMatches);
 
     // Auto capture only enabled elements on page load
     for (const match of enabledMatches) {
       showPageDebug(`Auto capturing: ${match.rule.name}`);
-      await autoCapture(match.element);
+      await capture(match.element);
     }
   } catch (error) {
     console.error('Failed to initialize auto capture:', error);
   }
 }
 
-function highlightAutoCaptureElements(
-  matches: { element: HTMLElement; rule: AutoCaptureRule }[],
+function highlightCaptureElements(
+  matches: { element: HTMLElement; rule: CaptureRule }[],
 ): void {
   matches.forEach(({ element, rule }) => {
     element.style.outline = '2px solid #007cba';
     element.style.outlineOffset = '2px';
-    element.setAttribute('data-markdown-auto-capture', 'true');
+    element.setAttribute('data-markdown-capture', 'true');
     element.setAttribute('data-rule-id', rule.id);
 
     // Add label div to top-right of element
@@ -371,17 +371,25 @@ function highlightAutoCaptureElements(
   });
 }
 
-function addAutoCaptureLabel(
-  element: HTMLElement,
-  rule: AutoCaptureRule,
-): void {
+function addAutoCaptureLabel(element: HTMLElement, rule: CaptureRule): void {
+  // Create main container
+  const container = document.createElement('div');
+  container.className = 'markdown-capture-container';
+  container.style.cssText = `
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    z-index: 10001;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  `;
+
   // Create label container
   const label = document.createElement('div');
   label.className = 'markdown-capture-label';
   label.style.cssText = `
-    position: absolute;
-    top: -2px;
-    right: -2px;
     background: ${rule.enabled ? '#007cba' : '#666666'};
     color: white;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -389,7 +397,6 @@ function addAutoCaptureLabel(
     font-weight: 600;
     padding: 2px 6px;
     border-radius: 0 0 0 4px;
-    z-index: 10001;
     white-space: nowrap;
     letter-spacing: 0.5px;
     text-transform: uppercase;
@@ -397,7 +404,6 @@ function addAutoCaptureLabel(
     align-items: center;
     gap: 4px;
     cursor: pointer;
-    pointer-events: auto;
   `;
 
   // Create toggle switch
@@ -427,7 +433,28 @@ function addAutoCaptureLabel(
 
   // Create text
   const text = document.createElement('span');
-  text.textContent = rule.enabled ? 'CAPTURE ON' : 'CAPTURE OFF';
+  text.textContent = rule.enabled ? 'CAPTURE AUTO' : 'CAPTURE MANUAL';
+
+  // Create manual capture button (only shown when rule is disabled)
+  const manualCaptureButton = document.createElement('div');
+  manualCaptureButton.className = 'manual-capture-button';
+  manualCaptureButton.style.cssText = `
+    background: #28a745;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 0 0 4px 4px;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: center;
+    display: ${rule.enabled ? 'none' : 'block'};
+    transition: background-color 0.2s ease;
+  `;
+  manualCaptureButton.textContent = 'SAVE';
 
   // Add click handler for toggle
   label.addEventListener('click', async e => {
@@ -435,13 +462,14 @@ function addAutoCaptureLabel(
     e.stopPropagation();
 
     try {
-      const newState = await toggleAutoCaptureRule(rule.id);
+      const newState = await toggleCaptureRule(rule.id);
 
       // Update visual state
       toggle.style.background = newState ? '#28a745' : '#dc3545';
       toggleSlider.style.left = newState ? '7px' : '1px';
       label.style.background = newState ? '#007cba' : '#666666';
-      text.textContent = newState ? 'CAPTURE ON' : 'CAPTURE OFF';
+      text.textContent = newState ? 'CAPTURE AUTO' : 'CAPTURE MANUAL';
+      manualCaptureButton.style.display = newState ? 'none' : 'block';
 
       // Update rule object
       rule.enabled = newState;
@@ -456,9 +484,36 @@ function addAutoCaptureLabel(
     }
   });
 
+  // Add click handler for manual capture button
+  manualCaptureButton.addEventListener('click', async e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      await capture(element);
+      showPageDebug(`Manual capture completed: ${rule.name}`);
+
+      // Brief visual feedback
+      manualCaptureButton.style.background = '#007cba';
+      setTimeout(() => {
+        manualCaptureButton.style.background = '#28a745';
+      }, 200);
+    } catch (error) {
+      showPageDebug(`Failed to manually capture: ${(error as Error).message}`);
+      manualCaptureButton.style.background = '#dc3545';
+      setTimeout(() => {
+        manualCaptureButton.style.background = '#28a745';
+      }, 1000);
+    }
+  });
+
   // Assemble label
   label.appendChild(toggle);
   label.appendChild(text);
+
+  // Assemble container
+  container.appendChild(label);
+  container.appendChild(manualCaptureButton);
 
   // Make sure the parent element has relative positioning
   const originalPosition = element.style.position;
@@ -470,8 +525,8 @@ function addAutoCaptureLabel(
     );
   }
 
-  // Add label to element
-  element.appendChild(label);
+  // Add container to element
+  element.appendChild(container);
 }
 
 function findTargetElementFromContext(targetInfo: {
@@ -555,7 +610,7 @@ async function handleAutoCapture(request?: TabMessage): Promise<void> {
   await initializeAutoCapture();
 }
 
-async function autoCapture(element: HTMLElement): Promise<void> {
+async function capture(element: HTMLElement): Promise<void> {
   const markdown = htmlToMarkdown(element);
 
   showPageDebug(

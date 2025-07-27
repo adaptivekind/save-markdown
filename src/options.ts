@@ -1,10 +1,10 @@
 import { ExtensionOptions } from './types';
 import {
-  getAutoCaptureRules,
-  removeAutoCaptureRule,
-  updateAutoCaptureRule,
-  AutoCaptureRule,
-} from './autoCaptureRules';
+  getCaptureRules,
+  removeCaptureRule,
+  updateCaptureRule,
+  CaptureRule,
+} from './captureRules';
 
 const defaultOptions: ExtensionOptions = {
   saveDirectory: '~/Downloads',
@@ -36,7 +36,7 @@ class OptionsManager {
     await this.loadOptions();
     this.setupEventListeners();
     this.updateFilenamePreview();
-    await this.loadAutoCaptureRules();
+    await this.loadCaptureRules();
   }
 
   private setupEventListeners(): void {
@@ -246,17 +246,17 @@ class OptionsManager {
     }, 3000);
   }
 
-  private async loadAutoCaptureRules(): Promise<void> {
+  private async loadCaptureRules(): Promise<void> {
     try {
-      const rules = await getAutoCaptureRules();
-      this.displayAutoCaptureRules(rules);
+      const rules = await getCaptureRules();
+      this.displayCaptureRules(rules);
     } catch (error) {
       console.error('Failed to load capture rules:', error);
     }
   }
 
-  private displayAutoCaptureRules(rules: AutoCaptureRule[]): void {
-    const container = document.getElementById('autoCaptureRules');
+  private displayCaptureRules(rules: CaptureRule[]): void {
+    const container = document.getElementById('captureRules');
     const noRulesMessage = document.getElementById('noRulesMessage');
 
     if (!container || !noRulesMessage) return;
@@ -286,10 +286,10 @@ class OptionsManager {
     });
   }
 
-  private createRuleHTML(rule: AutoCaptureRule): string {
+  private createRuleHTML(rule: CaptureRule): string {
     const date = new Date(rule.created).toLocaleDateString();
     return `
-      <div class="auto-capture-rule" id="rule-${rule.id}">
+      <div class="capture-rule" id="rule-${rule.id}">
         <div class="rule-header">
           <div class="rule-name">${rule.name}</div>
           <div class="rule-actions">
@@ -324,8 +324,8 @@ class OptionsManager {
     }
 
     try {
-      await removeAutoCaptureRule(id);
-      await this.loadAutoCaptureRules();
+      await removeCaptureRule(id);
+      await this.loadCaptureRules();
       this.showStatus('Capture rule deleted successfully', 'success');
     } catch (error) {
       console.error('Failed to delete rule:', error);
@@ -356,7 +356,7 @@ class OptionsManager {
       editFormElement.style.display = 'none';
 
       // Reset form values (reload from current data)
-      this.loadAutoCaptureRules();
+      this.loadCaptureRules();
     }
   }
 
@@ -388,12 +388,12 @@ class OptionsManager {
     }
 
     try {
-      await updateAutoCaptureRule(id, {
+      await updateCaptureRule(id, {
         domain: newDomain,
         xpath: newXpath,
       });
 
-      await this.loadAutoCaptureRules();
+      await this.loadCaptureRules();
       this.showStatus('Capture rule updated successfully', 'success');
     } catch (error) {
       console.error('Failed to update rule:', error);

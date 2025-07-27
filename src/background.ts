@@ -88,23 +88,23 @@ function createContextMenu(): void {
             },
           );
 
-          // Create auto capture menu item (always visible)
+          // Create select capture menu item (always visible)
           chrome.contextMenus.create(
             {
               id: 'markdown-capture-auto',
               parentId: 'markdown-capture-parent',
-              title: 'Auto Capture',
+              title: 'Select Capture',
               contexts: ['page', 'selection', 'link', 'image'],
               visible: true, // Always visible
             },
             () => {
               if (chrome.runtime.lastError) {
                 console.error(
-                  'Auto capture menu creation failed:',
+                  'Select capture menu creation failed:',
                   chrome.runtime.lastError,
                 );
               } else {
-                console.log('Auto capture menu created successfully');
+                console.log('Select capture menu created successfully');
               }
             },
           );
@@ -137,7 +137,7 @@ chrome.contextMenus.onClicked.addListener(
       console.log('Stopping selection from context menu');
       chrome.tabs.sendMessage(tab.id, { action: 'stopSelection' });
     } else if (info.menuItemId === 'markdown-capture-auto' && tab?.id) {
-      console.log('Starting auto capture mode from context menu');
+      console.log('Starting select capture mode from context menu');
       chrome.tabs.sendMessage(tab.id, { action: 'startAutoCapture' });
     }
   },

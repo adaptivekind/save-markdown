@@ -4,7 +4,7 @@
 
 import { generateXPath, getElementByXPath } from './xpathGenerator';
 
-export interface AutoCaptureRule {
+export interface CaptureRule {
   id: string;
   domain: string;
   xpath: string;
@@ -13,12 +13,12 @@ export interface AutoCaptureRule {
   enabled: boolean;
 }
 
-const STORAGE_KEY = 'autoCaptureRules';
+const STORAGE_KEY = 'captureRules';
 
 /**
  * Gets all auto capture rules from storage
  */
-export async function getAutoCaptureRules(): Promise<AutoCaptureRule[]> {
+export async function getCaptureRules(): Promise<CaptureRule[]> {
   try {
     const result = await chrome.storage.sync.get([STORAGE_KEY]);
     return result[STORAGE_KEY] || [];
@@ -31,24 +31,24 @@ export async function getAutoCaptureRules(): Promise<AutoCaptureRule[]> {
 /**
  * Gets auto capture rules for the current domain
  */
-export async function getAutoCaptureRulesForDomain(
+export async function getCaptureRulesForDomain(
   domain: string,
-): Promise<AutoCaptureRule[]> {
-  const rules = await getAutoCaptureRules();
+): Promise<CaptureRule[]> {
+  const rules = await getCaptureRules();
   return rules.filter(rule => rule.domain === domain);
 }
 
 /**
  * Adds a new auto capture rule
  */
-export async function addAutoCaptureRule(
+export async function addCaptureRule(
   domain: string,
   xpath: string,
   name: string,
 ): Promise<void> {
   try {
-    const rules = await getAutoCaptureRules();
-    const newRule: AutoCaptureRule = {
+    const rules = await getCaptureRules();
+    const newRule: CaptureRule = {
       id: generateRuleId(),
       domain,
       xpath,
@@ -68,9 +68,9 @@ export async function addAutoCaptureRule(
 /**
  * Removes an auto capture rule by ID
  */
-export async function removeAutoCaptureRule(id: string): Promise<void> {
+export async function removeCaptureRule(id: string): Promise<void> {
   try {
-    const rules = await getAutoCaptureRules();
+    const rules = await getCaptureRules();
     const filteredRules = rules.filter(rule => rule.id !== id);
     await chrome.storage.sync.set({ [STORAGE_KEY]: filteredRules });
   } catch (error) {
@@ -82,12 +82,12 @@ export async function removeAutoCaptureRule(id: string): Promise<void> {
 /**
  * Updates an existing auto capture rule
  */
-export async function updateAutoCaptureRule(
+export async function updateCaptureRule(
   id: string,
-  updates: Partial<AutoCaptureRule>,
+  updates: Partial<CaptureRule>,
 ): Promise<void> {
   try {
-    const rules = await getAutoCaptureRules();
+    const rules = await getCaptureRules();
     const ruleIndex = rules.findIndex(rule => rule.id === id);
 
     if (ruleIndex === -1) {
@@ -105,9 +105,9 @@ export async function updateAutoCaptureRule(
 /**
  * Toggles the enabled state of an auto capture rule
  */
-export async function toggleAutoCaptureRule(id: string): Promise<boolean> {
+export async function toggleCaptureRule(id: string): Promise<boolean> {
   try {
-    const rules = await getAutoCaptureRules();
+    const rules = await getCaptureRules();
     const rule = rules.find(rule => rule.id === id);
 
     if (!rule) {
@@ -115,7 +115,7 @@ export async function toggleAutoCaptureRule(id: string): Promise<boolean> {
     }
 
     const newEnabledState = !rule.enabled;
-    await updateAutoCaptureRule(id, { enabled: newEnabledState });
+    await updateCaptureRule(id, { enabled: newEnabledState });
     return newEnabledState;
   } catch (error) {
     console.error('Failed to toggle auto capture rule:', error);
@@ -137,18 +137,18 @@ export async function createRuleFromElement(
     ? `${tagName}: ${elementText}...`
     : `${tagName} element`;
 
-  await addAutoCaptureRule(domain, xpath, name);
+  await addCaptureRule(domain, xpath, name);
 }
 
 /**
  * Finds elements on the current page that match auto capture rules
  */
-export async function findAutoCaptureElements(): Promise<
-  { element: HTMLElement; rule: AutoCaptureRule }[]
+export async function findCaptureElements(): Promise<
+  { element: HTMLElement; rule: CaptureRule }[]
 > {
   const domain = window.location.hostname.replace('www.', '');
-  const rules = await getAutoCaptureRulesForDomain(domain);
-  const matches: { element: HTMLElement; rule: AutoCaptureRule }[] = [];
+  const rules = await getCaptureRulesForDomain(domain);
+  const matches: { element: HTMLElement; rule: CaptureRule }[] = [];
 
   for (const rule of rules) {
     // Only process enabled rules for automatic capture
@@ -168,12 +168,12 @@ export async function findAutoCaptureElements(): Promise<
 /**
  * Finds all elements (enabled and disabled) that match auto capture rules for display
  */
-export async function findAllAutoCaptureElements(): Promise<
-  { element: HTMLElement; rule: AutoCaptureRule }[]
+export async function findAllCaptureElements(): Promise<
+  { element: HTMLElement; rule: CaptureRule }[]
 > {
   const domain = window.location.hostname.replace('www.', '');
-  const rules = await getAutoCaptureRulesForDomain(domain);
-  const matches: { element: HTMLElement; rule: AutoCaptureRule }[] = [];
+  const rules = await getCaptureRulesForDomain(domain);
+  const matches: { element: HTMLElement; rule: CaptureRule }[] = [];
 
   for (const rule of rules) {
     const element = getElementByXPath(rule.xpath);
