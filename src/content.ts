@@ -360,7 +360,7 @@ function addAutoCaptureLabel(element: HTMLElement): void {
   // Create label element
   const label = document.createElement('div');
   label.className = 'markdown-capture-label';
-  label.textContent = 'MARKDOWN CAPTURE';
+  label.textContent = 'MARKDOWN AUTO CAPTURE';
   label.style.cssText = `
     position: absolute;
     top: -2px;

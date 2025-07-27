@@ -8,7 +8,7 @@ import {
 
 const defaultOptions: ExtensionOptions = {
   saveDirectory: '~/Downloads',
-  filenameTemplate: '{title}_{timestamp}.md',
+  filenameTemplate: '{title}.md',
   useDomainSubfolder: true,
   includeMetadata: true,
   metadataTemplate: `---
