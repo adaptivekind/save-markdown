@@ -2,6 +2,10 @@
  * XPath generation utilities for HTML elements
  */
 
+function normaliseClassName(className: string) {
+  return className.replace(/\s\s+/g, ' ');
+}
+
 /**
  * Generates an XPath expression for the given HTML element
  * Prioritizes ID-based selectors and falls back to position-based paths
@@ -21,7 +25,7 @@ export function generateXPath(element: HTMLElement): string {
 
     // Include class attribute if present for more specificity
     if (current.className) {
-      selector += `[@class="${current.className}"]`;
+      selector += `[@class="${normaliseClassName(current.className)}]`;
     }
 
     // Calculate position among siblings of the same tag
