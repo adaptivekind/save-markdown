@@ -24,7 +24,8 @@
       "WebFetch(domain:crxjs.dev)",
       "mcp__markdown-reader__read_markdown_file",
       "Bash(npm run dev:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(bash:*)"
     ],
     "deny": []
   }

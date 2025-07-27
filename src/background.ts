@@ -48,46 +48,6 @@ function createContextMenu(): void {
         } else {
           console.log('Parent context menu created successfully');
 
-          // Create start selection menu item
-          chrome.contextMenus.create(
-            {
-              id: 'markdown-capture-start',
-              parentId: 'markdown-capture-parent',
-              title: 'Start Selection',
-              contexts: ['page', 'selection', 'link', 'image'],
-            },
-            () => {
-              if (chrome.runtime.lastError) {
-                console.error(
-                  'Start selection menu creation failed:',
-                  chrome.runtime.lastError,
-                );
-              } else {
-                console.log('Start selection menu created successfully');
-              }
-            },
-          );
-
-          // Create stop selection menu item
-          chrome.contextMenus.create(
-            {
-              id: 'markdown-capture-stop',
-              parentId: 'markdown-capture-parent',
-              title: 'Stop Selection',
-              contexts: ['page', 'selection', 'link', 'image'],
-            },
-            () => {
-              if (chrome.runtime.lastError) {
-                console.error(
-                  'Stop selection menu creation failed:',
-                  chrome.runtime.lastError,
-                );
-              } else {
-                console.log('Stop selection menu created successfully');
-              }
-            },
-          );
-
           // Create select capture menu item (always visible)
           chrome.contextMenus.create(
             {
@@ -105,6 +65,27 @@ function createContextMenu(): void {
                 );
               } else {
                 console.log('Select capture menu created successfully');
+              }
+            },
+          );
+
+          // Create options menu item
+          chrome.contextMenus.create(
+            {
+              id: 'markdown-capture-options',
+              parentId: 'markdown-capture-parent',
+              title: 'Options',
+              contexts: ['page', 'selection', 'link', 'image'],
+              visible: true,
+            },
+            () => {
+              if (chrome.runtime.lastError) {
+                console.error(
+                  'Options menu creation failed:',
+                  chrome.runtime.lastError,
+                );
+              } else {
+                console.log('Options menu created successfully');
               }
             },
           );
@@ -130,15 +111,12 @@ chrome.runtime.onStartup.addListener(() => {
 chrome.contextMenus.onClicked.addListener(
   (info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab) => {
     console.log('Context menu clicked:', info.menuItemId);
-    if (info.menuItemId === 'markdown-capture-start' && tab?.id) {
-      console.log('Starting selection from context menu');
-      chrome.tabs.sendMessage(tab.id, { action: 'startSelection' });
-    } else if (info.menuItemId === 'markdown-capture-stop' && tab?.id) {
-      console.log('Stopping selection from context menu');
-      chrome.tabs.sendMessage(tab.id, { action: 'stopSelection' });
-    } else if (info.menuItemId === 'markdown-capture-auto' && tab?.id) {
+    if (info.menuItemId === 'markdown-capture-auto' && tab?.id) {
       console.log('Starting select capture mode from context menu');
       chrome.tabs.sendMessage(tab.id, { action: 'startAutoCapture' });
+    } else if (info.menuItemId === 'markdown-capture-options') {
+      console.log('Opening options page from context menu');
+      chrome.runtime.openOptionsPage();
     }
   },
 );
