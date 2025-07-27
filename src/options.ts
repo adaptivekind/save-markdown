@@ -251,7 +251,7 @@ class OptionsManager {
       const rules = await getAutoCaptureRules();
       this.displayAutoCaptureRules(rules);
     } catch (error) {
-      console.error('Failed to load auto capture rules:', error);
+      console.error('Failed to load capture rules:', error);
     }
   }
 
@@ -319,17 +319,17 @@ class OptionsManager {
   }
 
   private async deleteRule(id: string): Promise<void> {
-    if (!confirm('Are you sure you want to delete this auto capture rule?')) {
+    if (!confirm('Are you sure you want to delete this capture rule?')) {
       return;
     }
 
     try {
       await removeAutoCaptureRule(id);
       await this.loadAutoCaptureRules();
-      this.showStatus('Auto capture rule deleted successfully', 'success');
+      this.showStatus('Capture rule deleted successfully', 'success');
     } catch (error) {
       console.error('Failed to delete rule:', error);
-      this.showStatus('Failed to delete auto capture rule', 'error');
+      this.showStatus('Failed to delete capture rule', 'error');
     }
   }
 
@@ -394,10 +394,10 @@ class OptionsManager {
       });
 
       await this.loadAutoCaptureRules();
-      this.showStatus('Auto capture rule updated successfully', 'success');
+      this.showStatus('Capture rule updated successfully', 'success');
     } catch (error) {
       console.error('Failed to update rule:', error);
-      this.showStatus('Failed to update auto capture rule', 'error');
+      this.showStatus('Failed to update capture rule', 'error');
     }
   }
 }
