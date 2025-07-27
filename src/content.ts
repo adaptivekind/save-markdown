@@ -1,15 +1,15 @@
 import { htmlToMarkdown } from './htmlToMarkdown';
+import { initializePageDebugBox, showPageDebug } from './pageDebugBox';
 import {
-  calculateDebugBoxPosition,
-  DebugBoxDimensions,
-} from './elementDebugBoxPositioning';
+  createElementDebugBox,
+  removeElementDebugBox,
+  getElementDebugBoxElement,
+  generateXPath,
+} from './elementDebugBox';
 
 let isSelectionActive = false;
 let overlay: HTMLElement | null = null;
 let selectedElement: HTMLElement | null = null;
-let pageDebugBox: HTMLElement | null = null;
-let elementDebugBox: HTMLElement | null = null;
-let debugMode = true;
 
 interface TabMessage {
   action: 'startSelection' | 'stopSelection' | 'showDebug';
@@ -28,16 +28,8 @@ interface RuntimeMessage {
   error?: string;
 }
 
-// Initialize page debug box and load settings
-chrome.storage.sync.get(['debugMode'], (result: { [key: string]: boolean }) => {
-  console.log('storage debugMode', result);
-  debugMode = result.debugMode === undefined ? true : result.debugMode;
-  if (debugMode) {
-    console.log('Showing page debug box');
-    createPageDebugBox();
-    showPageDebug('Debug mode enabled on page load');
-  }
-});
+// Initialize page debug box
+initializePageDebugBox();
 
 // Listen for messages from popup and background
 chrome.runtime.onMessage.addListener(
@@ -138,7 +130,7 @@ function handleMouseOver(e: MouseEvent): void {
   showPageDebug('Handling mouse over');
 
   const element = e.target as HTMLElement;
-  if (element === overlay || element === elementDebugBox) return;
+  if (element === overlay || element === getElementDebugBoxElement()) return;
 
   const rect = element.getBoundingClientRect();
   overlay.style.display = 'block';
@@ -147,11 +139,9 @@ function handleMouseOver(e: MouseEvent): void {
   overlay.style.width = rect.width + 'px';
   overlay.style.height = rect.height + 'px';
 
-  // Show element debug box if in debug mode
-  if (debugMode) {
-    showPageDebug('Adding element debug box');
-    createElementDebugBox(element);
-  }
+  // Show element debug box
+  showPageDebug('Adding element debug box');
+  createElementDebugBox(element);
 }
 
 function handleMouseOut(): void {
@@ -178,46 +168,6 @@ function handleKeyDown(e: KeyboardEvent): void {
   }
 }
 
-function generateXPath(element: HTMLElement): string {
-  if (element.id) {
-    return `//*[@id="${element.id}"]`;
-  }
-
-  const parts: string[] = [];
-  let current: HTMLElement | null = element;
-
-  while (current && current.nodeType === Node.ELEMENT_NODE) {
-    let selector = current.tagName.toLowerCase();
-
-    if (current.className) {
-      selector += `[@class="${current.className}"]`;
-    }
-
-    // Count siblings of the same tag
-    let siblingIndex = 1;
-    let sibling = current.previousElementSibling;
-    while (sibling) {
-      if (sibling.tagName === current.tagName) {
-        siblingIndex++;
-      }
-      sibling = sibling.previousElementSibling;
-    }
-
-    // Check if there are multiple siblings of the same tag
-    const totalSiblings =
-      current.parentElement?.querySelectorAll(current.tagName.toLowerCase())
-        .length || 1;
-    if (totalSiblings > 1) {
-      selector += `[${siblingIndex}]`;
-    }
-
-    parts.unshift(selector);
-    current = current.parentElement;
-  }
-
-  return '/' + parts.join('/');
-}
-
 function captureElement(element: HTMLElement): void {
   // Convert element to markdown
   const markdown = htmlToMarkdown(element);
@@ -236,107 +186,4 @@ function captureElement(element: HTMLElement): void {
     title: document.title,
   };
   chrome.runtime.sendMessage(message);
-}
-
-// Page debug box functions
-function createPageDebugBox(): void {
-  if (pageDebugBox) return;
-
-  pageDebugBox = document.createElement('div');
-  pageDebugBox.id = 'markdown-capture-page-debug-box';
-  pageDebugBox.style.cssText = `
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    width: 300px;
-    max-height: 500px;
-    background: rgba(45, 45, 45, 0.95);
-    color: #ffff99;
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
-    padding: 8px;
-    border: 1px solid #007cba;
-    border-radius: 4px;
-    z-index: 10001;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  `;
-
-  document.body.appendChild(pageDebugBox);
-}
-
-function createElementDebugBox(element: HTMLElement): void {
-  if (!debugMode) return;
-
-  removeElementDebugBox();
-
-  elementDebugBox = document.createElement('div');
-  elementDebugBox.id = 'markdown-capture-element-debug';
-  elementDebugBox.style.cssText = `
-    position: absolute;
-    background: rgba(0, 0, 0, 0.9);
-    color: #00ff00;
-    font-family: 'Courier New', monospace;
-    font-size: 10px;
-    padding: 5px;
-    border: 1px solid #00ff00;
-    border-radius: 3px;
-    z-index: 10002;
-    max-width: 500px;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-    pointer-events: none;
-  `;
-
-  const rect = element.getBoundingClientRect();
-  const xpath = generateXPath(element);
-
-  elementDebugBox.textContent = `Tag: ${element.tagName.toLowerCase()}\nXPath: ${xpath}`;
-
-  // Position the debug box using the positioning module
-  const dimensions: DebugBoxDimensions = {
-    width: 500, // max-width from CSS
-    height: 60, // Approximate height
-    margin: 5,
-  };
-
-  const position = calculateDebugBoxPosition(rect, dimensions);
-
-  elementDebugBox.style.left = `${position.left}px`;
-  elementDebugBox.style.top = `${position.top}px`;
-
-  document.body.appendChild(elementDebugBox);
-}
-
-function removeElementDebugBox(): void {
-  if (elementDebugBox) {
-    elementDebugBox.remove();
-    elementDebugBox = null;
-  }
-}
-
-function showPageDebug(message: string): void {
-  console.log('debug mode', debugMode);
-  if (!debugMode) return;
-
-  if (!pageDebugBox) {
-    createPageDebugBox();
-  }
-
-  const timestamp = new Date().toLocaleTimeString();
-  const debugMessage = `[${timestamp}] ${message}\n`;
-
-  // Add to the beginning of the page debug box content
-  const currentContent = pageDebugBox?.textContent || '';
-  if (pageDebugBox) {
-    pageDebugBox.textContent = debugMessage + currentContent;
-
-    // Keep only last 20 lines
-    const lines = pageDebugBox.textContent.split('\n');
-    if (lines.length > 20) {
-      pageDebugBox.textContent = lines.slice(0, 20).join('\n');
-    }
-  }
 }
