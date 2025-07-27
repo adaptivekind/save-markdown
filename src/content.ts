@@ -245,7 +245,7 @@ function createDebugOverlay(): void {
     bottom: 10px;
     right: 10px;
     width: 300px;
-    max-height: 200px;
+    max-height: 500px;
     background: rgba(45, 45, 45, 0.95);
     color: #ffff99;
     font-family: 'Courier New', monospace;
@@ -280,7 +280,7 @@ function createElementDebugBox(element: HTMLElement): void {
     border: 1px solid #00ff00;
     border-radius: 3px;
     z-index: 10002;
-    max-width: 300px;
+    max-width: 500px;
     word-wrap: break-word;
     white-space: pre-wrap;
     pointer-events: none;
@@ -291,15 +291,46 @@ function createElementDebugBox(element: HTMLElement): void {
 
   elementDebugBox.textContent = `Tag: ${element.tagName.toLowerCase()}\nXPath: ${xpath}`;
 
-  // Position the debug box above the element if there's space, otherwise below
+  // Position the debug box with smart positioning
+  const boxWidth = 300; // max-width from CSS
   const boxHeight = 60; // Approximate height
-  const topPosition = rect.top + window.scrollY - boxHeight - 5;
-  const useTopPosition = topPosition > 0;
+  const margin = 5;
 
-  elementDebugBox.style.left = `${rect.left + window.scrollX}px`;
-  elementDebugBox.style.top = useTopPosition
-    ? `${topPosition}px`
-    : `${rect.bottom + window.scrollY + 5}px`;
+  // Check available space in all directions
+  const spaceAbove = rect.top;
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const spaceRight = window.innerWidth - rect.right;
+
+  let left: number, top: number;
+
+  // Try positioning above first
+  if (spaceAbove >= boxHeight + margin) {
+    left = rect.left + window.scrollX;
+    top = rect.top + window.scrollY - boxHeight - margin;
+  }
+  // Try positioning below
+  else if (spaceBelow >= boxHeight + margin) {
+    left = rect.left + window.scrollX;
+    top = rect.bottom + window.scrollY + margin;
+  }
+  // Try positioning to the right
+  else if (spaceRight >= boxWidth + margin) {
+    left = rect.right + window.scrollX + margin;
+    top = rect.top + window.scrollY;
+  }
+  // Fallback: position inside element at top-right
+  else {
+    left = rect.right + window.scrollX - boxWidth - margin;
+    top = rect.top + window.scrollY + margin;
+
+    // Ensure it doesn't go outside the element bounds
+    if (left < rect.left + window.scrollX) {
+      left = rect.left + window.scrollX + margin;
+    }
+  }
+
+  elementDebugBox.style.left = `${left}px`;
+  elementDebugBox.style.top = `${top}px`;
 
   document.body.appendChild(elementDebugBox);
 }
