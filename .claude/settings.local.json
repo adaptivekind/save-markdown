@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(python3:*)",
+      "Bash(convert:*)",
+      "Bash(rm:*)",
+      "Bash(magick:*)",
+      "Bash(chmod:*)",
+      "Bash(./generate-icons.sh:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(npx husky:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run prettier:fix:*)",
+      "Bash(git add:*)",
+      "Bash(mv:*)",
+      "Bash(npm test)",
+      "Bash(npm run test:ci:*)",
+      "WebFetch(domain:crxjs.dev)",
+      "mcp__markdown-reader__read_markdown_file",
+      "Bash(npm run dev:*)",
+      "Bash(npm run lint:*)",
+      "Bash(bash:*)"
+    ],
+    "deny": []
+  }
+}

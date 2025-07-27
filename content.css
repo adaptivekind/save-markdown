@@ -1,0 +1,9 @@
+#markdown-capture-overlay {
+  position: absolute;
+  border: 2px solid #007cba;
+  background: rgba(0, 124, 186, 0.1);
+  pointer-events: none;
+  z-index: 10000;
+  display: none;
+  box-sizing: border-box;
+}

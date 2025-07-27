@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        width: 300px;
+        padding: 20px;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #2d2d2d;
+        color: #ffffff;
+        margin: 0;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .header h2 {
+        color: #ffffff;
+        margin: 0 0 8px 0;
+      }
+      .header p {
+        color: #cccccc;
+        margin: 0;
+        font-size: 13px;
+      }
+      .button {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 6px;
+        background: #007cba;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.2s ease;
+      }
+      .button:hover {
+        background: #0099e6;
+      }
+      .button:disabled {
+        background: #555555;
+        cursor: not-allowed;
+        color: #999999;
+      }
+      .bottom-menu {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid #555555;
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+      }
+      .menu-link {
+        color: #cccccc;
+        text-decoration: none;
+        font-size: 12px;
+        padding: 8px 12px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .menu-link:hover {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .menu-icon {
+        font-size: 14px;
+      }
+      .status {
+        padding: 8px;
+        border-radius: 4px;
+        margin: 8px 0;
+        font-size: 12px;
+        text-align: center;
+      }
+      .success {
+        background: #2d5a2d;
+        color: #90ee90;
+        border: 1px solid #4a7c59;
+      }
+      .error {
+        background: #5a2d2d;
+        color: #ffb3b3;
+        border: 1px solid #7c4a4a;
+      }
+      .toggle-section {
+        margin: 16px 0;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
+        border: 1px solid #555555;
+      }
+      .toggle-label {
+        font-size: 13px;
+        color: #cccccc;
+        margin-bottom: 8px;
+        display: block;
+      }
+      .toggle-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .toggle-text {
+        font-size: 14px;
+        color: #ffffff;
+      }
+      .toggle-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        background: #555555;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      .toggle-switch.active {
+        background: #007cba;
+      }
+      .toggle-slider {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+      }
+      .toggle-switch.active .toggle-slider {
+        transform: translateX(20px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h2>Save Markdown</h2>
+      <p>Select HTML elements and save as markdown</p>
+    </div>
+
+    <div class="toggle-section">
+      <label class="toggle-label">Markdown saving Settings</label>
+      <div class="toggle-container">
+        <span class="toggle-text">Markdown saving</span>
+        <div id="autoCaptureToggle" class="toggle-switch">
+          <div class="toggle-slider"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="status" class="status" style="display: none"></div>
+
+    <div class="bottom-menu">
+      <a href="#" id="settingsLink" class="menu-link">
+        <span class="menu-icon">⚙️</span>
+        Settings
+      </a>
+      <a href="#" id="helpLink" class="menu-link">
+        <span class="menu-icon">❓</span>
+        Help
+      </a>
+    </div>
+
+    <script src="src/popup.ts" type="module"></script>
+  </body>
+</html>

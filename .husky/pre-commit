@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Check for untracked files
+if [ -n "$(git ls-files --others --exclude-standard)" ]; then
+  echo "❌ Untracked files found. Please add them to git or .gitignore:"
+  git ls-files --others --exclude-standard
+  exit 1
+fi
+
+# Run lint-staged
+npx lint-staged
+
+# Build and test
+npm run build
+npm test
