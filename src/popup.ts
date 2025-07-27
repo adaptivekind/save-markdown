@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
       chrome.storage.sync.set({ enableAutoCapture: newState }, function () {
         updateToggleState(newState);
         showStatus(
-          `Auto capture ${newState ? 'enabled' : 'disabled'}`,
+          `Markdown saving ${newState ? 'enabled' : 'disabled'}`,
           'success',
         );
       });
