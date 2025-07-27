@@ -4,6 +4,7 @@ let isSelectionActive = false;
 let overlay: HTMLElement | null = null;
 let selectedElement: HTMLElement | null = null;
 let debugOverlay: HTMLElement | null = null;
+let elementDebugBox: HTMLElement | null = null;
 let debugMode = true;
 
 interface TabMessage {
@@ -118,6 +119,9 @@ function stopElementSelection(): void {
     overlay = null;
   }
 
+  // Remove debug box
+  removeElementDebugBox();
+
   // Remove event listeners
   document.removeEventListener('mouseover', handleMouseOver);
   document.removeEventListener('mouseout', handleMouseOut);
@@ -127,9 +131,10 @@ function stopElementSelection(): void {
 
 function handleMouseOver(e: MouseEvent): void {
   if (!isSelectionActive || !overlay) return;
+  showDebug('Handling mouse over');
 
   const element = e.target as HTMLElement;
-  if (element === overlay) return;
+  if (element === overlay || element === elementDebugBox) return;
 
   const rect = element.getBoundingClientRect();
   overlay.style.display = 'block';
@@ -137,11 +142,18 @@ function handleMouseOver(e: MouseEvent): void {
   overlay.style.top = rect.top + window.scrollY + 'px';
   overlay.style.width = rect.width + 'px';
   overlay.style.height = rect.height + 'px';
+
+  // Show debug box if in debug mode
+  if (debugMode) {
+    showDebug('Adding element debug box');
+    createElementDebugBox(element);
+  }
 }
 
 function handleMouseOut(): void {
   if (!isSelectionActive || !overlay) return;
   overlay.style.display = 'none';
+  removeElementDebugBox();
 }
 
 function handleClick(e: MouseEvent): void {
@@ -162,11 +174,55 @@ function handleKeyDown(e: KeyboardEvent): void {
   }
 }
 
+function generateXPath(element: HTMLElement): string {
+  if (element.id) {
+    return `//*[@id="${element.id}"]`;
+  }
+
+  const parts: string[] = [];
+  let current: HTMLElement | null = element;
+
+  while (current && current.nodeType === Node.ELEMENT_NODE) {
+    let selector = current.tagName.toLowerCase();
+
+    if (current.className) {
+      selector += `[@class="${current.className}"]`;
+    }
+
+    // Count siblings of the same tag
+    let siblingIndex = 1;
+    let sibling = current.previousElementSibling;
+    while (sibling) {
+      if (sibling.tagName === current.tagName) {
+        siblingIndex++;
+      }
+      sibling = sibling.previousElementSibling;
+    }
+
+    // Check if there are multiple siblings of the same tag
+    const totalSiblings =
+      current.parentElement?.querySelectorAll(current.tagName.toLowerCase())
+        .length || 1;
+    if (totalSiblings > 1) {
+      selector += `[${siblingIndex}]`;
+    }
+
+    parts.unshift(selector);
+    current = current.parentElement;
+  }
+
+  return '/' + parts.join('/');
+}
+
 function captureElement(element: HTMLElement): void {
   // Convert element to markdown
   const markdown = htmlToMarkdown(element);
   console.log('markdown', markdown);
-  showDebug(`Captured element: ${element.tagName} (${markdown.length} chars)`);
+
+  const xpath = generateXPath(element);
+  showDebug(
+    `Captured element: ${element.tagName} (${markdown.length} chars)\nXPath: ${xpath}`,
+  );
 
   // Send to background script for saving
   const message: SaveMarkdownMessage = {
@@ -207,6 +263,54 @@ function createDebugOverlay(): void {
   document.body.appendChild(debugOverlay);
 }
 
+function createElementDebugBox(element: HTMLElement): void {
+  if (!debugMode) return;
+
+  removeElementDebugBox();
+
+  elementDebugBox = document.createElement('div');
+  elementDebugBox.id = 'markdown-capture-element-debug';
+  elementDebugBox.style.cssText = `
+    position: absolute;
+    background: rgba(0, 0, 0, 0.9);
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    padding: 5px;
+    border: 1px solid #00ff00;
+    border-radius: 3px;
+    z-index: 10002;
+    max-width: 300px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    pointer-events: none;
+  `;
+
+  const rect = element.getBoundingClientRect();
+  const xpath = generateXPath(element);
+
+  elementDebugBox.textContent = `Tag: ${element.tagName.toLowerCase()}\nXPath: ${xpath}`;
+
+  // Position the debug box above the element if there's space, otherwise below
+  const boxHeight = 60; // Approximate height
+  const topPosition = rect.top + window.scrollY - boxHeight - 5;
+  const useTopPosition = topPosition > 0;
+
+  elementDebugBox.style.left = `${rect.left + window.scrollX}px`;
+  elementDebugBox.style.top = useTopPosition
+    ? `${topPosition}px`
+    : `${rect.bottom + window.scrollY + 5}px`;
+
+  document.body.appendChild(elementDebugBox);
+}
+
+function removeElementDebugBox(): void {
+  if (elementDebugBox) {
+    elementDebugBox.remove();
+    elementDebugBox = null;
+  }
+}
+
 function showDebug(message: string): void {
   console.log('debug mode', debugMode);
   if (!debugMode) return;
@@ -216,7 +320,7 @@ function showDebug(message: string): void {
   }
 
   const timestamp = new Date().toLocaleTimeString();
-  const debugMessage = `[${timestamp}] ${message}\n`;
+  const debugMessage = `[${timestamp}] X ${message}\n`;
 
   // Add to the beginning of the overlay content
   const currentContent = debugOverlay?.textContent || '';

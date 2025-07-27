@@ -23,15 +23,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
   startButton.addEventListener('click', function () {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      const activeTab = tabs[0];
-      if (activeTab?.id) {
+      const activeTabId = tabs[0]?.id;
+      if (activeTabId) {
         const message: TabMessage = { action: 'startSelection' };
-        chrome.tabs.sendMessage(activeTab.id, message, function (response) {
+        chrome.tabs.sendMessage(activeTabId, message, function (response) {
           // Check if content script responded
           if (chrome.runtime.lastError) {
             sendDebugToPage(
               `Popup: Runtime error - ${chrome.runtime.lastError.message}`,
-              activeTab.id,
+              activeTabId,
             );
             showStatus(
               'Content script not ready. Please refresh the page and try again.',
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           sendDebugToPage(
             `Popup: Start selection response - ${JSON.stringify(response)}`,
-            activeTab.id,
+            activeTabId,
           );
           if (response && response.success) {
             startButton.disabled = true;
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
             showStatus('Failed to start element selection.', 'error');
             sendDebugToPage(
               `Popup: Failed response - ${JSON.stringify(response)}`,
-              activeTab.id,
+              activeTabId,
             );
           }
         });
@@ -65,14 +65,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   stopButton.addEventListener('click', function () {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      const activeTab = tabs[0];
-      if (activeTab?.id) {
+      const activeTabId = tabs[0]?.id;
+      if (activeTabId) {
         const message: TabMessage = { action: 'stopSelection' };
-        chrome.tabs.sendMessage(activeTab.id, message, function (response) {
+        chrome.tabs.sendMessage(activeTabId, message, function (response) {
           if (chrome.runtime.lastError) {
             sendDebugToPage(
               `Popup: Runtime error on stop - ${chrome.runtime.lastError.message}`,
-              activeTab.id,
+              activeTabId,
             );
             // Content script might not be available, just reset UI
             startButton.disabled = false;
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           sendDebugToPage(
             `Popup: Stop selection response - ${JSON.stringify(response)}`,
-            activeTab.id,
+            activeTabId,
           );
           if (response && response.success) {
             startButton.disabled = false;
