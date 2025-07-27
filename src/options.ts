@@ -2,6 +2,7 @@ import { ExtensionOptions } from './types';
 import {
   getAutoCaptureRules,
   removeAutoCaptureRule,
+  updateAutoCaptureRule,
   AutoCaptureRule,
 } from './autoCaptureRules';
 
@@ -271,24 +272,48 @@ class OptionsManager {
 
     container.innerHTML = rules.map(rule => this.createRuleHTML(rule)).join('');
 
-    // Add delete button event listeners
+    // Add event listeners for each rule
     rules.forEach(rule => {
       const deleteButton = document.getElementById(`delete-${rule.id}`);
+      const editButton = document.getElementById(`edit-${rule.id}`);
+      const saveButton = document.getElementById(`save-${rule.id}`);
+      const cancelButton = document.getElementById(`cancel-${rule.id}`);
+
       deleteButton?.addEventListener('click', () => this.deleteRule(rule.id));
+      editButton?.addEventListener('click', () => this.enterEditMode(rule.id));
+      saveButton?.addEventListener('click', () => this.saveRule(rule.id));
+      cancelButton?.addEventListener('click', () => this.cancelEdit(rule.id));
     });
   }
 
   private createRuleHTML(rule: AutoCaptureRule): string {
     const date = new Date(rule.created).toLocaleDateString();
     return `
-      <div class="auto-capture-rule">
+      <div class="auto-capture-rule" id="rule-${rule.id}">
         <div class="rule-header">
           <div class="rule-name">${rule.name}</div>
-          <button id="delete-${rule.id}" class="delete-rule">Delete</button>
+          <div class="rule-actions">
+            <button id="edit-${rule.id}" class="edit-rule">Edit</button>
+            <button id="delete-${rule.id}" class="delete-rule">Delete</button>
+          </div>
         </div>
-        <div class="rule-domain">${rule.domain}</div>
-        <div class="rule-xpath">${rule.xpath}</div>
-        <div class="rule-date">Created: ${date}</div>
+        <div class="rule-content" id="content-${rule.id}">
+          <div class="rule-domain" id="domain-display-${rule.id}">${rule.domain}</div>
+          <div class="rule-xpath" id="xpath-display-${rule.id}">${rule.xpath}</div>
+          <div class="rule-date">Created: ${date}</div>
+        </div>
+        <div class="rule-edit-form" id="edit-form-${rule.id}" style="display: none;">
+          <label for="domain-edit-${rule.id}">Domain:</label>
+          <input type="text" id="domain-edit-${rule.id}" class="edit-field" value="${rule.domain}">
+          
+          <label for="xpath-edit-${rule.id}">XPath:</label>
+          <textarea id="xpath-edit-${rule.id}" class="edit-field xpath">${rule.xpath}</textarea>
+          
+          <div class="edit-actions">
+            <button id="save-${rule.id}" class="save-rule">Save</button>
+            <button id="cancel-${rule.id}" class="cancel-rule">Cancel</button>
+          </div>
+        </div>
       </div>
     `;
   }
@@ -305,6 +330,74 @@ class OptionsManager {
     } catch (error) {
       console.error('Failed to delete rule:', error);
       this.showStatus('Failed to delete auto capture rule', 'error');
+    }
+  }
+
+  private enterEditMode(id: string): void {
+    const ruleElement = document.getElementById(`rule-${id}`);
+    const contentElement = document.getElementById(`content-${id}`);
+    const editFormElement = document.getElementById(`edit-form-${id}`);
+
+    if (ruleElement && contentElement && editFormElement) {
+      ruleElement.classList.add('edit-mode');
+      contentElement.style.display = 'none';
+      editFormElement.style.display = 'block';
+    }
+  }
+
+  private cancelEdit(id: string): void {
+    const ruleElement = document.getElementById(`rule-${id}`);
+    const contentElement = document.getElementById(`content-${id}`);
+    const editFormElement = document.getElementById(`edit-form-${id}`);
+
+    if (ruleElement && contentElement && editFormElement) {
+      ruleElement.classList.remove('edit-mode');
+      contentElement.style.display = 'block';
+      editFormElement.style.display = 'none';
+
+      // Reset form values (reload from current data)
+      this.loadAutoCaptureRules();
+    }
+  }
+
+  private async saveRule(id: string): Promise<void> {
+    const domainInput = document.getElementById(
+      `domain-edit-${id}`,
+    ) as HTMLInputElement;
+    const xpathInput = document.getElementById(
+      `xpath-edit-${id}`,
+    ) as HTMLTextAreaElement;
+
+    if (!domainInput || !xpathInput) {
+      this.showStatus('Failed to save rule: form elements not found', 'error');
+      return;
+    }
+
+    const newDomain = domainInput.value.trim();
+    const newXpath = xpathInput.value.trim();
+
+    // Validate inputs
+    if (!newDomain) {
+      this.showStatus('Domain cannot be empty', 'error');
+      return;
+    }
+
+    if (!newXpath) {
+      this.showStatus('XPath cannot be empty', 'error');
+      return;
+    }
+
+    try {
+      await updateAutoCaptureRule(id, {
+        domain: newDomain,
+        xpath: newXpath,
+      });
+
+      await this.loadAutoCaptureRules();
+      this.showStatus('Auto capture rule updated successfully', 'success');
+    } catch (error) {
+      console.error('Failed to update rule:', error);
+      this.showStatus('Failed to update auto capture rule', 'error');
     }
   }
 }

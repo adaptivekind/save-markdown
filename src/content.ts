@@ -7,6 +7,7 @@ import {
 } from './elementDebugBox';
 import { generateXPath } from './xpathGenerator';
 import {
+  AutoCaptureRule,
   createRuleFromElement,
   findAutoCaptureElements,
 } from './autoCaptureRules';
@@ -216,6 +217,11 @@ async function initializeAutoCapture(): Promise<void> {
     const matches = await findAutoCaptureElements();
     autoCaptureElements = matches.map(match => match.element);
 
+    // Show notification if auto capture rules are active
+    if (matches.length > 0) {
+      showAutoCaptureNotification(matches);
+    }
+
     // Highlight auto capture elements
     highlightAutoCaptureElements();
 
@@ -234,7 +240,47 @@ function highlightAutoCaptureElements(): void {
     element.style.outline = '2px solid #007cba';
     element.style.outlineOffset = '2px';
     element.setAttribute('data-markdown-auto-capture', 'true');
+
+    // Add label div to top-right of element
+    addAutoCaptureLabel(element);
   });
+}
+
+function addAutoCaptureLabel(element: HTMLElement): void {
+  // Create label element
+  const label = document.createElement('div');
+  label.className = 'markdown-capture-label';
+  label.textContent = 'MARKDOWN CAPTURE';
+  label.style.cssText = `
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #007cba;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 0 0 0 4px;
+    z-index: 10001;
+    pointer-events: none;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  `;
+
+  // Make sure the parent element has relative positioning
+  const originalPosition = element.style.position;
+  if (!originalPosition || originalPosition === 'static') {
+    element.style.position = 'relative';
+    element.setAttribute(
+      'data-original-position',
+      originalPosition || 'static',
+    );
+  }
+
+  // Add label to element
+  element.appendChild(label);
 }
 
 async function handleAutoCapture(): Promise<void> {
@@ -266,4 +312,75 @@ async function autoCapture(element: HTMLElement): Promise<void> {
     title: document.title,
   };
   chrome.runtime.sendMessage(message);
+}
+
+// Auto capture notification functions
+function showAutoCaptureNotification(
+  matches: { element: HTMLElement; rule: AutoCaptureRule }[],
+): void {
+  // Remove any existing notification
+  removeAutoCaptureNotification();
+
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.id = 'markdown-capture-auto-notification';
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #007cba;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 124, 186, 0.3);
+    z-index: 10000;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease-in-out;
+    max-width: 300px;
+    text-align: left;
+  `;
+
+  // Set notification text
+
+  const matchesToString = matches
+    .map(match => `${match.rule.domain} (${match.rule.xpath})`)
+    .join('<br/>');
+  notification.innerHTML = `
+    <div style="display: flex; align-items: left; gap: 8px;">
+      <div>Markdown saved<br/><small>${matchesToString}</small></div>
+    </div>
+  `;
+
+  // Add to page
+  document.body.appendChild(notification);
+
+  // Animate in
+  requestAnimationFrame(() => {
+    notification.style.opacity = '1';
+    notification.style.transform = 'translateX(0)';
+  });
+
+  // Start fade out after 2.7 seconds (fade takes 0.3s)
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100%)';
+
+    // Remove from DOM after fade completes
+    setTimeout(() => {
+      removeAutoCaptureNotification();
+    }, 300);
+  }, 2700);
+}
+
+function removeAutoCaptureNotification(): void {
+  const existing = document.getElementById(
+    'markdown-capture-auto-notification',
+  );
+  if (existing) {
+    existing.remove();
+  }
 }
