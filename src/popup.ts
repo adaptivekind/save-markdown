@@ -7,10 +7,6 @@ interface RuntimeMessage {
   error?: string;
 }
 
-interface ExtensionOptions {
-  debugMode?: boolean;
-}
-
 let debugMode = true; // Default to true
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -28,12 +24,14 @@ document.addEventListener('DOMContentLoaded', function () {
   const debugDiv = document.getElementById('debug') as HTMLDivElement;
 
   // Load debug mode setting
-  chrome.storage.sync.get(['debugMode'], (result: ExtensionOptions) => {
-    debugMode = result.debugMode ?? true;
-    if (debugMode) {
-      showDebug('Debug mode enabled');
-    }
-  });
+  chrome.storage.sync.get(
+    ['debugMode'],
+    (result: { [key: string]: string }) => {
+      if (result.debugMode) {
+        showDebug('Debug mode enabled');
+      }
+    },
+  );
 
   startButton.addEventListener('click', function () {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {

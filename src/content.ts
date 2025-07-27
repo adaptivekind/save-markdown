@@ -19,7 +19,7 @@ interface SaveMarkdownMessage {
 chrome.runtime.onMessage.addListener(
   (
     request: TabMessage,
-    sender: chrome.runtime.MessageSender,
+    _sender: chrome.runtime.MessageSender,
     sendResponse: (response?: unknown) => void,
   ) => {
     console.log('onMessage content.ts', request);

@@ -1,167 +1,225 @@
-# Markdown Capture Chrome Extension
+# Markdown Capture
 
-A Chrome extension that allows you to select any HTML element on a webpage and save it as formatted markdown to your configured directory.
+A powerful Chrome extension that lets you select any HTML element on a webpage and save it as beautifully formatted markdown to your computer.
 
-## Features
+## ✨ Features
 
-- **Element Selection**: Click to activate selection mode, then click any HTML element to capture it
-- **Smart Conversion**: Converts HTML to clean markdown format preserving:
-  - Headers (H1-H6)
-  - Text formatting (bold, italic, code)
-  - Links and images
-  - Lists (ordered and unordered)
-  - Tables
-  - Blockquotes
-  - Code blocks
-- **Visual Feedback**: Blue overlay shows which element you're hovering over
-- **Configurable Saving**: Set custom directory and filename templates
-- **Metadata**: Includes source URL, capture date, and page title
+### 🎯 Smart Element Selection
 
-## Local Installation
+- **Visual Selection**: Hover over any element with a helpful blue overlay
+- **One-Click Capture**: Simply click to capture any element as markdown
+- **Keyboard Support**: Press `Escape` to cancel selection
+- **Context Menu**: Right-click any element for quick capture
 
-1. **Download and Build the Extension**
+### 📝 Advanced Markdown Conversion
+
+Preserves formatting for:
+
+- **Headers** (H1-H6)
+- **Text Formatting** (bold, italic, code, strikethrough)
+- **Links and Images** (with proper markdown syntax)
+- **Lists** (ordered and unordered, with nesting)
+- **Tables** (complete with headers and alignment)
+- **Blockquotes** and **Code Blocks**
+- **Complex Structures** (nested elements, mixed content)
+
+### ⚙️ Powerful Configuration
+
+- **Custom Save Directory**: Choose where your files are saved
+- **Filename Templates**: Use variables like `{title}`, `{date}`, `{domain}`
+- **Metadata Control**: Include/exclude source URL and capture date
+- **Format Options**: Preserve original formatting or clean for readability
+- **Import/Export Settings**: Backup and share your configuration
+
+### 🛠️ Developer Tools Integration
+
+- **DevTools Panel**: Advanced capture options in Chrome DevTools
+- **Elements Sidebar**: Quick capture from Elements panel
+- **Debug Mode**: Detailed logging for troubleshooting
+- **Hot Reload**: Instant updates during development
+
+## 🚀 Installation
+
+### Option 1: Chrome Web Store (Recommended)
+
+_Coming soon - extension will be available on the Chrome Web Store_
+
+### Option 2: Local Development Install
+
+1. **Clone and Build**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/your-repo/markdown-capture.git
    cd markdown-capture
    npm install
    npm run build
    ```
 
-2. **Open Chrome Extensions Page**
-   - Open Google Chrome
-   - Navigate to `chrome://extensions/`
-   - Or go to Chrome menu → More Tools → Extensions
+2. **Load in Chrome**
+   - Open `chrome://extensions/`
+   - Enable "Developer mode" (top-right toggle)
+   - Click "Load unpacked" and select the `dist/` folder
+   - Pin the extension to your toolbar (optional)
 
-3. **Enable Developer Mode**
-   - Toggle the "Developer mode" switch in the top-right corner
+## 📖 How to Use
 
-4. **Load the Extension**
-   - Click "Load unpacked" button
-   - Select the `markdown-capture` folder containing the extension files
-   - The extension should appear in your extensions list
+### Basic Usage
 
-5. **Pin the Extension (Optional)**
-   - Click the puzzle piece icon (Extensions) in Chrome toolbar
-   - Find "Markdown Capture" and click the pin icon to keep it visible
+1. **Click the extension icon** in your Chrome toolbar
+2. **Click "Start Element Selection"** in the popup
+3. **Navigate to any webpage** and hover over elements
+4. **Click the element** you want to capture
+5. **Your markdown file** is automatically saved!
 
-## Usage
+### Advanced Usage
 
-1. Click the extension icon to open the popup
-2. Configure your save directory and filename template (optional)
-3. Click "Start Element Selection"
-4. Navigate to any webpage
-5. Click on any element you want to capture
-6. The element will be converted to markdown and saved to your configured directory
+#### ⚙️ Settings Page
 
-## Configuration
+Access comprehensive settings via:
 
-### Save Directory
+- Extension popup → Settings button, or
+- `chrome://extensions/` → Markdown Capture → Extension options
 
-- Default: `~/Downloads`
-- **Important**: Chrome extensions can only save files to subdirectories within your Downloads folder
-- Examples:
-  - `~/Downloads/markdown` → saves to `Downloads/markdown/`
-  - `~/Documents/captures` → saves to `Downloads/Documents/captures/`
-  - For true custom directories, manually move files after download
+#### 🎛️ DevTools Integration
 
-### Filename Template
+1. Open Chrome DevTools (`F12`)
+2. Look for the "Markdown Capture" tab
+3. Select elements directly from the Elements panel
+4. Use advanced capture options
 
-- Default: `{title}_{timestamp}.md`
-- Available variables:
-  - `{title}` - Page title (sanitized)
-  - `{timestamp}` - ISO timestamp
-  - `{domain}` - Website domain
-  - `{date}` - Date in YYYY-MM-DD format
+#### 🖱️ Context Menu
 
-### Disable Download Confirmation
+- Right-click any element → "Start Markdown Selection"
+- Quick access without opening the popup
 
-To enable seamless automatic downloads without Chrome asking "Save as" every time:
+## ⚙️ Configuration Guide
 
-1. **Method 1: Global Chrome Setting**
-   - Go to Chrome Settings (`chrome://settings/`)
-   - Click "Advanced" → "Downloads"
-   - Turn OFF "Ask where to save each file before downloading"
+### 📁 Save Directory Settings
 
-2. **Method 2: Extension-Specific Permission**
-   - When the extension first tries to download, Chrome will show a notification
-   - Click "Allow" to permit automatic downloads for this extension
-   - This only needs to be done once per extension
+- **Default**: `~/Downloads`
+- **Examples**:
+  - `~/Downloads/markdown` → `Downloads/markdown/`
+  - `~/Documents/notes` → `Downloads/Documents/notes/`
 
-## Files Structure
+_Note: Chrome security requires all downloads go through the Downloads folder_
 
-- `manifest.json` - Extension configuration
-- `popup.html/js` - Extension popup interface
-- `content.js/css` - Page interaction and element selection
-- `background.js` - File saving and download handling
+### 📄 Filename Templates
 
-## Permissions
+Customize how files are named using these variables:
 
-- `activeTab` - Access current tab content
-- `storage` - Save configuration settings
-- `downloads` - Save captured markdown files
-- `<all_urls>` - Work on any website
+| Variable      | Description          | Example                 |
+| ------------- | -------------------- | ----------------------- |
+| `{title}`     | Page title (cleaned) | `Getting_Started_Guide` |
+| `{timestamp}` | Full timestamp       | `2024-01-15T14-30-00`   |
+| `{date}`      | Date only            | `2024-01-15`            |
+| `{domain}`    | Website domain       | `github-com`            |
 
-## Development
+**Template Examples**:
 
-The extension is built with TypeScript and uses Manifest V3:
+- `{title}_{date}.md` → `Guide_2024-01-15.md`
+- `{domain}/{title}.md` → `github-com/Guide.md`
+- `notes_{timestamp}.md` → `notes_2024-01-15T14-30-00.md`
 
-- **TypeScript** for type safety and better development experience
-- **Service worker** for background processing
-- **Content scripts** for page interaction
-- **Chrome storage API** for configuration
-- **Chrome downloads API** for file saving
+### 📋 Metadata Templates
 
-### Development Commands
+Customize the frontmatter added to your markdown files:
 
-```bash
-# Install dependencies
-npm install
-
-# Build TypeScript files
-npm run build
-
-# Watch for changes and rebuild automatically
-npm run watch
-
-# Clean build output
-npm run clean
-
-# Linting and formatting
-npm run lint          # Check code style and lint errors
-npm run lint:fix      # Auto-fix formatting and linting issues
-npm run prettier      # Check Prettier formatting
-npm run prettier:fix  # Apply Prettier formatting
+```yaml
+---
+Source: { url }
+Captured: { date }
+Title: { title }
+Domain: { domain }
+---
 ```
 
-### Continuous Integration
+### 🔧 Advanced Options
 
-This project uses GitHub Actions for automated testing and building:
+- **Auto-download**: Skip save dialogs for seamless capture
+- **Preserve Formatting**: Keep original spacing vs. clean output
+- **Debug Mode**: Enable detailed logging for troubleshooting
 
-- **CI Pipeline**: Runs on every push and pull request
-- **Node.js versions**: Tests against Node.js 20.x and 22.x
-- **Checks**: Linting, building, and testing
-- **Artifacts**: Extension build files are uploaded for the latest Node.js version
-- **Pre-commit hooks**: Husky ensures code quality before commits
+## 💡 Tips & Tricks
 
-### File Structure
+### 🎯 Better Element Selection
 
-```
-src/
-├── background.ts    # Service worker (background script)
-├── content.ts       # Content script for page interaction
-└── popup.ts         # Popup interface logic
+- **Hover slowly** to see the exact element boundaries
+- **Use DevTools** for precise element selection
+- **Try different zoom levels** if having trouble selecting small elements
 
-dist/                # Compiled JavaScript output
-├── background.js
-├── content.js
-└── popup.js
-```
+### 📁 File Organization
 
-## Troubleshooting
+- Use filename templates with folders: `{domain}/{title}.md`
+- Set up consistent naming patterns for easier searching
+- Export your settings to share with team members
 
-- **Extension not loading**: Ensure all files are in the same directory and manifest.json is valid
-- **Selection not working**: Check if the page allows content scripts (some internal Chrome pages block them)
-- **Files not saving**: Verify Chrome has download permissions and check the Console for errors
-- **Save confirmation appearing**: Follow the "Disable Download Confirmation" steps above
-- **Files saving to wrong location**: Remember Chrome extensions can only save to subdirectories within Downloads
+### 🚀 Productivity Shortcuts
+
+- **Pin the extension** to your toolbar for quick access
+- **Enable auto-download** to skip save confirmations
+- **Use context menu** for fastest element capture
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**🔴 "Content script not ready" error**
+
+- **Solution**: Refresh the page and try again
+- **Cause**: Page loaded before extension was ready
+
+**🔴 Element selection not working**
+
+- **Check**: Some pages (like `chrome://` pages) block extensions
+- **Try**: Regular websites instead of internal Chrome pages
+
+**🔴 Files not saving automatically**
+
+- **Enable auto-download**: Chrome Settings → Downloads → Turn off "Ask where to save"
+- **Or**: Allow downloads when Chrome prompts you
+
+**🔴 Files saving to wrong location**
+
+- **Remember**: Chrome extensions can only save to Downloads subfolders
+- **Solution**: Manually move files or use automated file organization tools
+
+### 🐛 Debug Mode
+
+Enable debug mode in settings to see detailed information about:
+
+- Extension communication
+- Capture process
+- Error details
+- Performance timing
+
+## 🛡️ Privacy & Security
+
+- **No data collection**: Extension works entirely locally
+- **No network requests**: No data sent to external servers
+- **Minimal permissions**: Only requests necessary Chrome APIs
+- **Open source**: Full code available for review
+
+## 🤝 Contributing
+
+We welcome contributions! Please see [DEV.md](DEV.md) for:
+
+- Development setup
+- Architecture overview
+- Coding standards
+- Testing guidelines
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [CRXJS](https://crxjs.dev/) for modern Chrome extension development
+- Powered by [Vite](https://vitejs.dev/) for fast building
+- TypeScript for type safety and better development experience
+
+---
+
+**Happy capturing! 🎉**
+
+_Star this repo if you find it useful, and feel free to report issues or suggest features._

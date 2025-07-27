@@ -1,12 +1,4 @@
-interface ExtensionOptions {
-  saveDirectory: string;
-  filenameTemplate: string;
-  includeMetadata: boolean;
-  metadataTemplate: string;
-  preserveFormatting: boolean;
-  autoDownload: boolean;
-  debugMode: boolean;
-}
+import { ExtensionOptions } from './types';
 
 const defaultOptions: ExtensionOptions = {
   saveDirectory: '~/Downloads',
