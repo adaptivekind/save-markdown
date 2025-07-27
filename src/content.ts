@@ -13,14 +13,28 @@ import {
 } from './autoCaptureRules';
 
 let isSelectionActive = false;
+let isAutoCaptureActive = false;
 let overlay: HTMLElement | null = null;
 let selectedElement: HTMLElement | null = null;
 let autoCaptureElements: HTMLElement[] = [];
 let lastHoveredElement: HTMLElement | null = null;
 
 interface TabMessage {
-  action: 'startSelection' | 'stopSelection' | 'showDebug' | 'autoCapture';
+  action:
+    | 'startSelection'
+    | 'stopSelection'
+    | 'showDebug'
+    | 'autoCapture'
+    | 'startAutoCapture'
+    | 'stopAutoCapture';
   message?: string;
+  frameId?: number;
+  pageUrl?: string;
+  targetElementInfo?: {
+    linkUrl?: string;
+    srcUrl?: string;
+    selectionText?: string;
+  };
 }
 
 interface SaveMarkdownMessage {
@@ -81,11 +95,35 @@ chrome.runtime.onMessage.addListener(
       return false;
     } else if (request.action === 'autoCapture') {
       try {
-        handleAutoCapture();
+        handleAutoCapture(request);
         sendResponse({ success: true, message: 'Auto capture rule created' });
       } catch (error) {
         showPageDebug(
           `Error creating auto capture rule: ${(error as Error).message}`,
+        );
+        sendResponse({ success: false, error: (error as Error).message });
+      }
+      return true;
+    } else if (request.action === 'startAutoCapture') {
+      try {
+        startAutoCapture();
+        showPageDebug('Auto capture mode started');
+        sendResponse({ success: true, message: 'Auto capture mode started' });
+      } catch (error) {
+        showPageDebug(
+          `Error starting auto capture mode: ${(error as Error).message}`,
+        );
+        sendResponse({ success: false, error: (error as Error).message });
+      }
+      return true;
+    } else if (request.action === 'stopAutoCapture') {
+      try {
+        stopAutoCapture();
+        showPageDebug('Auto capture mode stopped');
+        sendResponse({ success: true, message: 'Auto capture mode stopped' });
+      } catch (error) {
+        showPageDebug(
+          `Error stopping auto capture mode: ${(error as Error).message}`,
         );
         sendResponse({ success: false, error: (error as Error).message });
       }
@@ -146,9 +184,57 @@ function stopElementSelection(): void {
   document.removeEventListener('keydown', handleKeyDown);
 }
 
+function startAutoCapture(): void {
+  if (isAutoCaptureActive) return;
+  console.log('Starting Auto Capture Mode');
+
+  isAutoCaptureActive = true;
+  document.body.style.cursor = 'copy';
+
+  // Create overlay with different styling for auto capture
+  overlay = document.createElement('div');
+  overlay.id = 'markdown-auto-capture-overlay';
+  overlay.style.cssText = `
+    position: absolute;
+    border: 2px dashed #28a745;
+    background: rgba(40, 167, 69, 0.1);
+    pointer-events: none;
+    z-index: 10000;
+    display: none;
+  `;
+  document.body.appendChild(overlay);
+
+  // Add event listeners
+  document.addEventListener('mouseover', handleMouseOver);
+  document.addEventListener('mouseout', handleMouseOut);
+  document.addEventListener('click', handleClick, true);
+  document.addEventListener('keydown', handleKeyDown);
+}
+
+function stopAutoCapture(): void {
+  if (!isAutoCaptureActive) return;
+
+  isAutoCaptureActive = false;
+  document.body.style.cursor = '';
+
+  // Remove overlay
+  if (overlay) {
+    overlay.remove();
+    overlay = null;
+  }
+
+  // Remove debug box
+  removeElementDebugBox();
+
+  // Remove event listeners
+  document.removeEventListener('mouseover', handleMouseOver);
+  document.removeEventListener('mouseout', handleMouseOut);
+  document.removeEventListener('click', handleClick, true);
+  document.removeEventListener('keydown', handleKeyDown);
+}
+
 function handleMouseOver(e: MouseEvent): void {
-  if (!isSelectionActive || !overlay) return;
-  showPageDebug('Handling mouse over');
+  if ((!isSelectionActive && !isAutoCaptureActive) || !overlay) return;
 
   const element = e.target as HTMLElement;
   if (element === overlay || element === getElementDebugBoxElement()) return;
@@ -163,31 +249,42 @@ function handleMouseOver(e: MouseEvent): void {
   overlay.style.height = rect.height + 'px';
 
   // Show element debug box
-  showPageDebug('Adding element debug box');
   createElementDebugBox(element);
 }
 
 function handleMouseOut(): void {
-  if (!isSelectionActive || !overlay) return;
+  if ((!isSelectionActive && !isAutoCaptureActive) || !overlay) return;
   overlay.style.display = 'none';
   removeElementDebugBox();
 }
 
 function handleClick(e: MouseEvent): void {
-  if (!isSelectionActive) return;
+  if (!isSelectionActive && !isAutoCaptureActive) return;
   console.log('Handling Click');
 
   e.preventDefault();
   e.stopPropagation();
 
   selectedElement = e.target as HTMLElement;
-  captureElement(selectedElement);
-  stopElementSelection();
+
+  if (isSelectionActive) {
+    // Regular capture mode
+    captureElement(selectedElement);
+    stopElementSelection();
+  } else if (isAutoCaptureActive) {
+    // Auto capture mode - create rule instead of capturing
+    createAutoCaptureRule(selectedElement);
+    stopAutoCapture();
+  }
 }
 
 function handleKeyDown(e: KeyboardEvent): void {
   if (e.key === 'Escape') {
-    stopElementSelection();
+    if (isSelectionActive) {
+      stopElementSelection();
+    } else if (isAutoCaptureActive) {
+      stopAutoCapture();
+    }
   }
 }
 
@@ -209,6 +306,19 @@ function captureElement(element: HTMLElement): void {
     title: document.title,
   };
   chrome.runtime.sendMessage(message);
+}
+
+async function createAutoCaptureRule(element: HTMLElement): Promise<void> {
+  // Generate and show XPath before creating the rule
+  const xpath = generateXPath(element);
+  showPageDebug(
+    `Auto capture rule created for ${element.tagName.toLowerCase()}\nXPath saved: ${xpath}`,
+  );
+
+  await createRuleFromElement(element);
+
+  // Refresh auto capture elements
+  await initializeAutoCapture();
 }
 
 // Auto capture functions
@@ -283,15 +393,82 @@ function addAutoCaptureLabel(element: HTMLElement): void {
   element.appendChild(label);
 }
 
-async function handleAutoCapture(): Promise<void> {
-  if (!lastHoveredElement) {
+function findTargetElementFromContext(targetInfo: {
+  linkUrl?: string;
+  srcUrl?: string;
+  selectionText?: string;
+}): HTMLElement | null {
+  // Strategy 1: Find element by link URL
+  if (targetInfo.linkUrl) {
+    const linkElement = document.querySelector(
+      `a[href="${targetInfo.linkUrl}"]`,
+    ) as HTMLElement;
+    if (linkElement) {
+      return linkElement;
+    }
+  }
+
+  // Strategy 2: Find element by image source URL
+  if (targetInfo.srcUrl) {
+    const imgElement = document.querySelector(
+      `img[src="${targetInfo.srcUrl}"]`,
+    ) as HTMLElement;
+    if (imgElement) {
+      return imgElement;
+    }
+  }
+
+  // Strategy 3: Find element by selected text content
+  if (targetInfo.selectionText && targetInfo.selectionText.trim().length > 0) {
+    const textContent = targetInfo.selectionText.trim();
+    // Use XPath to find elements containing the exact text
+    const xpath = `//*[contains(text(), "${textContent}")]`;
+    const result = document.evaluate(
+      xpath,
+      document,
+      null,
+      XPathResult.FIRST_ORDERED_NODE_TYPE,
+      null,
+    );
+    if (result.singleNodeValue) {
+      return result.singleNodeValue as HTMLElement;
+    }
+  }
+
+  return null;
+}
+
+async function handleAutoCapture(request?: TabMessage): Promise<void> {
+  let targetElement: HTMLElement | null = null;
+
+  // If called from context menu, try to find the target element
+  if (request?.targetElementInfo) {
+    targetElement = findTargetElementFromContext(request.targetElementInfo);
+    if (targetElement) {
+      showPageDebug('Auto capture: Found target element from context menu');
+    } else {
+      showPageDebug(
+        'Auto capture: Could not find target element from context, falling back to last hovered',
+      );
+    }
+  }
+
+  // Fall back to lastHoveredElement if no target found
+  if (!targetElement) {
+    targetElement = lastHoveredElement;
+  }
+
+  if (!targetElement) {
     throw new Error('No element selected for auto capture');
   }
 
-  await createRuleFromElement(lastHoveredElement);
+  // Generate and show XPath before creating the rule
+  const xpath = generateXPath(targetElement);
   showPageDebug(
-    `Auto capture rule created for ${lastHoveredElement.tagName.toLowerCase()}`,
+    `Auto capture rule created for ${targetElement.tagName.toLowerCase()}\nXPath saved: ${xpath}`,
   );
+
+  await createRuleFromElement(targetElement);
 
   // Refresh auto capture elements
   await initializeAutoCapture();
