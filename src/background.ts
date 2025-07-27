@@ -31,20 +31,41 @@ interface Config {
 // Function to create context menu
 function createContextMenu(): void {
   chrome.contextMenus.removeAll(() => {
+    // Create parent menu item
     chrome.contextMenus.create(
       {
-        id: 'markdown-capture-start',
-        title: 'Start Markdown Selection',
-        contexts: ['page'],
+        id: 'markdown-capture-parent',
+        title: 'Markdown Capture',
+        contexts: ['page', 'selection', 'link', 'image'],
       },
       () => {
         if (chrome.runtime.lastError) {
           console.error(
-            'Context menu creation failed:',
+            'Parent context menu creation failed:',
             chrome.runtime.lastError,
           );
         } else {
-          console.log('Context menu created successfully');
+          console.log('Parent context menu created successfully');
+
+          // Create child menu item
+          chrome.contextMenus.create(
+            {
+              id: 'markdown-capture-start',
+              parentId: 'markdown-capture-parent',
+              title: 'Start Selection',
+              contexts: ['page', 'selection', 'link', 'image'],
+            },
+            () => {
+              if (chrome.runtime.lastError) {
+                console.error(
+                  'Child context menu creation failed:',
+                  chrome.runtime.lastError,
+                );
+              } else {
+                console.log('Child context menu created successfully');
+              }
+            },
+          );
         }
       },
     );
@@ -168,6 +189,16 @@ function notifyCapture(
     action: action,
     error: error,
   });
+
+  // Send debug info to content script
+  chrome.tabs
+    .sendMessage(tabId, {
+      action: 'showDebug',
+      message: `Background: ${action}${error ? ` - ${error}` : ''}`,
+    })
+    .catch(() => {
+      // Content script might not be ready, ignore error
+    });
 
   // Also notify popup if it's open
   chrome.runtime

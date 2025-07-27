@@ -34,15 +34,5 @@ jobs:
       - name: Run tests
         run: npm run test:ci
 
-      - name: Upload build artifacts
-        if: matrix.node-version == '22.x'
-        uses: actions/upload-artifact@v4
-        with:
-          name: extension-build
-          path: |
-            dist/
-            manifest.json
-            popup.html
-            content.css
-            icons/
-          retention-days: 30
+      - name: Run build
+        run: npm run build
