@@ -48,6 +48,7 @@ interface SaveMarkdownMessage {
 interface RuntimeMessage {
   action: 'captureComplete' | 'captureError';
   error?: string;
+  filename?: string;
 }
 
 // Initialize page debug box
@@ -89,7 +90,13 @@ chrome.runtime.onMessage.addListener(
       showPageDebug(request.message || 'Debug message');
       return false;
     } else if (request.action === 'captureComplete') {
-      showPageDebug('Capture completed successfully');
+      const filename = (request as RuntimeMessage).filename;
+      showPageDebug(
+        `Capture completed successfully${filename ? `: ${filename}` : ''}`,
+      );
+      if (filename) {
+        showCaptureCompleteNotification(filename);
+      }
       return false;
     } else if (request.action === 'captureError') {
       showPageDebug(`Capture error: ${request.error || 'Unknown error'}`);
@@ -337,11 +344,6 @@ async function initializeAutoCapture(): Promise<void> {
     const enabledMatches = await findAutoCaptureElements();
     const allMatches = await findAllAutoCaptureElements();
 
-    // Show notification if auto capture rules are active
-    if (enabledMatches.length > 0) {
-      showAutoCaptureNotification(enabledMatches);
-    }
-
     // Highlight all auto capture elements (enabled and disabled)
     highlightAutoCaptureElements(allMatches);
 
@@ -570,16 +572,13 @@ async function autoCapture(element: HTMLElement): Promise<void> {
   chrome.runtime.sendMessage(message);
 }
 
-// Auto capture notification functions
-function showAutoCaptureNotification(
-  matches: { element: HTMLElement; rule: AutoCaptureRule }[],
-): void {
+function showCaptureCompleteNotification(filename: string): void {
   // Remove any existing notification
-  removeAutoCaptureNotification();
+  removeCaptureCompleteNotification();
 
   // Create notification element
   const notification = document.createElement('div');
-  notification.id = 'markdown-capture-auto-notification';
+  notification.id = 'markdown-capture-complete-notification';
   notification.style.cssText = `
     position: fixed;
     top: 20px;
@@ -596,18 +595,19 @@ function showAutoCaptureNotification(
     opacity: 0;
     transform: translateX(100%);
     transition: all 0.3s ease-in-out;
-    max-width: 300px;
+    max-width: 200px;
     text-align: left;
+    word-break: break-word;
   `;
 
-  // Set notification text
-
-  const matchesToString = matches
-    .map(match => `${match.rule.domain} (${match.rule.xpath})`)
-    .join('<br/>');
+  // Set notification content
   notification.innerHTML = `
-    <div style="display: flex; align-items: left; gap: 8px;">
-      <div>Markdown saved<br/><small>${matchesToString}</small></div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="font-size: 16px;">✓</div>
+      <div>
+        <div style="font-weight: 600; margin-bottom: 2px;">Markdown saved</div>
+        <div style="font-size: 12px; opacity: 0.9;">${filename}</div>
+      </div>
     </div>
   `;
 
@@ -627,14 +627,14 @@ function showAutoCaptureNotification(
 
     // Remove from DOM after fade completes
     setTimeout(() => {
-      removeAutoCaptureNotification();
+      removeCaptureCompleteNotification();
     }, 300);
   }, 2700);
 }
 
-function removeAutoCaptureNotification(): void {
+function removeCaptureCompleteNotification(): void {
   const existing = document.getElementById(
-    'markdown-capture-auto-notification',
+    'markdown-capture-complete-notification',
   );
   if (existing) {
     existing.remove();

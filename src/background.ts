@@ -230,7 +230,7 @@ async function saveMarkdownFile(
           );
         } else {
           console.log('Download started with ID:', downloadId);
-          notifyCapture(tabId, 'captureComplete');
+          notifyCapture(tabId, 'captureComplete', null, filename);
         }
       },
     );
@@ -244,10 +244,12 @@ function notifyCapture(
   tabId: number,
   action: string,
   error: string | null = null,
+  filename?: string,
 ): void {
   chrome.tabs.sendMessage(tabId, {
     action: action,
     error: error,
+    filename: filename,
   });
 
   // Send debug info to content script
@@ -265,6 +267,7 @@ function notifyCapture(
     .sendMessage({
       action: action,
       error: error,
+      filename: filename,
     })
     .catch(() => {
       // Popup might not be open, ignore error

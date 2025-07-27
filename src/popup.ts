@@ -6,6 +6,7 @@ interface TabMessage {
 interface RuntimeMessage {
   action: 'captureComplete' | 'captureError';
   error?: string;
+  filename?: string;
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -179,7 +180,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (message.action === 'captureComplete') {
       startButton.disabled = false;
       stopButton.disabled = true;
-      showStatus('Element captured and saved successfully!', 'success');
+      const statusMessage = message.filename
+        ? `Element captured and saved as: ${message.filename}`
+        : 'Element captured and saved successfully!';
+      showStatus(statusMessage, 'success');
     } else if (message.action === 'captureError') {
       showStatus(
         'Error saving captured element: ' + (message.error || 'Unknown error'),
