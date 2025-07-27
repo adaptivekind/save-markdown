@@ -576,7 +576,7 @@ function showCaptureRuleContextMenu(
     text-transform: uppercase;
     letter-spacing: 0.5px;
   `;
-  header.textContent = 'Markdown Capture';
+  header.textContent = 'Save Markdown';
 
   // Create rule info section
   const ruleInfo = document.createElement('div');

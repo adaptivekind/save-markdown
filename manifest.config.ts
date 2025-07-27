@@ -12,8 +12,7 @@ const [major, minor, patch, label = '0'] = version
 
 export default defineManifest(async env => ({
   manifest_version: 3,
-  name:
-    env.mode === 'development' ? '[DEV] Markdown Capture' : 'Markdown Capture',
+  name: env.mode === 'development' ? '[DEV] Save Markdown' : 'Save Markdown',
   // up to four numbers separated by dots
   version: `${major}.${minor}.${patch}.${label}`,
   // semver is OK in "version_name"
@@ -24,7 +23,7 @@ export default defineManifest(async env => ({
   host_permissions: ['<all_urls>'],
   action: {
     default_popup: 'popup.html',
-    default_title: 'Markdown Capture',
+    default_title: 'Save Markdown',
     default_icon: {
       16: 'icons/icon16.png',
       48: 'icons/icon48.png',

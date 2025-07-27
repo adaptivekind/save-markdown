@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
   helpLink.addEventListener('click', function (e) {
     e.preventDefault();
     chrome.tabs.create({
-      url: 'https://github.com/ianhomer/markdown-capture',
+      url: 'https://github.com/ianhomer/save-markdown',
     });
   });
 

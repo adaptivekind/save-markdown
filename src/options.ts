@@ -160,7 +160,7 @@ class OptionsManager {
 
       const link = document.createElement('a');
       link.href = URL.createObjectURL(dataBlob);
-      link.download = 'markdown-capture-settings.json';
+      link.download = 'save-markdown-settings.json';
       link.click();
 
       this.showStatus('Settings exported successfully!', 'success');

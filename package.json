@@ -1,8 +1,8 @@
 {
-  "name": "markdown-capture",
+  "name": "save-markdown",
   "version": "0.0.1",
   "type": "module",
-  "description": "Chrome extension to capture HTML elements as markdown",
+  "description": "Chrome extension to save HTML elements as markdown",
   "scripts": {
     "build": "vite build",
     "dev": "vite",

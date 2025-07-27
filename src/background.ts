@@ -36,7 +36,7 @@ function createContextMenu(): void {
     chrome.contextMenus.create(
       {
         id: 'markdown-capture-parent',
-        title: 'Markdown Capture',
+        title: 'Save Markdown',
         contexts: ['page', 'selection', 'link', 'image'],
       },
       () => {
