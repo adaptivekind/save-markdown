@@ -2,7 +2,9 @@
 
 This guide covers development setup, architecture, and contribution guidelines for the Markdown Capture Chrome extension.
 
-## Quick Start
+## Getting Started
+
+Set up your development environment:
 
 ```bash
 # Clone and setup
@@ -24,6 +26,8 @@ npm run test:watch   # Run tests in watch mode
 
 ## Technology Stack
 
+We use modern tools that provide good developer experience:
+
 - **Build System**: Vite + CRXJS for modern Chrome extension development
 - **Language**: TypeScript with strict type checking
 - **Testing**: Jest with TypeScript support
@@ -33,6 +37,8 @@ npm run test:watch   # Run tests in watch mode
 ## Project Architecture
 
 ### Extension Components
+
+The extension follows Chrome's standard architecture with these main components:
 
 ```
 src/
@@ -62,55 +68,59 @@ src/
 
 **Message Flow**:
 
-1. **Popup → Content**: Start/stop element selection
-2. **Content → Background**: Save captured markdown
-3. **Background → Popup**: Capture completion status
+1. **Popup to Content**: Start/stop element selection
+2. **Content to Background**: Save captured markdown
+3. **Background to Popup**: Capture completion status
 4. **Options**: Persistent settings via chrome.storage.sync
 
-### Key Features
+### Technical Features
 
 #### CRXJS Integration
 
-- **Hot Module Replacement**: Real-time updates during development
-- **Modern Build**: Vite-powered bundling with optimizations
-- **TypeScript Support**: Native TS compilation and type checking
-- **Manifest V3**: Latest Chrome extension standards
+CRXJS provides modern development capabilities:
+
+- Hot Module Replacement for real-time updates during development
+- Vite-powered bundling with optimizations
+- Native TypeScript compilation and type checking
+- Manifest V3 compliance
 
 #### Development Tools
 
-- **Debug Mode**: Toggle in options page, shows detailed popup logging
-- **DevTools Panel**: Custom Chrome DevTools integration for advanced capture
-- **Context Menu**: Right-click element capture
-- **Options Page**: Comprehensive settings management
+We include several tools to help with development and debugging:
+
+- Debug mode with detailed popup logging
+- Custom Chrome DevTools integration for advanced capture
+- Right-click context menu for element capture
+- Comprehensive settings management through options page
 
 ## Development Workflow
 
-### Setting Up Development Environment
+### Setting Up Your Environment
 
-1. **Install Dependencies**
+1. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. **Start Development Server**
+2. Start the development server:
 
    ```bash
    npm run dev
    ```
 
-3. **Load Extension in Chrome**
+3. Load the extension in Chrome:
    - Open `chrome://extensions/`
    - Enable "Developer mode"
    - Click "Load unpacked"
    - Select the `dist/` directory
 
-4. **Enable Debug Mode**
-   - Click extension icon → Settings
+4. Enable debug mode for development:
+   - Click extension icon, then Settings
    - Set "Debug Mode" to "Yes"
    - Debug information will appear in popup
 
-### File Structure
+### Project Structure
 
 ```
 markdown-capture/
@@ -128,15 +138,17 @@ markdown-capture/
 
 ### Build Process
 
-The extension uses CRXJS with Vite for a modern development experience:
+The extension uses CRXJS with Vite for modern development:
 
-- **Source Files**: TypeScript files in `src/`
-- **Build Output**: Compiled JavaScript in `dist/`
-- **Manifest**: Dynamic generation via `manifest.config.ts`
-- **Assets**: Icons and CSS automatically copied
-- **Hot Reload**: Changes automatically reload extension
+- Source files: TypeScript files in `src/`
+- Build output: Compiled JavaScript in `dist/`
+- Manifest: Dynamic generation via `manifest.config.ts`
+- Assets: Icons and CSS automatically copied
+- Hot reload: Changes automatically reload extension
 
-### Testing Strategy
+### Testing
+
+We test key functionality to ensure reliability:
 
 ```bash
 # Unit Tests
@@ -149,7 +161,7 @@ npm run build              # Build extension
 # Manual testing in Chrome DevTools
 ```
 
-**Test Coverage**:
+**Current test coverage includes**:
 
 - Filename generation utilities
 - HTML to Markdown conversion
@@ -159,10 +171,12 @@ npm run build              # Build extension
 
 #### Pre-commit Hooks (Husky)
 
-- **Untracked Files Check**: Prevents commits with untracked files
-- **Lint Staged**: Formats and lints only staged files
-- **Build Validation**: Ensures TypeScript compiles
-- **Test Execution**: Runs test suite
+We use Husky to maintain code quality:
+
+- Untracked files check: Prevents commits with untracked files
+- Lint staged: Formats and lints only staged files
+- Build validation: Ensures TypeScript compiles
+- Test execution: Runs test suite
 
 #### ESLint Configuration
 
@@ -191,7 +205,7 @@ npm run build              # Build extension
 
 ### HTML to Markdown Conversion
 
-The `htmlToMarkdown.ts` module provides recursive HTML parsing:
+The `htmlToMarkdown.ts` module handles recursive HTML parsing:
 
 ```typescript
 export function htmlToMarkdown(element: HTMLElement): string {
@@ -206,7 +220,7 @@ export function htmlToMarkdown(element: HTMLElement): string {
 
 ### Filename Generation
 
-Template-based filename generation with variables:
+We use template-based filename generation with variables:
 
 ```typescript
 interface FilenameVariables {
@@ -222,7 +236,7 @@ interface FilenameVariables {
 
 ### Debug Mode
 
-Enable detailed logging for development:
+Debug mode provides detailed logging for development:
 
 ```typescript
 // In popup.ts
@@ -232,7 +246,7 @@ function showDebug(message: string): void {
 }
 ```
 
-**Debug Information**:
+**Debug information includes**:
 
 - Message communication between components
 - API response details
@@ -241,7 +255,9 @@ function showDebug(message: string): void {
 
 ## Chrome Extension APIs
 
-### Permissions Used
+### Permissions
+
+The extension requests these permissions:
 
 ```json
 {
@@ -260,6 +276,8 @@ function showDebug(message: string): void {
 
 ### Storage Schema
 
+Extension settings are stored using this interface:
+
 ```typescript
 interface ExtensionOptions {
   saveDirectory: string; // Default: "~/Downloads"
@@ -274,26 +292,26 @@ interface ExtensionOptions {
 
 ## Troubleshooting
 
-### Common Issues
+### Common Development Issues
 
 1. **Content Script Not Ready**
-   - **Symptom**: "undefined" response on first page load
-   - **Solution**: Refresh page or check debug mode output
-   - **Root Cause**: Content script injection timing
+   - Symptom: "undefined" response on first page load
+   - Solution: Refresh page or check debug mode output
+   - Root cause: Content script injection timing
 
 2. **Build Failures**
-   - **Check**: TypeScript compilation errors
-   - **Fix**: Run `npm run lint:fix` and address type issues
+   - Check: TypeScript compilation errors
+   - Fix: Run `npm run lint:fix` and address type issues
 
 3. **Extension Not Loading**
-   - **Verify**: `dist/` directory contains built files
-   - **Check**: Chrome DevTools → Extensions → Service Worker errors
+   - Verify: `dist/` directory contains built files
+   - Check: Chrome DevTools - Extensions - Service Worker errors
 
 4. **Hot Reload Not Working**
-   - **Restart**: Development server (`npm run dev`)
-   - **Reload**: Extension in Chrome extensions page
+   - Restart: Development server (`npm run dev`)
+   - Reload: Extension in Chrome extensions page
 
-### Debug Mode Usage
+### Using Debug Mode
 
 Enable debug mode in options page to see:
 
@@ -304,35 +322,39 @@ Enable debug mode in options page to see:
 
 ### Performance Considerations
 
-- **Content Script**: Minimized footprint, only active during selection
-- **Background Script**: Service worker model for efficiency
-- **Build Output**: Tree-shaking eliminates unused code
-- **Asset Optimization**: Icons and resources compressed
+The extension is designed for efficiency:
+
+- Content script: Minimized footprint, only active during selection
+- Background script: Service worker model for efficiency
+- Build output: Tree-shaking eliminates unused code
+- Asset optimization: Icons and resources compressed
 
 ## Contributing
 
-### Code Style
+### Code Standards
 
-- Use TypeScript with strict type checking
-- Follow ESLint and Prettier configurations
-- Write tests for new functionality
-- Update documentation for API changes
+We maintain code quality through:
+
+- TypeScript with strict type checking
+- ESLint and Prettier configurations
+- Tests for new functionality
+- Documentation updates for API changes
 
 ### Pull Request Process
 
-1. **Fork and Branch**: Create feature branch from `main`
-2. **Develop**: Make changes with tests
-3. **Quality Check**: Run `npm run lint` and `npm test`
-4. **Build Test**: Verify `npm run build` succeeds
-5. **Submit PR**: Include description and testing notes
+1. Fork and branch: Create feature branch from `main`
+2. Develop: Make changes with tests
+3. Quality check: Run `npm run lint` and `npm test`
+4. Build test: Verify `npm run build` succeeds
+5. Submit PR: Include description and testing notes
 
 ### Release Process
 
-1. **Version Bump**: Update `package.json` version
-2. **Build**: Run `npm run build`
-3. **Test**: Manual testing in Chrome
-4. **Tag**: Create git tag for release
-5. **Package**: Zip `dist/` contents for Chrome Web Store
+1. Version bump: Update `package.json` version
+2. Build: Run `npm run build`
+3. Test: Manual testing in Chrome
+4. Tag: Create git tag for release
+5. Package: Zip `dist/` contents for Chrome Web Store
 
 ## Resources
 

@@ -21,7 +21,8 @@
       "Bash(mv:*)",
       "Bash(npm test)",
       "Bash(npm run test:ci:*)",
-      "WebFetch(domain:crxjs.dev)"
+      "WebFetch(domain:crxjs.dev)",
+      "mcp__markdown-reader__read_markdown_file"
     ],
     "deny": []
   }
