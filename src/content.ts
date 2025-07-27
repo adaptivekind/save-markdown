@@ -1,9 +1,13 @@
 import { htmlToMarkdown } from './htmlToMarkdown';
+import {
+  calculateDebugBoxPosition,
+  DebugBoxDimensions,
+} from './elementDebugBoxPositioning';
 
 let isSelectionActive = false;
 let overlay: HTMLElement | null = null;
 let selectedElement: HTMLElement | null = null;
-let debugOverlay: HTMLElement | null = null;
+let pageDebugBox: HTMLElement | null = null;
 let elementDebugBox: HTMLElement | null = null;
 let debugMode = true;
 
@@ -24,14 +28,14 @@ interface RuntimeMessage {
   error?: string;
 }
 
-// Initialize debug overlay and load settings
+// Initialize page debug box and load settings
 chrome.storage.sync.get(['debugMode'], (result: { [key: string]: boolean }) => {
   console.log('storage debugMode', result);
   debugMode = result.debugMode === undefined ? true : result.debugMode;
   if (debugMode) {
-    console.log('Showing debug overlay');
-    createDebugOverlay();
-    showDebug('Debug mode enabled on page load');
+    console.log('Showing page debug box');
+    createPageDebugBox();
+    showPageDebug('Debug mode enabled on page load');
   }
 });
 
@@ -47,31 +51,31 @@ chrome.runtime.onMessage.addListener(
     if (request.action === 'startSelection') {
       try {
         startElementSelection();
-        showDebug('Element selection started');
+        showPageDebug('Element selection started');
         sendResponse({ success: true, message: 'Selection started' });
       } catch (error) {
-        showDebug(`Error starting selection: ${(error as Error).message}`);
+        showPageDebug(`Error starting selection: ${(error as Error).message}`);
         sendResponse({ success: false, error: (error as Error).message });
       }
       return true; // Keep message channel open for async response
     } else if (request.action === 'stopSelection') {
       try {
         stopElementSelection();
-        showDebug('Element selection stopped');
+        showPageDebug('Element selection stopped');
         sendResponse({ success: true, message: 'Selection stopped' });
       } catch (error) {
-        showDebug(`Error stopping selection: ${(error as Error).message}`);
+        showPageDebug(`Error stopping selection: ${(error as Error).message}`);
         sendResponse({ success: false, error: (error as Error).message });
       }
       return true; // Keep message channel open for async response
     } else if (request.action === 'showDebug' && 'message' in request) {
-      showDebug(request.message || 'Debug message');
+      showPageDebug(request.message || 'Debug message');
       return false;
     } else if (request.action === 'captureComplete') {
-      showDebug('Capture completed successfully');
+      showPageDebug('Capture completed successfully');
       return false;
     } else if (request.action === 'captureError') {
-      showDebug(`Capture error: ${request.error || 'Unknown error'}`);
+      showPageDebug(`Capture error: ${request.error || 'Unknown error'}`);
       return false;
     }
 
@@ -131,7 +135,7 @@ function stopElementSelection(): void {
 
 function handleMouseOver(e: MouseEvent): void {
   if (!isSelectionActive || !overlay) return;
-  showDebug('Handling mouse over');
+  showPageDebug('Handling mouse over');
 
   const element = e.target as HTMLElement;
   if (element === overlay || element === elementDebugBox) return;
@@ -143,9 +147,9 @@ function handleMouseOver(e: MouseEvent): void {
   overlay.style.width = rect.width + 'px';
   overlay.style.height = rect.height + 'px';
 
-  // Show debug box if in debug mode
+  // Show element debug box if in debug mode
   if (debugMode) {
-    showDebug('Adding element debug box');
+    showPageDebug('Adding element debug box');
     createElementDebugBox(element);
   }
 }
@@ -220,7 +224,7 @@ function captureElement(element: HTMLElement): void {
   console.log('markdown', markdown);
 
   const xpath = generateXPath(element);
-  showDebug(
+  showPageDebug(
     `Captured element: ${element.tagName} (${markdown.length} chars)\nXPath: ${xpath}`,
   );
 
@@ -234,13 +238,13 @@ function captureElement(element: HTMLElement): void {
   chrome.runtime.sendMessage(message);
 }
 
-// Debug overlay functions
-function createDebugOverlay(): void {
-  if (debugOverlay) return;
+// Page debug box functions
+function createPageDebugBox(): void {
+  if (pageDebugBox) return;
 
-  debugOverlay = document.createElement('div');
-  debugOverlay.id = 'markdown-capture-debug-overlay';
-  debugOverlay.style.cssText = `
+  pageDebugBox = document.createElement('div');
+  pageDebugBox.id = 'markdown-capture-page-debug-box';
+  pageDebugBox.style.cssText = `
     position: fixed;
     bottom: 10px;
     right: 10px;
@@ -260,7 +264,7 @@ function createDebugOverlay(): void {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   `;
 
-  document.body.appendChild(debugOverlay);
+  document.body.appendChild(pageDebugBox);
 }
 
 function createElementDebugBox(element: HTMLElement): void {
@@ -291,46 +295,17 @@ function createElementDebugBox(element: HTMLElement): void {
 
   elementDebugBox.textContent = `Tag: ${element.tagName.toLowerCase()}\nXPath: ${xpath}`;
 
-  // Position the debug box with smart positioning
-  const boxWidth = 300; // max-width from CSS
-  const boxHeight = 60; // Approximate height
-  const margin = 5;
+  // Position the debug box using the positioning module
+  const dimensions: DebugBoxDimensions = {
+    width: 500, // max-width from CSS
+    height: 60, // Approximate height
+    margin: 5,
+  };
 
-  // Check available space in all directions
-  const spaceAbove = rect.top;
-  const spaceBelow = window.innerHeight - rect.bottom;
-  const spaceRight = window.innerWidth - rect.right;
+  const position = calculateDebugBoxPosition(rect, dimensions);
 
-  let left: number, top: number;
-
-  // Try positioning above first
-  if (spaceAbove >= boxHeight + margin) {
-    left = rect.left + window.scrollX;
-    top = rect.top + window.scrollY - boxHeight - margin;
-  }
-  // Try positioning below
-  else if (spaceBelow >= boxHeight + margin) {
-    left = rect.left + window.scrollX;
-    top = rect.bottom + window.scrollY + margin;
-  }
-  // Try positioning to the right
-  else if (spaceRight >= boxWidth + margin) {
-    left = rect.right + window.scrollX + margin;
-    top = rect.top + window.scrollY;
-  }
-  // Fallback: position inside element at top-right
-  else {
-    left = rect.right + window.scrollX - boxWidth - margin;
-    top = rect.top + window.scrollY + margin;
-
-    // Ensure it doesn't go outside the element bounds
-    if (left < rect.left + window.scrollX) {
-      left = rect.left + window.scrollX + margin;
-    }
-  }
-
-  elementDebugBox.style.left = `${left}px`;
-  elementDebugBox.style.top = `${top}px`;
+  elementDebugBox.style.left = `${position.left}px`;
+  elementDebugBox.style.top = `${position.top}px`;
 
   document.body.appendChild(elementDebugBox);
 }
@@ -342,26 +317,26 @@ function removeElementDebugBox(): void {
   }
 }
 
-function showDebug(message: string): void {
+function showPageDebug(message: string): void {
   console.log('debug mode', debugMode);
   if (!debugMode) return;
 
-  if (!debugOverlay) {
-    createDebugOverlay();
+  if (!pageDebugBox) {
+    createPageDebugBox();
   }
 
   const timestamp = new Date().toLocaleTimeString();
-  const debugMessage = `[${timestamp}] X ${message}\n`;
+  const debugMessage = `[${timestamp}] ${message}\n`;
 
-  // Add to the beginning of the overlay content
-  const currentContent = debugOverlay?.textContent || '';
-  if (debugOverlay) {
-    debugOverlay.textContent = debugMessage + currentContent;
+  // Add to the beginning of the page debug box content
+  const currentContent = pageDebugBox?.textContent || '';
+  if (pageDebugBox) {
+    pageDebugBox.textContent = debugMessage + currentContent;
 
     // Keep only last 20 lines
-    const lines = debugOverlay.textContent.split('\n');
+    const lines = pageDebugBox.textContent.split('\n');
     if (lines.length > 20) {
-      debugOverlay.textContent = lines.slice(0, 20).join('\n');
+      pageDebugBox.textContent = lines.slice(0, 20).join('\n');
     }
   }
 }
