@@ -7,51 +7,9 @@ import {
   DebugBoxDimensions,
 } from './elementDebugBoxPositioning';
 import { isDebugModeEnabled } from './pageDebugBox';
+import { generateXPath } from './xpathGenerator';
 
 let elementDebugBox: HTMLElement | null = null;
-
-/**
- * Generates XPath for an element
- */
-export function generateXPath(element: HTMLElement): string {
-  if (element.id) {
-    return `//*[@id="${element.id}"]`;
-  }
-
-  const parts: string[] = [];
-  let current: HTMLElement | null = element;
-
-  while (current && current.nodeType === Node.ELEMENT_NODE) {
-    let selector = current.tagName.toLowerCase();
-
-    if (current.className) {
-      selector += `[@class="${current.className}"]`;
-    }
-
-    // Count siblings of the same tag
-    let siblingIndex = 1;
-    let sibling = current.previousElementSibling;
-    while (sibling) {
-      if (sibling.tagName === current.tagName) {
-        siblingIndex++;
-      }
-      sibling = sibling.previousElementSibling;
-    }
-
-    // Check if there are multiple siblings of the same tag
-    const totalSiblings =
-      current.parentElement?.querySelectorAll(current.tagName.toLowerCase())
-        .length || 1;
-    if (totalSiblings > 1) {
-      selector += `[${siblingIndex}]`;
-    }
-
-    parts.unshift(selector);
-    current = current.parentElement;
-  }
-
-  return '/' + parts.join('/');
-}
 
 /**
  * Creates and displays an element debug box for the given element

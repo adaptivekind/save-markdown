@@ -4,8 +4,8 @@ import {
   createElementDebugBox,
   removeElementDebugBox,
   getElementDebugBoxElement,
-  generateXPath,
 } from './elementDebugBox';
+import { generateXPath } from './xpathGenerator';
 
 let isSelectionActive = false;
 let overlay: HTMLElement | null = null;
