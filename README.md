@@ -1,10 +1,14 @@
 # Markdown Capture
 
-A Chrome extension that helps you select HTML elements on web pages and convert them to clean markdown files. This tool bridges the gap between web content and your local markdown workflow.
+A Chrome extension that helps you select HTML elements on web pages and convert
+them to clean markdown files. This tool bridges the gap between web content and
+your local markdown workflow.
 
 ## Getting Started
 
-The extension provides multiple ways to capture content depending on your needs. You can use the popup interface for quick captures, integrate with Chrome DevTools for precise selection, or use context menus for workflow efficiency.
+The extension provides multiple ways to capture content depending on your needs.
+You can use the popup interface for quick captures, integrate with Chrome
+DevTools for precise selection, or use context menus for workflow efficiency.
 
 ## Core Capabilities
 
