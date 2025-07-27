@@ -41,6 +41,16 @@ document.addEventListener('DOMContentLoaded', function () {
       if (activeTab?.id) {
         const message: TabMessage = { action: 'startSelection' };
         chrome.tabs.sendMessage(activeTab.id, message, function (response) {
+          // Check if content script responded
+          if (chrome.runtime.lastError) {
+            showDebug(`Runtime error: ${chrome.runtime.lastError.message}`);
+            showStatus(
+              'Content script not ready. Please refresh the page and try again.',
+              'error',
+            );
+            return;
+          }
+
           showDebug(`Start selection response: ${JSON.stringify(response)}`);
           if (response && response.success) {
             startButton.disabled = true;
@@ -64,6 +74,20 @@ document.addEventListener('DOMContentLoaded', function () {
       if (activeTab?.id) {
         const message: TabMessage = { action: 'stopSelection' };
         chrome.tabs.sendMessage(activeTab.id, message, function (response) {
+          if (chrome.runtime.lastError) {
+            showDebug(
+              `Runtime error on stop: ${chrome.runtime.lastError.message}`,
+            );
+            // Content script might not be available, just reset UI
+            startButton.disabled = false;
+            stopButton.disabled = true;
+            showStatus(
+              'Selection stopped (content script not available).',
+              'success',
+            );
+            return;
+          }
+
           showDebug(`Stop selection response: ${JSON.stringify(response)}`);
           if (response && response.success) {
             startButton.disabled = false;

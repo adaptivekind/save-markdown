@@ -27,7 +27,6 @@ export default defineManifest(async env => ({
     default_title: 'Markdown Capture',
   },
   options_page: 'options.html',
-  devtools_page: 'devtools.html',
   content_scripts: [
     {
       matches: ['<all_urls>'],

@@ -23,13 +23,27 @@ chrome.runtime.onMessage.addListener(
     sendResponse: (response?: unknown) => void,
   ) => {
     console.log('onMessage content.ts', request);
+
     if (request.action === 'startSelection') {
-      startElementSelection();
-      sendResponse({ success: true });
+      try {
+        startElementSelection();
+        sendResponse({ success: true, message: 'Selection started' });
+      } catch (error) {
+        sendResponse({ success: false, error: (error as Error).message });
+      }
+      return true; // Keep message channel open for async response
     } else if (request.action === 'stopSelection') {
-      stopElementSelection();
-      sendResponse({ success: true });
+      try {
+        stopElementSelection();
+        sendResponse({ success: true, message: 'Selection stopped' });
+      } catch (error) {
+        sendResponse({ success: false, error: (error as Error).message });
+      }
+      return true; // Keep message channel open for async response
     }
+
+    // Return false for unhandled messages
+    return false;
   },
 );
 
