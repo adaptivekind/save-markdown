@@ -5,7 +5,7 @@ import {
   removeElementDebugBox,
   getElementDebugBoxElement,
 } from './elementDebugBox';
-import { generateXPath } from './xpathGenerator';
+import { generateXPath, getElementByXPath } from './xpathGenerator';
 import {
   CaptureRule,
   createRuleFromElement,
@@ -484,6 +484,14 @@ function addAutoCaptureLabel(element: HTMLElement, rule: CaptureRule): void {
     }
   });
 
+  // Add right-click context menu handler
+  label.addEventListener('contextmenu', async e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    showCaptureRuleContextMenu(e, rule, element, container);
+  });
+
   // Add click handler for manual capture button
   manualCaptureButton.addEventListener('click', async e => {
     e.preventDefault();
@@ -527,6 +535,521 @@ function addAutoCaptureLabel(element: HTMLElement, rule: CaptureRule): void {
 
   // Add container to element
   element.appendChild(container);
+}
+
+function showCaptureRuleContextMenu(
+  e: MouseEvent,
+  rule: CaptureRule,
+  element: HTMLElement,
+  container: HTMLElement,
+): void {
+  // Remove any existing context menu
+  removeExistingContextMenu();
+
+  // Create context menu
+  const contextMenu = document.createElement('div');
+  contextMenu.id = 'capture-rule-context-menu';
+  contextMenu.style.cssText = `
+    position: fixed;
+    top: ${e.clientY}px;
+    left: ${e.clientX}px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10002;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 13px;
+    min-width: 180px;
+    overflow: hidden;
+  `;
+
+  // Create menu header
+  const header = document.createElement('div');
+  header.style.cssText = `
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  `;
+  header.textContent = 'Markdown Capture';
+
+  // Create rule info section
+  const ruleInfo = document.createElement('div');
+  ruleInfo.style.cssText = `
+    padding: 8px 12px;
+    border-bottom: 1px solid #dee2e6;
+    background: #f8f9fa;
+  `;
+  ruleInfo.innerHTML = `
+    <div style="font-weight: 500; color: #495057; margin-bottom: 2px;">${rule.name}</div>
+    <div style="font-size: 11px; color: #6c757d;">${rule.domain}</div>
+  `;
+
+  // Create edit XPath option
+  const editOption = document.createElement('div');
+  editOption.style.cssText = `
+    padding: 8px 12px;
+    cursor: pointer;
+    color: #007cba;
+    font-weight: 500;
+    transition: background-color 0.15s ease;
+    border-bottom: 1px solid #dee2e6;
+  `;
+  editOption.textContent = 'Edit XPath';
+
+  // Add hover effect for edit option
+  editOption.addEventListener('mouseenter', () => {
+    editOption.style.background = '#f8f9fa';
+  });
+  editOption.addEventListener('mouseleave', () => {
+    editOption.style.background = 'transparent';
+  });
+
+  // Add click handler for edit option
+  editOption.addEventListener('click', () => {
+    removeExistingContextMenu();
+    showXPathEditModal(rule, element, container);
+  });
+
+  // Create remove option
+  const removeOption = document.createElement('div');
+  removeOption.style.cssText = `
+    padding: 8px 12px;
+    cursor: pointer;
+    color: #dc3545;
+    font-weight: 500;
+    transition: background-color 0.15s ease;
+  `;
+  removeOption.textContent = 'Remove Capture Rule';
+
+  // Add hover effect for remove option
+  removeOption.addEventListener('mouseenter', () => {
+    removeOption.style.background = '#f8f9fa';
+  });
+  removeOption.addEventListener('mouseleave', () => {
+    removeOption.style.background = 'transparent';
+  });
+
+  // Add click handler for remove option
+  removeOption.addEventListener('click', async () => {
+    try {
+      await removeCaptureRuleAndElement(rule, element, container);
+      removeExistingContextMenu();
+      showPageDebug(`Capture rule removed: ${rule.name}`);
+    } catch (error) {
+      showPageDebug(
+        `Failed to remove capture rule: ${(error as Error).message}`,
+      );
+    }
+  });
+
+  // Assemble context menu
+  contextMenu.appendChild(header);
+  contextMenu.appendChild(ruleInfo);
+  contextMenu.appendChild(editOption);
+  contextMenu.appendChild(removeOption);
+
+  // Add to page
+  document.body.appendChild(contextMenu);
+
+  // Position adjustment to keep menu on screen
+  const rect = contextMenu.getBoundingClientRect();
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
+
+  if (rect.right > windowWidth) {
+    contextMenu.style.left = `${e.clientX - rect.width}px`;
+  }
+  if (rect.bottom > windowHeight) {
+    contextMenu.style.top = `${e.clientY - rect.height}px`;
+  }
+
+  // Add click outside to close
+  const closeMenu = (event: Event) => {
+    if (!contextMenu.contains(event.target as Node)) {
+      removeExistingContextMenu();
+      document.removeEventListener('click', closeMenu);
+    }
+  };
+
+  // Delay adding the listener to prevent immediate closing
+  setTimeout(() => {
+    document.addEventListener('click', closeMenu);
+  }, 0);
+
+  // Close on escape key
+  const handleEscape = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      removeExistingContextMenu();
+      document.removeEventListener('keydown', handleEscape);
+    }
+  };
+  document.addEventListener('keydown', handleEscape);
+}
+
+function removeExistingContextMenu(): void {
+  const existingMenu = document.getElementById('capture-rule-context-menu');
+  if (existingMenu) {
+    existingMenu.remove();
+  }
+}
+
+function showXPathEditModal(
+  rule: CaptureRule,
+  element: HTMLElement,
+  container: HTMLElement,
+): void {
+  // Remove any existing modal
+  removeExistingModal();
+
+  // Create modal overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'xpath-edit-overlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10003;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `;
+
+  // Create modal
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  `;
+
+  // Create modal header
+  const header = document.createElement('div');
+  header.style.cssText = `
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #dee2e6;
+  `;
+  header.innerHTML = `
+    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #212529;">Edit XPath</h3>
+    <p style="margin: 8px 0 0; font-size: 14px; color: #6c757d;">Modify the XPath selector for this capture rule</p>
+  `;
+
+  // Create modal body
+  const body = document.createElement('div');
+  body.style.cssText = `
+    padding: 20px 24px;
+  `;
+
+  // Rule info
+  const ruleInfo = document.createElement('div');
+  ruleInfo.style.cssText = `
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 16px;
+  `;
+  ruleInfo.innerHTML = `
+    <div style="font-weight: 500; margin-bottom: 4px;">${rule.name}</div>
+    <div style="font-size: 12px; color: #6c757d;">${rule.domain}</div>
+  `;
+
+  // XPath input section
+  const xpathLabel = document.createElement('label');
+  xpathLabel.style.cssText = `
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #212529;
+  `;
+  xpathLabel.textContent = 'XPath Selector:';
+
+  const xpathInput = document.createElement('textarea');
+  xpathInput.style.cssText = `
+    width: 100%;
+    min-height: 80px;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 13px;
+    resize: vertical;
+    box-sizing: border-box;
+  `;
+  xpathInput.value = rule.xpath;
+
+  // Status message
+  const statusMessage = document.createElement('div');
+  statusMessage.style.cssText = `
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    display: none;
+  `;
+
+  // Test button
+  const testButton = document.createElement('button');
+  testButton.style.cssText = `
+    margin-top: 12px;
+    padding: 6px 12px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  `;
+  testButton.textContent = 'Test XPath';
+
+  testButton.addEventListener('click', () => {
+    testXPath(xpathInput.value, statusMessage);
+  });
+
+  // Assemble body
+  body.appendChild(ruleInfo);
+  body.appendChild(xpathLabel);
+  body.appendChild(xpathInput);
+  body.appendChild(statusMessage);
+  body.appendChild(testButton);
+
+  // Create modal footer
+  const footer = document.createElement('div');
+  footer.style.cssText = `
+    padding: 16px 24px 20px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  `;
+
+  const cancelButton = document.createElement('button');
+  cancelButton.style.cssText = `
+    padding: 8px 16px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  `;
+  cancelButton.textContent = 'Cancel';
+
+  const saveButton = document.createElement('button');
+  saveButton.style.cssText = `
+    padding: 8px 16px;
+    background: #007cba;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  `;
+  saveButton.textContent = 'Save Changes';
+
+  // Add event listeners
+  cancelButton.addEventListener('click', removeExistingModal);
+
+  saveButton.addEventListener('click', async () => {
+    const newXPath = xpathInput.value.trim();
+    if (newXPath && newXPath !== rule.xpath) {
+      try {
+        await updateCaptureRuleXPath(rule, newXPath, element, container);
+        removeExistingModal();
+        showPageDebug(`XPath updated for rule: ${rule.name}`);
+      } catch (error) {
+        showErrorMessage(
+          statusMessage,
+          `Failed to update XPath: ${(error as Error).message}`,
+        );
+      }
+    } else {
+      removeExistingModal();
+    }
+  });
+
+  footer.appendChild(cancelButton);
+  footer.appendChild(saveButton);
+
+  // Assemble modal
+  modal.appendChild(header);
+  modal.appendChild(body);
+  modal.appendChild(footer);
+  overlay.appendChild(modal);
+
+  // Add to page
+  document.body.appendChild(overlay);
+
+  // Focus on input
+  xpathInput.focus();
+  xpathInput.select();
+
+  // Close on overlay click
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) {
+      removeExistingModal();
+    }
+  });
+
+  // Close on escape
+  const handleEscape = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      removeExistingModal();
+      document.removeEventListener('keydown', handleEscape);
+    }
+  };
+  document.addEventListener('keydown', handleEscape);
+}
+
+function removeExistingModal(): void {
+  const existingModal = document.getElementById('xpath-edit-overlay');
+  if (existingModal) {
+    existingModal.remove();
+  }
+}
+
+function testXPath(xpath: string, statusElement: HTMLElement): void {
+  try {
+    const element = getElementByXPath(xpath);
+    if (element) {
+      showSuccessMessage(
+        statusElement,
+        `✓ XPath is valid and matches 1 element`,
+      );
+
+      // Briefly highlight the matched element
+      const originalOutline = element.style.outline;
+      const originalOutlineOffset = element.style.outlineOffset;
+      element.style.outline = '3px solid #28a745';
+      element.style.outlineOffset = '2px';
+
+      setTimeout(() => {
+        element.style.outline = originalOutline;
+        element.style.outlineOffset = originalOutlineOffset;
+      }, 2000);
+    } else {
+      showErrorMessage(statusElement, '✗ XPath does not match any elements');
+    }
+  } catch (error) {
+    showErrorMessage(
+      statusElement,
+      `✗ Invalid XPath: ${(error as Error).message}`,
+    );
+  }
+}
+
+function showSuccessMessage(element: HTMLElement, message: string): void {
+  element.style.cssText = `
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    display: block;
+  `;
+  element.textContent = message;
+}
+
+function showErrorMessage(element: HTMLElement, message: string): void {
+  element.style.cssText = `
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    display: block;
+  `;
+  element.textContent = message;
+}
+
+async function updateCaptureRuleXPath(
+  rule: CaptureRule,
+  newXPath: string,
+  element: HTMLElement,
+  container: HTMLElement,
+): Promise<void> {
+  // Import the updateCaptureRule function
+  const { updateCaptureRule } = await import('./captureRules');
+
+  // Validate the new XPath first
+  const testElement = getElementByXPath(newXPath);
+
+  if (!testElement) {
+    throw new Error('XPath does not match any elements on this page');
+  }
+
+  // Update the rule in storage
+  await updateCaptureRule(rule.id, { xpath: newXPath });
+
+  // Clean up the current element
+  cleanupCaptureElement(element, container);
+
+  // Refresh the auto capture elements on the page
+  await initializeAutoCapture();
+}
+
+async function removeCaptureRuleAndElement(
+  rule: CaptureRule,
+  element: HTMLElement,
+  container: HTMLElement,
+): Promise<void> {
+  // Import the removeCaptureRule function
+  const { removeCaptureRule } = await import('./captureRules');
+
+  // Remove the rule from storage
+  await removeCaptureRule(rule.id);
+
+  // Clean up the element
+  cleanupCaptureElement(element, container);
+
+  // Refresh the auto capture elements on the page
+  await initializeAutoCapture();
+}
+
+function cleanupCaptureElement(
+  element: HTMLElement,
+  container: HTMLElement,
+): void {
+  // Remove the capture container
+  if (container && container.parentNode) {
+    container.parentNode.removeChild(container);
+  }
+
+  // Remove capture-related attributes
+  element.removeAttribute('data-markdown-capture');
+  element.removeAttribute('data-rule-id');
+
+  // Remove outline styling
+  element.style.outline = '';
+  element.style.outlineOffset = '';
+
+  // Restore original position if it was changed
+  const originalPosition = element.getAttribute('data-original-position');
+  if (originalPosition) {
+    element.style.position =
+      originalPosition === 'static' ? '' : originalPosition;
+    element.removeAttribute('data-original-position');
+  }
 }
 
 function findTargetElementFromContext(targetInfo: {
