@@ -1,11 +1,12 @@
 import { ExtensionOptions, SaveRule } from './types';
-import { getSaveRules, removeSaveRule, updateSaveRule } from './saveRules';
+import { removeSaveRule, updateSaveRule } from './saveRules';
 import {
-  getSuggestedRules,
   addSuggestedRule,
   removeSuggestedRule,
   updateSuggestedRule,
 } from './suggestedRules';
+import { SaveRuleManager } from './saveRuleManager';
+import { SuggestedRuleManager } from './suggestedRuleManager';
 
 const defaultOptions: ExtensionOptions = {
   saveDirectory: '~/Downloads',
@@ -28,9 +29,17 @@ Title: {title}
 
 class OptionsManager {
   private statusElement: HTMLElement;
+  private saveRuleManager: SaveRuleManager;
+  private suggestedRuleManager: SuggestedRuleManager;
 
   constructor() {
     this.statusElement = document.getElementById('status') as HTMLElement;
+    this.saveRuleManager = new SaveRuleManager((message, type) =>
+      this.showStatus(message, type),
+    );
+    this.suggestedRuleManager = new SuggestedRuleManager((message, type) =>
+      this.showStatus(message, type),
+    );
     this.init();
   }
 
@@ -271,12 +280,7 @@ class OptionsManager {
   }
 
   private async loadSaveRules(): Promise<void> {
-    try {
-      const rules = await getSaveRules();
-      this.displaySaveRules(rules);
-    } catch (error) {
-      this.showStatus('Failed to load save rules', 'error');
-    }
+    await this.saveRuleManager.loadAndDisplayRules();
   }
 
   private displaySaveRules(rules: SaveRule[]): void {
@@ -438,12 +442,7 @@ class OptionsManager {
   // Suggested Rules Management Methods
 
   private async loadSuggestedRules(): Promise<void> {
-    try {
-      const rules = await getSuggestedRules();
-      this.displaySuggestedRules(rules);
-    } catch (error) {
-      this.showStatus('Failed to load suggested rules', 'error');
-    }
+    await this.suggestedRuleManager.loadAndDisplayRules();
   }
 
   private displaySuggestedRules(rules: SaveRule[]): void {

@@ -4,6 +4,7 @@
 
 import { getElementByXPath } from './xpathGenerator';
 import { SaveRule } from './types';
+import { extractDomain } from './domain';
 import {
   getSaveRules,
   getSaveRulesForDomain,
@@ -96,7 +97,7 @@ export async function findSuggestedElement(): Promise<{
   element: HTMLElement;
   rule: SaveRule;
 } | null> {
-  const domain = window.location.hostname.replace('www.', '');
+  const domain = extractDomain(window.location.href);
 
   // Check if there are any auto save rules for this domain first
   const autoSaveRules = await getSaveRulesForDomain(domain);
