@@ -284,7 +284,7 @@ class OptionsManager {
   private createRuleHTML(rule: SaveRule): string {
     const date = new Date(rule.created).toLocaleDateString();
     return `
-      <div class="save-rule" id="rule-${rule.id}">
+      <div class="save-rule-item" id="rule-${rule.id}">
         <div class="rule-header">
           <div class="rule-name">${rule.name}</div>
           <div class="rule-actions">
@@ -298,6 +298,9 @@ class OptionsManager {
           <div class="rule-date">Created: ${date}</div>
         </div>
         <div class="rule-edit-form" id="edit-form-${rule.id}" style="display: none;">
+          <label for="name-edit-${rule.id}">Rule Name:</label>
+          <input type="text" id="name-edit-${rule.id}" class="edit-field" value="${rule.name}" placeholder="Enter a descriptive name for this rule">
+          
           <label for="domain-edit-${rule.id}">Domain:</label>
           <input type="text" id="domain-edit-${rule.id}" class="edit-field" value="${rule.domain}">
           
@@ -305,7 +308,7 @@ class OptionsManager {
           <textarea id="xpath-edit-${rule.id}" class="edit-field xpath">${rule.xpath}</textarea>
           
           <div class="edit-actions">
-            <button id="save-${rule.id}" class="save-rule">Save</button>
+            <button id="save-${rule.id}" class="save-rule-button">Save</button>
             <button id="cancel-${rule.id}" class="cancel-rule">Cancel</button>
           </div>
         </div>
@@ -354,6 +357,9 @@ class OptionsManager {
   }
 
   private async saveRule(id: string): Promise<void> {
+    const nameInput = document.getElementById(
+      `name-edit-${id}`,
+    ) as HTMLInputElement;
     const domainInput = document.getElementById(
       `domain-edit-${id}`,
     ) as HTMLInputElement;
@@ -361,15 +367,21 @@ class OptionsManager {
       `xpath-edit-${id}`,
     ) as HTMLTextAreaElement;
 
-    if (!domainInput || !xpathInput) {
+    if (!nameInput || !domainInput || !xpathInput) {
       this.showStatus('Failed to save rule: form elements not found', 'error');
       return;
     }
 
+    const newName = nameInput.value.trim();
     const newDomain = domainInput.value.trim();
     const newXpath = xpathInput.value.trim();
 
     // Validate inputs
+    if (!newName) {
+      this.showStatus('Rule name cannot be empty', 'error');
+      return;
+    }
+
     if (!newDomain) {
       this.showStatus('Domain cannot be empty', 'error');
       return;
@@ -382,6 +394,7 @@ class OptionsManager {
 
     try {
       await updateSaveRule(id, {
+        name: newName,
         domain: newDomain,
         xpath: newXpath,
       });

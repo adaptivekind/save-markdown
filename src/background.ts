@@ -82,7 +82,7 @@ chrome.contextMenus.onClicked.addListener(
   (info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab) => {
     if (info.menuItemId === 'create-save-rule' && tab?.id) {
       chrome.tabs.sendMessage(tab.id, { action: 'startCreateSaveRule' });
-    } else if (info.menuItemId === 'edit-save-markdown') {
+    } else if (info.menuItemId === 'markdown-capture-options') {
       chrome.runtime.openOptionsPage();
     }
   },
