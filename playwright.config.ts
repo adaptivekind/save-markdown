@@ -12,7 +12,7 @@ export default defineConfig({
   reporter: 'html',
   use: {
     trace: 'on-first-retry',
-    headless: false, // Required for extension testing
+    headless: true,
   },
   projects: [
     {

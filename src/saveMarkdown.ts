@@ -68,7 +68,7 @@ export async function saveMarkdownFile(
         if (chrome.runtime.lastError) {
           notify(tabId, 'captureError', chrome.runtime.lastError.message);
         } else {
-          notify(tabId, 'captureComplete', null, filename);
+          notify(tabId, 'captureComplete', null, `${directory}/${filename}`);
         }
       },
     );

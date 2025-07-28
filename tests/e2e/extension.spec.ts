@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { test, expect, chromium, type BrowserContext } from '@playwright/test';
 import path from 'path';
 import fs from 'fs';
@@ -12,6 +13,8 @@ test.describe('Save Markdown Extension E2E', () => {
   let extensionId: string;
 
   test.beforeAll(async () => {
+    test.setTimeout(5_000);
+
     // Build the extension first
     const pathToExtension = path.join(__dirname, '../../dist');
 
@@ -87,22 +90,26 @@ test.describe('Save Markdown Extension E2E', () => {
 
     // Look for the suggested save element and click "ADD SAVE RULE" to convert it to auto-save
     const suggestedElement = testPage.locator('.add-save-rule-button').first();
-    if (await suggestedElement.isVisible()) {
-      await suggestedElement.click();
 
-      // Wait for the rule to be created and auto-save to be initialized
-      await testPage.waitForTimeout(2000);
+    const session = await context.newCDPSession(testPage);
+    await session.send('Browser.setDownloadBehavior', {
+      behavior: 'default',
+      eventsEnabled: true,
+    });
+    // const downloadPromise = testPage.waitForEvent('download');
+    // console.log('Download promise set up');
+    testPage.on('download', download => download.path().then(console.log));
+    await suggestedElement.click();
 
-      // Reload the page to trigger auto-save with the new rule
-      await testPage.reload();
-      await testPage.waitForTimeout(3000);
-    } else {
-      await testPage.waitForTimeout(3000);
-    }
+    console.log('Awaiting download');
+    // const download = await downloadPromise;
+    // console.log(download);
 
     // Check if markdown file was saved in Downloads folder
+    await testPage.waitForTimeout(2000);
     const downloadsPath = path.join(os.homedir(), 'Downloads');
     const files = fs.readdirSync(downloadsPath);
+    console.log(downloadsPath);
 
     // Look for a markdown file that was recently created
     const markdownFiles = files.filter(
