@@ -20,7 +20,7 @@ Title: {title}
 `,
   preserveFormatting: true,
   autoDownload: true,
-  debugMode: true,
+  debugMode: false,
   enableAutoCapture: true,
 };
 
