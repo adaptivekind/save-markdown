@@ -10,8 +10,8 @@ import {
   updateSuggestedRule,
   findSuggestedElement,
   extractDomain,
-  SuggestedRule,
 } from './suggestedRules';
+import { SaveRule } from './types';
 
 // Mock chrome storage API
 const mockStorage = {
@@ -61,17 +61,20 @@ describe('suggestedRules', () => {
         xpath: '//article',
         name: 'Article element',
         priority: 100,
+        enabled: true,
       });
     });
 
     it('should return stored rules when they exist', async () => {
-      const storedRules: SuggestedRule[] = [
+      const storedRules: SaveRule[] = [
         {
           id: 'custom_rule',
           domain: 'example.com',
           xpath: '//main',
           name: 'Main content',
           priority: 200,
+          created: new Date().toISOString(),
+          enabled: true,
         },
       ];
 
@@ -85,13 +88,15 @@ describe('suggestedRules', () => {
 
   describe('getSuggestedRulesForDomain', () => {
     it('should return rules matching domain or universal rules', async () => {
-      const storedRules: SuggestedRule[] = [
+      const storedRules: SaveRule[] = [
         {
           id: 'universal',
           domain: '*',
           xpath: '//article',
           name: 'Article',
           priority: 100,
+          created: new Date().toISOString(),
+          enabled: true,
         },
         {
           id: 'domain_specific',
@@ -99,6 +104,8 @@ describe('suggestedRules', () => {
           xpath: '//main',
           name: 'Main',
           priority: 200,
+          created: new Date().toISOString(),
+          enabled: true,
         },
         {
           id: 'other_domain',
@@ -106,6 +113,8 @@ describe('suggestedRules', () => {
           xpath: '//section',
           name: 'Section',
           priority: 150,
+          created: new Date().toISOString(),
+          enabled: true,
         },
       ];
 
@@ -119,13 +128,15 @@ describe('suggestedRules', () => {
     });
 
     it('should sort rules by priority descending', async () => {
-      const storedRules: SuggestedRule[] = [
+      const storedRules: SaveRule[] = [
         {
           id: 'low_priority',
           domain: '*',
           xpath: '//article',
           name: 'Article',
           priority: 50,
+          created: new Date().toISOString(),
+          enabled: true,
         },
         {
           id: 'high_priority',
@@ -133,6 +144,8 @@ describe('suggestedRules', () => {
           xpath: '//main',
           name: 'Main',
           priority: 200,
+          created: new Date().toISOString(),
+          enabled: true,
         },
         {
           id: 'medium_priority',
@@ -140,6 +153,8 @@ describe('suggestedRules', () => {
           xpath: '//section',
           name: 'Section',
           priority: 100,
+          created: new Date().toISOString(),
+          enabled: true,
         },
       ];
 
@@ -155,7 +170,7 @@ describe('suggestedRules', () => {
 
   describe('addSuggestedRule', () => {
     it('should add a new suggested rule', async () => {
-      const existingRules: SuggestedRule[] = [];
+      const existingRules: SaveRule[] = [];
 
       mockStorage.sync.get.mockResolvedValue({ suggestedRules: existingRules });
 
@@ -169,6 +184,8 @@ describe('suggestedRules', () => {
               xpath: '//main',
               name: 'Main content',
               priority: 150,
+              created: expect.any(String),
+              enabled: true,
             }),
           ]),
         }),
@@ -194,13 +211,15 @@ describe('suggestedRules', () => {
 
   describe('removeSuggestedRule', () => {
     it('should remove rule by ID', async () => {
-      const existingRules: SuggestedRule[] = [
+      const existingRules: SaveRule[] = [
         {
           id: 'rule1',
           domain: 'example.com',
           xpath: '//main',
           name: 'Main',
           priority: 100,
+          created: new Date().toISOString(),
+          enabled: true,
         },
         {
           id: 'rule2',
@@ -208,6 +227,8 @@ describe('suggestedRules', () => {
           xpath: '//article',
           name: 'Article',
           priority: 200,
+          created: new Date().toISOString(),
+          enabled: true,
         },
       ];
 
@@ -223,13 +244,15 @@ describe('suggestedRules', () => {
 
   describe('updateSuggestedRule', () => {
     it('should update existing rule', async () => {
-      const existingRules: SuggestedRule[] = [
+      const existingRules: SaveRule[] = [
         {
           id: 'rule1',
           domain: 'example.com',
           xpath: '//main',
           name: 'Main',
           priority: 100,
+          created: new Date().toISOString(),
+          enabled: true,
         },
       ];
 
@@ -248,6 +271,8 @@ describe('suggestedRules', () => {
             xpath: '//main',
             name: 'Updated Main',
             priority: 200,
+            created: expect.any(String),
+            enabled: true,
           }),
         ],
       });
@@ -295,13 +320,15 @@ describe('suggestedRules', () => {
       const mockElement = document.createElement('article');
       getElementByXPath.mockReturnValue(mockElement);
 
-      const storedRules: SuggestedRule[] = [
+      const storedRules: SaveRule[] = [
         {
           id: 'article_rule',
           domain: '*',
           xpath: '//article',
           name: 'Article',
           priority: 100,
+          created: new Date().toISOString(),
+          enabled: true,
         },
       ];
 

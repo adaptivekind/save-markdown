@@ -3,15 +3,7 @@
  */
 
 import { generateXPath, getElementByXPath } from './xpathGenerator';
-
-export interface SaveRule {
-  id: string;
-  domain: string;
-  xpath: string;
-  name: string;
-  created: string;
-  enabled: boolean;
-}
+import { SaveRule } from './types';
 
 const STORAGE_KEY = 'saveRules';
 
@@ -40,6 +32,7 @@ export async function addSaveRule(
   domain: string,
   xpath: string,
   name: string,
+  priority: number = 50,
 ): Promise<void> {
   const rules = await getSaveRules();
   const newRule: SaveRule = {
@@ -49,6 +42,7 @@ export async function addSaveRule(
     name,
     created: new Date().toISOString(),
     enabled: true,
+    priority,
   };
 
   rules.push(newRule);

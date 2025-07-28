@@ -7,13 +7,13 @@ import {
 } from './debugElement';
 import { generateXPath, getElementByXPath } from './xpathGenerator';
 import {
-  SaveRule,
   createRuleFromElement,
   findSaveElements,
   findAllSaveElements,
   toggleSaveRule,
 } from './saveRules';
-import { SuggestedRule, findSuggestedElement } from './suggestedRules';
+import { findSuggestedElement } from './suggestedRules';
+import { SaveRule } from './types';
 
 let isCreateSaveRuleActive = false;
 let overlay: HTMLElement | null = null;
@@ -289,7 +289,7 @@ function highlightSaveElements(
 
 function highlightSuggestedElement(match: {
   element: HTMLElement;
-  rule: SuggestedRule;
+  rule: SaveRule;
 }): void {
   const { element, rule } = match;
 
@@ -469,10 +469,7 @@ function addAutoCaptureLabel(element: HTMLElement, rule: SaveRule): void {
   element.appendChild(container);
 }
 
-function addSuggestedSaveLabel(
-  element: HTMLElement,
-  rule: SuggestedRule,
-): void {
+function addSuggestedSaveLabel(element: HTMLElement, rule: SaveRule): void {
   // Create main container
   const container = document.createElement('div');
   container.className = 'markdown-suggested-container';

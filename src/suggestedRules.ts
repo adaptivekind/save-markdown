@@ -3,32 +3,27 @@
  */
 
 import { getElementByXPath } from './xpathGenerator';
-
-export interface SuggestedRule {
-  id: string;
-  domain: string; // '*' for all domains
-  xpath: string;
-  name: string;
-  priority: number; // Higher priority rules are checked first
-}
+import { SaveRule } from './types';
 
 const STORAGE_KEY = 'suggestedRules';
 
 // Default suggested rules
-const DEFAULT_SUGGESTED_RULES: SuggestedRule[] = [
+const DEFAULT_SUGGESTED_RULES: SaveRule[] = [
   {
     id: 'default_article',
     domain: '*', // All domains
     xpath: '//article',
     name: 'Article element',
     priority: 100,
+    created: new Date().toISOString(),
+    enabled: true,
   },
 ];
 
 /**
  * Gets all suggested save rules from storage
  */
-export async function getSuggestedRules(): Promise<SuggestedRule[]> {
+export async function getSuggestedRules(): Promise<SaveRule[]> {
   const result = await chrome.storage.sync.get([STORAGE_KEY]);
   const storedRules = result[STORAGE_KEY] || [];
 
@@ -46,7 +41,7 @@ export async function getSuggestedRules(): Promise<SuggestedRule[]> {
  */
 export async function getSuggestedRulesForDomain(
   domain: string,
-): Promise<SuggestedRule[]> {
+): Promise<SaveRule[]> {
   const rules = await getSuggestedRules();
 
   // Filter rules that match the domain or are universal (*)
@@ -68,12 +63,14 @@ export async function addSuggestedRule(
   priority: number = 50,
 ): Promise<void> {
   const rules = await getSuggestedRules();
-  const newRule: SuggestedRule = {
+  const newRule: SaveRule = {
     id: generateSuggestedRuleId(),
     domain,
     xpath,
     name,
     priority,
+    created: new Date().toISOString(),
+    enabled: true,
   };
 
   rules.push(newRule);
@@ -94,7 +91,7 @@ export async function removeSuggestedRule(id: string): Promise<void> {
  */
 export async function updateSuggestedRule(
   id: string,
-  updates: Partial<SuggestedRule>,
+  updates: Partial<SaveRule>,
 ): Promise<void> {
   const rules = await getSuggestedRules();
   const ruleIndex = rules.findIndex(rule => rule.id === id);
@@ -114,7 +111,7 @@ export async function updateSuggestedRule(
  */
 export async function findSuggestedElement(): Promise<{
   element: HTMLElement;
-  rule: SuggestedRule;
+  rule: SaveRule;
 } | null> {
   const domain = window.location.hostname.replace('www.', '');
 

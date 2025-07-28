@@ -10,3 +10,13 @@ export interface ExtensionOptions {
   enableAutoCapture: boolean;
   enableSuggestedRules: boolean;
 }
+
+export interface SaveRule {
+  id: string;
+  domain: string;
+  xpath: string;
+  name: string;
+  created: string;
+  enabled: boolean;
+  priority: number;
+}

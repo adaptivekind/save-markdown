@@ -1,16 +1,10 @@
-import { ExtensionOptions } from './types';
-import {
-  getSaveRules,
-  removeSaveRule,
-  updateSaveRule,
-  SaveRule,
-} from './saveRules';
+import { ExtensionOptions, SaveRule } from './types';
+import { getSaveRules, removeSaveRule, updateSaveRule } from './saveRules';
 import {
   getSuggestedRules,
   addSuggestedRule,
   removeSuggestedRule,
   updateSuggestedRule,
-  SuggestedRule,
 } from './suggestedRules';
 
 const defaultOptions: ExtensionOptions = {
@@ -452,7 +446,7 @@ class OptionsManager {
     }
   }
 
-  private displaySuggestedRules(rules: SuggestedRule[]): void {
+  private displaySuggestedRules(rules: SaveRule[]): void {
     const container = document.getElementById('suggestedRules');
     const noRulesMessage = document.getElementById('noSuggestedRulesMessage');
 
@@ -497,7 +491,7 @@ class OptionsManager {
     });
   }
 
-  private createSuggestedRuleHTML(rule: SuggestedRule): string {
+  private createSuggestedRuleHTML(rule: SaveRule): string {
     return `
       <div class="suggested-rule-item" id="suggested-rule-${rule.id}">
         <div class="suggested-rule-header">
