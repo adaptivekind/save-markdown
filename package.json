@@ -18,10 +18,15 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --watchAll=false",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:wait-after": "WAIT_AFTER_TEST=true playwright test --headed",
     "prepare": "husky"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.3",
+    "@playwright/test": "^1.54.1",
     "@types/chrome": "^0.0.268",
     "@types/jest": "^29.5.8",
     "@types/jsdom": "^21.1.7",
