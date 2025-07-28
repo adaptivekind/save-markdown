@@ -177,10 +177,130 @@ Extension settings are stored via `chrome.storage.sync`:
 - `devtools` (optional): Enable DevTools panel functionality
 - `<all_urls>`: Work on any website (required for content script injection)
 
+## Development Notes
+
+### Testing
+
+- Run `npm test` before making changes to ensure functionality
+- Use `npm run test:watch` during development for continuous testing
+- All new features should include corresponding test cases
+- Mock Chrome APIs appropriately using existing patterns
+
+### Common Tasks
+
+- **Add New Module**: Create TypeScript file in `src/`, add tests, export functions
+- **Update Save Rules**: Modify `saveRules.ts` and corresponding tests
+- **Change File Saving**: Update `saveMarkdown.ts` and `filename.ts` modules
+- **Extend HTML Conversion**: Enhance `htmlToMarkdown.ts` parser
+- **Debug Issues**: Enable debug mode in extension settings
+
+### Architecture Principles
+
+- **Separation of Concerns**: Each module has a single responsibility
+- **Type Safety**: Use TypeScript interfaces for all data structures
+- **Error Handling**: Consistent error patterns across all modules
+- **Testing**: Comprehensive coverage for reliability
+- **Chrome APIs**: Minimal permissions, service worker compatibility
+
 ## Icon Generation
 
 Extension includes custom icons created from SVG source:
 
-- `icon.svg` - Source SVG with blue arrow and black "M"
+- `icon.svg` - Source SVG with blue circle and white "M"
 - `generate-icons.sh` - Builds PNG icons at 16x16, 48x48, 128x128
-- Arrow design maximized to fill canvas with prominent "M" overlay
+- Modern design optimized for Chrome extension toolbar
+
+# Important Instructions for Claude
+
+## Universal Guidance
+
+If the Markdown Reader MCP is available, read the `universal-guidance.md` file for universal guidance to follow across all documentation work. If the Markdown Reader MCP is NOT available, it can be installed as described at <https://github.com/adaptivekind/markdown-reader-mcp>.
+
+## Tone of Voice and Communication Standards
+
+Act as a thoughtful technical mentor sharing wisdom through collaborative exploration. The voice should be conversational yet substantial, like having coffee with a colleague who has deep expertise.
+
+**Core principles:**
+
+- Help first and empower - lead with how this benefits the reader and their growth
+- Learning by doing together - use inclusive "we" language, position yourself as a fellow learner
+- Working in the open - be transparent about uncertainties, experiments, and evolving thoughts
+- Practical wisdom - balance philosophical insights with actionable takeaways
+
+**Tone characteristics:**
+
+- Humble authority - share knowledge confidently without being dogmatic; admit what you don't know
+- Warmly professional - approachable and human while maintaining credibility
+- Reflectively practical - connect bigger picture thinking to concrete next steps
+
+**Language guidelines:**
+
+- Use simple, direct language even for complex topics
+- Explain technical concepts in human terms with brief context
+- Use inclusive "we" language when appropriate
+- Avoid overwhelming jargon without explanation
+- Be transparent about uncertainties and evolving approaches
+- Connect technical decisions to practical value
+- Employ bullet points and short paragraphs for readability
+
+**Mandatory formatting standards:**
+
+- Use normal dash "-" instead of em dash "—"
+- Write in a natural and serious voice
+- Do not add humorous anecdotes
+- Do not show excessive enthusiasm
+- Prefer "often/rarely" over absolute statements like "always/never"
+
+## Project Terminology
+
+- Use "save" terminology, not "capture" (this was refactored throughout the codebase)
+- Functions: `saveMarkdownFile()`, `createSaveRule()`, `saveRules.ts`
+- UI elements: "Create Save Rule", "Auto Save", "Manual Save"
+
+## Testing Requirements
+
+- ALWAYS run `npm test` after making changes to verify functionality
+- NEVER assume tests pass - always verify with actual test execution
+- Add test cases for new functionality following existing patterns
+- Use JSDOM environment for DOM-related testing
+
+## Module Architecture
+
+- Follow existing modular structure - each module has specific responsibility
+- Import functions from appropriate modules (e.g., `saveMarkdown.ts` for file operations)
+- Maintain TypeScript interfaces for type safety
+- Use consistent error handling patterns across modules
+
+## Development Workflow
+
+1. Read relevant test files to understand expected behavior
+2. Make changes following existing code patterns
+3. Run `npm test` to verify changes
+4. Run `npm run lint` to check code quality
+5. Test extension functionality manually if needed
+
+## File Guidelines
+
+- NEVER create files unless absolutely necessary for achieving the goal
+- ALWAYS prefer editing existing files to creating new ones
+- NEVER proactively create documentation files unless explicitly requested
+- Follow existing naming conventions and project structure
+
+## Quick Reference
+
+### Key Files to Understand
+
+- `src/main.ts` - Content script with element selection and auto-save logic
+- `src/saveRules.ts` - Save rule management (create, toggle, update, remove)
+- `src/saveMarkdown.ts` - File saving via Chrome Downloads API
+- `src/htmlToMarkdown.ts` - HTML parsing and markdown conversion
+- `src/xpathGenerator.ts` - Element targeting and XPath generation
+- `src/filename.ts` - Template-based filename generation
+
+### Current Test Coverage
+
+- Total tests: 121+ across all modules
+- Coverage includes: filename generation, save rules, XPath generation, HTML conversion
+- Use existing test patterns when adding new functionality
+
+IMPORTANT: This context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task.

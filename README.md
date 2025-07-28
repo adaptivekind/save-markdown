@@ -1,24 +1,34 @@
-# Markdown Capture
+# Save Markdown
 
-A Chrome extension that helps you select HTML elements on web pages and convert
-them to clean markdown files. This tool bridges the gap between web content and
-your local markdown workflow.
+A Chrome extension that helps you select HTML elements on web pages and convert them to clean markdown files. This tool bridges the gap between web content and your local markdown workflow.
 
 ## Getting Started
 
-The extension provides multiple ways to capture content depending on your needs.
-You can use the popup interface for quick captures, integrate with Chrome
-DevTools for precise selection, or use context menus for workflow efficiency.
+The extension provides multiple ways to save content depending on your needs. You can use the popup interface for quick saves, or use context menus for workflow efficiency.
+
+### Quick Start
+
+1. Install the extension and pin it to your Chrome toolbar
+2. Click the extension icon and select "Create Save Rule"
+3. Navigate to any webpage and hover over elements to see selection boundaries
+4. Click the element you want to save as markdown
+5. The markdown file saves automatically to your Downloads folder
+
+Future visits to similar pages can trigger automatic saves based on the rules you create.
 
 ## Core Capabilities
 
+### Auto Save Rules
+
+Create automated save rules for frequently accessed content. The extension can automatically save matching elements when you visit pages, or you can manually trigger saves for disabled rules.
+
 ### Element Selection
 
-The extension provides visual feedback when selecting elements. Hover over any element to see a blue overlay indicating the capture boundary. Click to capture the element, or press Escape to cancel selection.
+The extension provides visual feedback when selecting elements. Hover over any element to see a blue dashed overlay indicating the save boundary. Click to save the element, or press Escape to cancel selection.
 
 ### Markdown Conversion
 
-We preserve the structure and formatting of HTML elements during conversion:
+The extension preserves the structure and formatting of HTML elements during conversion:
 
 - Headers maintain their hierarchy (H1-H6)
 - Text formatting (bold, italic, code, strikethrough) carries over
@@ -33,19 +43,20 @@ We preserve the structure and formatting of HTML elements during conversion:
 The extension adapts to your workflow through several configuration options:
 
 - Save directory selection (within Chrome's download restrictions)
-- Filename templates using variables like `{title}`, `{date}`, `{domain}`
+- Filename templates using variables like `{title}`, `{date}`, `{domain}`, `{timestamp}`
+- Domain subfolder organization for automatic file organization
 - Metadata inclusion controls for source tracking
-- Format preservation settings
+- Auto save rule management and editing
 - Settings import/export for team consistency
 
 ### Developer Integration
 
-For technical users, we provide additional tools:
+For technical users, the extension provides additional tools:
 
-- DevTools panel integration for advanced element selection
+- XPath-based element targeting for precise selection
 - Debug mode with detailed operation logging
 - Hot reload support during development
-- Elements panel sidebar for quick access
+- Comprehensive test suite with 121+ test cases
 
 ## Installation
 
@@ -60,8 +71,8 @@ If you prefer to install from source or want to contribute:
 1. Clone and build the extension:
 
    ```bash
-   git clone https://github.com/your-repo/markdown-capture.git
-   cd markdown-capture
+   git clone https://github.com/your-repo/save-markdown.git
+   cd save-markdown
    npm install
    npm run build
    ```
@@ -76,42 +87,42 @@ If you prefer to install from source or want to contribute:
 
 ### Basic Workflow
 
-The most straightforward way to capture content:
+The most straightforward way to save content:
 
 1. Click the extension icon in your Chrome toolbar
-2. Click "Start Element Selection" in the popup
+2. Click "Create Save Rule" in the popup
 3. Navigate to any webpage and hover over elements
-4. Click the element you want to capture
+4. Click the element you want to save
 5. The markdown file saves automatically to your configured directory
+6. Future visits to similar pages can trigger automatic saves
 
 ### Settings Configuration
 
 Access the settings page through:
 
-- Extension popup settings button, or
-- `chrome://extensions/` - Markdown Capture - Extension options
-
-### DevTools Integration
-
-For more precise element selection:
-
-1. Open Chrome DevTools (F12)
-2. Look for the "Markdown Capture" tab
-3. Select elements directly from the Elements panel
-4. Access advanced capture options
+- Extension popup "Markdown Saving Settings" button, or
+- `chrome://extensions/` - Save Markdown - Extension options
 
 ### Context Menu Access
 
-Right-click any element and select "Start Markdown Selection" for quick access without opening the popup.
+Right-click any element and select "Create Save Rule" from the "Save Markdown" submenu for quick access without opening the popup.
+
+### Auto Save Management
+
+- View and manage all save rules in the options page
+- Toggle rules between AUTO SAVE and MANUAL SAVE modes
+- Edit XPath selectors for existing rules
+- Remove unused rules to keep your setup clean
 
 ## Configuration
 
 ### Save Directory Settings
 
-By default, files save to your Downloads folder. You can specify subdirectories:
+By default, files save to your Downloads folder. You can specify subdirectories and enable domain-based organization:
 
 - Default: `~/Downloads`
 - Custom: `~/Downloads/markdown` creates a markdown subfolder
+- Domain subfolders: Automatically organize files by website (e.g., `github-com/`)
 - Note: Chrome security requires all downloads go through the Downloads folder
 
 ### Filename Templates
@@ -127,9 +138,9 @@ Customize file naming using these variables:
 
 Template examples:
 
-- `{title}_{date}.md` produces `Guide_2024-01-15.md`
-- `{domain}/{title}.md` creates `github-com/Guide.md`
-- `notes_{timestamp}.md` generates `notes_2024-01-15T14-30-00.md`
+- `{title}_{date}.md` produces `guide_2024-01-15.md`
+- `{domain}/{title}.md` creates `github-com/guide.md`
+- `notes_{timestamp}.md` generates `notes_2024-01-15T14-30-00-123Z.md`
 
 ### Metadata Options
 
@@ -138,7 +149,7 @@ You can customize the frontmatter added to markdown files:
 ```yaml
 ---
 Source: { url }
-Captured: { date }
+Saved: { date }
 Title: { title }
 Domain: { domain }
 ---
@@ -147,6 +158,7 @@ Domain: { domain }
 ### Advanced Settings
 
 - Auto-download: Skip save dialogs for seamless workflow
+- Enable Auto Save: Master toggle for automatic rule execution
 - Preserve Formatting: Choose between original spacing or clean output
 - Debug Mode: Enable detailed logging for troubleshooting
 
@@ -154,13 +166,15 @@ Domain: { domain }
 
 ### Element Selection
 
-- Hover slowly to see exact element boundaries
-- Use DevTools for precise selection on complex pages
+- Hover slowly to see exact element boundaries with blue dashed overlay
+- Right-click for context menu access on any element
 - Adjust zoom levels if having trouble with small elements
+- Use the debug panel to see XPath information for selected elements
 
 ### File Organization
 
-- Use filename templates with folders for automatic organization
+- Enable domain subfolders for automatic organization by website
+- Use filename templates with date variables for chronological sorting
 - Establish consistent naming patterns for easier searching
 - Export settings to maintain consistency across team members
 
@@ -169,6 +183,8 @@ Domain: { domain }
 - Pin the extension to your toolbar
 - Enable auto-download to skip confirmation dialogs
 - Use context menu for quickest access
+- Create save rules for frequently visited content
+- Toggle rules to MANUAL SAVE mode when you want selective saving
 
 ## Troubleshooting
 
@@ -183,10 +199,13 @@ Domain: { domain }
 
 - Check: Some pages (like chrome:// pages) block extensions
 - Try: Regular websites instead of internal Chrome pages
+- Solution: Refresh the page if save rule creation fails
 
 **Files not saving automatically**
 
+- Check: Enable Auto Save in extension settings
 - Enable auto-download: Chrome Settings - Downloads - Turn off "Ask where to save"
+- Verify: Save rules are set to AUTO SAVE mode, not MANUAL SAVE
 - Or: Allow downloads when Chrome prompts you
 
 **Files saving to wrong location**
@@ -198,10 +217,11 @@ Domain: { domain }
 
 Enable debug mode in settings to see detailed information about:
 
-- Extension communication
-- Capture process
-- Error details
-- Performance timing
+- Extension communication between scripts
+- Save rule creation and XPath generation
+- Auto save rule matching and execution
+- Error details and troubleshooting information
+- File save operations and success notifications
 
 ## Privacy and Security
 
@@ -214,7 +234,7 @@ The extension operates entirely locally:
 
 ## Contributing
 
-We welcome contributions. See [DEV.md](DEV.md) for development setup, architecture details, and coding standards.
+Contributions are welcome. See [DEV.md](DEV.md) for development setup, architecture details, and coding standards.
 
 ## License
 
