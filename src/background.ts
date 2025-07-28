@@ -8,18 +8,7 @@ interface SaveMarkdownMessage {
   title: string;
 }
 
-interface StartSelectionMessage {
-  action: 'startSelection';
-}
-
-interface StopSelectionMessage {
-  action: 'stopSelection';
-}
-
-type Message =
-  | SaveMarkdownMessage
-  | StartSelectionMessage
-  | StopSelectionMessage;
+type Message = SaveMarkdownMessage;
 
 interface Config {
   saveDirectory?: string;
@@ -106,7 +95,6 @@ chrome.contextMenus.onClicked.addListener(
   },
 );
 
-// Background script for handling file saving
 chrome.runtime.onMessage.addListener(
   (
     message: Message,

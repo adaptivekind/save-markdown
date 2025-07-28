@@ -49,13 +49,13 @@ The extension follows standard Chrome Extension architecture with three main com
 ### Component Communication Flow
 
 ```
-Popup (popup.ts) ←→ Content Script (content.ts) ←→ Background Worker (background.ts)
+Popup (popup.ts) ←→ Content Script (main.ts) ←→ Background Worker (background.ts)
                                                             ↓
                                                    Filename Utils (filename.ts)
 ```
 
 - **Popup** (`popup.html` + `popup.ts`): User interface and configuration
-- **Content Script** (`content.ts`): Injected into all web pages, handles element selection and HTML→markdown conversion
+- **Content Script** (`main.ts`): Injected into all web pages, handles element selection and HTML→markdown conversion
 - **Background Service Worker** (`background.ts`): Handles file saving via Chrome Downloads API
 - **Filename Utilities** (`filename.ts`): Pure functions for filename generation and path handling
 
@@ -71,7 +71,7 @@ Popup (popup.ts) ←→ Content Script (content.ts) ←→ Background Worker (ba
 All source files are in `src/` and built by Vite with CRXJS:
 
 - `src/background.ts` → Background service worker (built by CRXJS)
-- `src/content.ts` → Content script (built by CRXJS)
+- `src/main.ts` → Content script (built by CRXJS)
 - `src/popup.ts` → Popup script (built by CRXJS)
 - `src/options.ts` → Options page script (built by CRXJS)
 - `src/devtools.ts` → DevTools extension script (built by CRXJS)
@@ -86,7 +86,7 @@ All source files are in `src/` and built by Vite with CRXJS:
 
 ### HTML to Markdown Conversion
 
-The `htmlToMarkdown()` function in `content.ts` contains a recursive parser that handles:
+The `htmlToMarkdown()` function in `main.ts` contains a recursive parser that handles:
 
 - Headers (H1-H6), text formatting (bold, italic, code)
 - Links, images, lists (ordered/unordered), tables, blockquotes, code blocks

@@ -14,20 +14,13 @@ import {
   toggleSaveRule,
 } from './captureRules';
 
-let isSelectionActive = false;
 let isCreateSaveRuleActive = false;
 let overlay: HTMLElement | null = null;
 let selectedElement: HTMLElement | null = null;
 let lastHoveredElement: HTMLElement | null = null;
 
 interface TabMessage {
-  action:
-    | 'startSelection'
-    | 'stopSelection'
-    | 'showDebug'
-    | 'capture'
-    | 'startCreateSaveRule'
-    | 'stopAutoCapture';
+  action: 'showDebug' | 'capture' | 'startCreateSaveRule' | 'stopAutoCapture';
   message?: string;
   frameId?: number;
   pageUrl?: string;
@@ -64,27 +57,7 @@ chrome.runtime.onMessage.addListener(
     _sender: chrome.runtime.MessageSender,
     sendResponse: (response?: unknown) => void,
   ) => {
-    if (request.action === 'startSelection') {
-      try {
-        startElementSelection();
-        showPageDebug('Element selection started');
-        sendResponse({ success: true, message: 'Selection started' });
-      } catch (error) {
-        showPageDebug(`Error starting selection: ${(error as Error).message}`);
-        sendResponse({ success: false, error: (error as Error).message });
-      }
-      return true; // Keep message channel open for async response
-    } else if (request.action === 'stopSelection') {
-      try {
-        stopElementSelection();
-        showPageDebug('Element selection stopped');
-        sendResponse({ success: true, message: 'Selection stopped' });
-      } catch (error) {
-        showPageDebug(`Error stopping selection: ${(error as Error).message}`);
-        sendResponse({ success: false, error: (error as Error).message });
-      }
-      return true; // Keep message channel open for async response
-    } else if (request.action === 'showDebug' && 'message' in request) {
+    if (request.action === 'showDebug' && 'message' in request) {
       showPageDebug(request.message || 'Debug message');
       return false;
     } else if (request.action === 'captureComplete') {
@@ -141,54 +114,6 @@ chrome.runtime.onMessage.addListener(
   },
 );
 
-function startElementSelection(): void {
-  if (isSelectionActive) return;
-
-  isSelectionActive = true;
-  document.body.style.cursor = 'crosshair';
-
-  // Create overlay
-  overlay = document.createElement('div');
-  overlay.id = 'markdown-capture-overlay';
-  overlay.style.cssText = `
-    position: absolute;
-    border: 2px dashed #007cba;
-    background: rgba(0, 124, 186, 0.1);
-    pointer-events: none;
-    z-index: 10000;
-    display: none;
-  `;
-  document.body.appendChild(overlay);
-
-  // Add event listeners
-  document.addEventListener('mouseover', handleMouseOver);
-  document.addEventListener('mouseout', handleMouseOut);
-  document.addEventListener('click', handleClick, true);
-  document.addEventListener('keydown', handleKeyDown);
-}
-
-function stopElementSelection(): void {
-  if (!isSelectionActive) return;
-
-  isSelectionActive = false;
-  document.body.style.cursor = '';
-
-  // Remove overlay
-  if (overlay) {
-    overlay.remove();
-    overlay = null;
-  }
-
-  // Remove debug box
-  removeElementDebugBox();
-
-  // Remove event listeners
-  document.removeEventListener('mouseover', handleMouseOver);
-  document.removeEventListener('mouseout', handleMouseOut);
-  document.removeEventListener('click', handleClick, true);
-  document.removeEventListener('keydown', handleKeyDown);
-}
-
 function startCreateSaveRule(): void {
   if (isCreateSaveRuleActive) return;
 
@@ -238,7 +163,7 @@ function stopAutoCapture(): void {
 }
 
 function handleMouseOver(e: MouseEvent): void {
-  if ((!isSelectionActive && !isCreateSaveRuleActive) || !overlay) return;
+  if (!isCreateSaveRuleActive || !overlay) return;
 
   const element = e.target as HTMLElement;
   if (element === overlay || element === getElementDebugBoxElement()) return;
@@ -257,57 +182,30 @@ function handleMouseOver(e: MouseEvent): void {
 }
 
 function handleMouseOut(): void {
-  if ((!isSelectionActive && !isCreateSaveRuleActive) || !overlay) return;
+  if (!isCreateSaveRuleActive || !overlay) return;
   overlay.style.display = 'none';
   removeElementDebugBox();
 }
 
 function handleClick(e: MouseEvent): void {
-  if (!isSelectionActive && !isCreateSaveRuleActive) return;
+  if (!isCreateSaveRuleActive) return;
 
   e.preventDefault();
   e.stopPropagation();
 
   selectedElement = e.target as HTMLElement;
 
-  if (isSelectionActive) {
-    // Regular capture mode
-    captureElement(selectedElement);
-    stopElementSelection();
-  } else if (isCreateSaveRuleActive) {
-    // Auto capture mode - create rule instead of capturing
-    createSaveRule(selectedElement);
-    stopAutoCapture();
-  }
+  // Create save rule mode
+  createSaveRule(selectedElement);
+  stopAutoCapture();
 }
 
 function handleKeyDown(e: KeyboardEvent): void {
   if (e.key === 'Escape') {
-    if (isSelectionActive) {
-      stopElementSelection();
-    } else if (isCreateSaveRuleActive) {
+    if (isCreateSaveRuleActive) {
       stopAutoCapture();
     }
   }
-}
-
-function captureElement(element: HTMLElement): void {
-  // Convert element to markdown
-  const markdown = htmlToMarkdown(element);
-
-  const xpath = generateXPath(element);
-  showPageDebug(
-    `Captured element: ${element.tagName} (${markdown.length} chars)\nXPath: ${xpath}`,
-  );
-
-  // Send to background script for saving
-  const message: SaveMarkdownMessage = {
-    action: 'saveMarkdown',
-    content: markdown,
-    url: window.location.href,
-    title: document.title,
-  };
-  chrome.runtime.sendMessage(message);
 }
 
 async function createSaveRule(element: HTMLElement): Promise<void> {

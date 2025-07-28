@@ -34,7 +34,7 @@ export default defineManifest(async env => ({
   content_scripts: [
     {
       matches: ['<all_urls>'],
-      js: ['src/content.ts'],
+      js: ['src/main.ts'],
     },
   ],
   background: {
