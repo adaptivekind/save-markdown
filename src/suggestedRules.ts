@@ -4,6 +4,12 @@
 
 import { getElementByXPath } from './xpathGenerator';
 import { SaveRule } from './types';
+import {
+  getSaveRules as getBaseRules,
+  addSaveRule as addBaseRule,
+  removeSaveRule as removeBaseRule,
+  updateSaveRule as updateBaseRule,
+} from './saveRules';
 
 const STORAGE_KEY = 'suggestedRules';
 
@@ -24,8 +30,7 @@ const DEFAULT_SUGGESTED_RULES: SaveRule[] = [
  * Gets all suggested save rules from storage
  */
 export async function getSuggestedRules(): Promise<SaveRule[]> {
-  const result = await chrome.storage.sync.get([STORAGE_KEY]);
-  const storedRules = result[STORAGE_KEY] || [];
+  const storedRules = await getBaseRules(STORAGE_KEY);
 
   // Merge with defaults if no custom rules exist
   if (storedRules.length === 0) {
@@ -62,28 +67,14 @@ export async function addSuggestedRule(
   name: string,
   priority: number = 50,
 ): Promise<void> {
-  const rules = await getSuggestedRules();
-  const newRule: SaveRule = {
-    id: generateSuggestedRuleId(),
-    domain,
-    xpath,
-    name,
-    priority,
-    created: new Date().toISOString(),
-    enabled: true,
-  };
-
-  rules.push(newRule);
-  await chrome.storage.sync.set({ [STORAGE_KEY]: rules });
+  await addBaseRule(domain, xpath, name, priority, STORAGE_KEY);
 }
 
 /**
  * Removes a suggested save rule by ID
  */
 export async function removeSuggestedRule(id: string): Promise<void> {
-  const rules = await getSuggestedRules();
-  const filteredRules = rules.filter(rule => rule.id !== id);
-  await chrome.storage.sync.set({ [STORAGE_KEY]: filteredRules });
+  await removeBaseRule(id, STORAGE_KEY);
 }
 
 /**
@@ -93,16 +84,7 @@ export async function updateSuggestedRule(
   id: string,
   updates: Partial<SaveRule>,
 ): Promise<void> {
-  const rules = await getSuggestedRules();
-  const ruleIndex = rules.findIndex(rule => rule.id === id);
-
-  const rule = rules[ruleIndex];
-  if (!rule) {
-    throw new Error('Suggested rule not found');
-  }
-
-  rules[ruleIndex] = { ...rule, ...updates };
-  await chrome.storage.sync.set({ [STORAGE_KEY]: rules });
+  await updateBaseRule(id, updates, STORAGE_KEY);
 }
 
 /**
@@ -135,22 +117,4 @@ export async function findSuggestedElement(): Promise<{
   }
 
   return null;
-}
-
-/**
- * Generates a unique suggested rule ID
- */
-function generateSuggestedRuleId(): string {
-  return `suggested_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-}
-
-/**
- * Extracts domain from URL
- */
-export function extractDomain(url: string): string {
-  try {
-    return new URL(url).hostname.replace('www.', '');
-  } catch {
-    return 'unknown-domain';
-  }
 }

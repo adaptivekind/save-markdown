@@ -12,9 +12,9 @@ import {
   createRuleFromElement,
   findSaveElements,
   findAllSaveElements,
-  extractDomain,
 } from './saveRules';
 import { SaveRule } from './types';
+import { extractDomain } from './domain';
 
 // Mock chrome.storage.sync
 const mockStorage: { [key: string]: unknown } = {};
