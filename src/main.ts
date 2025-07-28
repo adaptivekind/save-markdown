@@ -1,10 +1,10 @@
 import { htmlToMarkdown } from './htmlToMarkdown';
-import { initializePageDebugBox, showPageDebug } from './pageDebugBox';
+import { initializePageDebugBox, showPageDebug } from './debugPage';
 import {
   createElementDebugBox,
   removeElementDebugBox,
   getElementDebugBoxElement,
-} from './elementDebugBox';
+} from './debugElement';
 import { generateXPath, getElementByXPath } from './xpathGenerator';
 import {
   SaveRule,

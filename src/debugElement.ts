@@ -2,7 +2,7 @@
  * Element debug box module for displaying debug information about selected elements
  */
 
-import { isDebugModeEnabled } from './pageDebugBox';
+import { isDebugModeEnabled } from './debugPage';
 import { generateXPath } from './xpathGenerator';
 
 interface Position {
