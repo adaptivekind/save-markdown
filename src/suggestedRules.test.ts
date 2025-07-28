@@ -263,12 +263,22 @@ describe('suggestedRules', () => {
   });
 
   describe('findSuggestedElement', () => {
+    let consoleSpy: jest.SpyInstance;
+
     beforeEach(() => {
+      // Suppress JSDOM navigation warnings
+      consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
       // Mock window.location
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).location = {
         hostname: 'example.com',
       };
+    });
+
+    afterEach(() => {
+      // Restore console
+      consoleSpy.mockRestore();
     });
 
     it('should return null if auto save rules exist for domain', async () => {
