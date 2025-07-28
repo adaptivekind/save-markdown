@@ -2,7 +2,6 @@
 import { test, expect, chromium, type BrowserContext } from '@playwright/test';
 import path from 'path';
 import fs from 'fs';
-import os from 'os';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,13 +19,13 @@ test.describe('Save Markdown Extension E2E', () => {
 
     // Launch browser with extension
     context = await chromium.launchPersistentContext('', {
-      headless: false,
       args: [
         `--disable-extensions-except=${pathToExtension}`,
         `--load-extension=${pathToExtension}`,
         '--no-sandbox',
         '--disable-dev-shm-usage',
       ],
+      acceptDownloads: true,
     });
 
     // Get extension ID from chrome://extensions
@@ -83,6 +82,13 @@ test.describe('Save Markdown Extension E2E', () => {
     // Serve the test HTML file and navigate to it
     const testPagePath = path.join(__dirname, 'fixtures/test-page.html');
     const testPage = await context.newPage();
+    const session = await context.newCDPSession(testPage);
+    const downloadPath = './target/e2e-downloads';
+    await session.send('Browser.setDownloadBehavior', {
+      behavior: 'allow',
+      downloadPath,
+      eventsEnabled: true,
+    });
     await testPage.goto(`file://${testPagePath}`);
 
     // Wait for the extension to process the page and show suggested elements
@@ -91,25 +97,19 @@ test.describe('Save Markdown Extension E2E', () => {
     // Look for the suggested save element and click "ADD SAVE RULE" to convert it to auto-save
     const suggestedElement = testPage.locator('.add-save-rule-button').first();
 
-    const session = await context.newCDPSession(testPage);
-    await session.send('Browser.setDownloadBehavior', {
-      behavior: 'default',
-      eventsEnabled: true,
-    });
     // const downloadPromise = testPage.waitForEvent('download');
-    // console.log('Download promise set up');
+    console.log('Download promise set up');
     testPage.on('download', download => download.path().then(console.log));
     await suggestedElement.click();
 
-    console.log('Awaiting download');
+    // console.log('Awaiting download');
     // const download = await downloadPromise;
     // console.log(download);
 
     // Check if markdown file was saved in Downloads folder
     await testPage.waitForTimeout(2000);
-    const downloadsPath = path.join(os.homedir(), 'Downloads');
-    const files = fs.readdirSync(downloadsPath);
-    console.log(downloadsPath);
+    const files = fs.readdirSync(downloadPath);
+    console.log(downloadPath);
 
     // Look for a markdown file that was recently created
     const markdownFiles = files.filter(
@@ -123,8 +123,8 @@ test.describe('Save Markdown Extension E2E', () => {
     const mostRecentFile = markdownFiles
       .map(file => ({
         name: file,
-        path: path.join(downloadsPath, file),
-        mtime: fs.statSync(path.join(downloadsPath, file)).mtime,
+        path: path.join(downloadPath, file),
+        mtime: fs.statSync(path.join(downloadPath, file)).mtime,
       }))
       .sort((a, b) => b.mtime.getTime() - a.mtime.getTime())[0];
 
