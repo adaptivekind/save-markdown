@@ -206,7 +206,8 @@ Extension settings are stored via `chrome.storage.sync`:
 
 Extension includes custom icons created from SVG source:
 
-- `icon.svg` - Source SVG with blue circle and white "M"
+- `icon.svg` - Source SVG with dark blue solid background (#005a87) and white "M"
+- `icon-disabled.svg` - Source SVG with light grey solid background (#999999) and white "M"
 - `generate-icons.sh` - Builds PNG icons at 16x16, 48x48, 128x128
 - Modern design optimized for Chrome extension toolbar
 
