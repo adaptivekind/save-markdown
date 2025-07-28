@@ -336,7 +336,7 @@ describe('xpathGenerator', () => {
       svg.appendChild(circle);
       document.body.appendChild(svg);
 
-      const xpath = generateXPath(circle as any);
+      const xpath = generateXPath(circle as unknown as HTMLElement);
       expect(xpath).toBe('/html/body/svg/circle');
     });
   });
