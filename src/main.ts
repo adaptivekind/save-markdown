@@ -240,10 +240,14 @@ async function createSaveRule(element: HTMLElement): Promise<void> {
 // Auto capture functions
 async function initializeAutoCapture(): Promise<void> {
   // Check if auto capture is enabled
-  const settings = await chrome.storage.sync.get(['enableAutoCapture']);
-  const isEnabled = settings.enableAutoCapture !== false; // Default to true
+  const settings = await chrome.storage.sync.get([
+    'enableAutoCapture',
+    'enableSuggestedRules',
+  ]);
+  const isAutoSaveEnabled = settings.enableAutoCapture !== false; // Default to true
+  const areSuggestedRulesEnabled = settings.enableSuggestedRules !== false; // Default to true
 
-  if (!isEnabled) {
+  if (!isAutoSaveEnabled) {
     showPageDebug('Auto capture is disabled');
     return;
   }
@@ -260,8 +264,8 @@ async function initializeAutoCapture(): Promise<void> {
     await capture(match.element);
   }
 
-  // If no auto save rules exist, check for suggested elements
-  if (allMatches.length === 0) {
+  // If no auto save rules exist and suggested rules are enabled, check for suggested elements
+  if (allMatches.length === 0 && areSuggestedRulesEnabled) {
     const suggestedMatch = await findSuggestedElement();
     if (suggestedMatch) {
       highlightSuggestedElement(suggestedMatch);
@@ -382,7 +386,7 @@ function addAutoCaptureLabel(element: HTMLElement, rule: SaveRule): void {
     display: ${rule.enabled ? 'none' : 'block'};
     transition: background-color 0.2s ease;
   `;
-  manualCaptureButton.textContent = 'SAVE';
+  manualCaptureButton.textContent = 'SAVE (ONCE)';
 
   // Add click handler for toggle
   label.addEventListener('click', async e => {
@@ -519,7 +523,7 @@ function addSuggestedSaveLabel(
     text-align: center;
     transition: background-color 0.2s ease;
   `;
-  saveButton.textContent = 'SAVE';
+  saveButton.textContent = 'SAVE (ONCE)';
 
   // Create "ADD SAVE RULE" button
   const addRuleButton = document.createElement('div');

@@ -8,4 +8,5 @@ export interface ExtensionOptions {
   autoDownload: boolean;
   debugMode: boolean;
   enableAutoCapture: boolean;
+  enableSuggestedRules: boolean;
 }

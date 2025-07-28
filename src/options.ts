@@ -29,6 +29,7 @@ Title: {title}
   autoDownload: true,
   debugMode: false,
   enableAutoCapture: true,
+  enableSuggestedRules: true,
 };
 
 class OptionsManager {
@@ -117,6 +118,9 @@ class OptionsManager {
     );
     (document.getElementById('enableAutoCapture') as HTMLSelectElement).value =
       String(options.enableAutoCapture);
+    (
+      document.getElementById('enableSuggestedRules') as HTMLSelectElement
+    ).value = String(options.enableSuggestedRules);
   }
 
   private getFormData(): ExtensionOptions {
@@ -147,6 +151,9 @@ class OptionsManager {
         'true',
       enableAutoCapture:
         (document.getElementById('enableAutoCapture') as HTMLSelectElement)
+          .value === 'true',
+      enableSuggestedRules:
+        (document.getElementById('enableSuggestedRules') as HTMLSelectElement)
           .value === 'true',
     };
   }
@@ -231,7 +238,8 @@ class OptionsManager {
       typeof opt.preserveFormatting === 'boolean' &&
       typeof opt.autoDownload === 'boolean' &&
       typeof opt.debugMode === 'boolean' &&
-      typeof opt.enableAutoCapture === 'boolean'
+      typeof opt.enableAutoCapture === 'boolean' &&
+      typeof opt.enableSuggestedRules === 'boolean'
     );
   }
 
