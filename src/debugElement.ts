@@ -2,14 +2,67 @@
  * Element debug box module for displaying debug information about selected elements
  */
 
-import {
-  calculateDebugBoxPosition,
-  DebugBoxDimensions,
-} from './elementDebugBoxPositioning';
-import { isDebugModeEnabled } from './pageDebugBox';
+import { isDebugModeEnabled } from './debugPage';
 import { generateXPath } from './xpathGenerator';
 
+interface Position {
+  left: number;
+  top: number;
+}
+
+interface DebugBoxDimensions {
+  width: number;
+  height: number;
+  margin: number;
+}
+
 let elementDebugBox: HTMLElement | null = null;
+
+/**
+ * Calculates the optimal position for an element debug box relative to an element
+ * Tries positions in order: above, below, right, inside top-right
+ */
+function calculateDebugBoxPosition(
+  elementRect: DOMRect,
+  dimensions: DebugBoxDimensions,
+): Position {
+  const { width: boxWidth, height: boxHeight, margin } = dimensions;
+
+  // Check available space in all directions
+  const spaceAbove = elementRect.top;
+  const spaceBelow = window.innerHeight - elementRect.bottom;
+  const spaceRight = window.innerWidth - elementRect.right;
+
+  let left: number, top: number;
+
+  // Try positioning above first
+  if (spaceAbove >= boxHeight + margin) {
+    left = elementRect.left + window.scrollX;
+    top = elementRect.top + window.scrollY - boxHeight - margin;
+  }
+  // Try positioning below
+  else if (spaceBelow >= boxHeight + margin) {
+    left = elementRect.left + window.scrollX;
+    top = elementRect.bottom + window.scrollY + margin;
+  }
+  // Try positioning to the right
+  else if (spaceRight >= boxWidth + margin) {
+    left = elementRect.right + window.scrollX + margin;
+    top = elementRect.top + window.scrollY;
+  }
+  // Fallback: position inside element at top-right
+  else {
+    left = elementRect.right + window.scrollX - boxWidth - margin;
+    top = elementRect.top + window.scrollY + margin;
+
+    // Ensure it doesn't go outside the element bounds
+    if (left < elementRect.left + window.scrollX) {
+      left = elementRect.left + window.scrollX + margin;
+    }
+  }
+
+  return { left, top };
+}
 
 /**
  * Creates and displays an element debug box for the given element

@@ -2,6 +2,7 @@
 .DS_Store
 
 .jest/
+.vite/
 coverage/
 dist/
 node_modules/

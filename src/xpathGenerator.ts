@@ -3,7 +3,7 @@
  */
 
 function normaliseClassName(className: string) {
-  return className.replace(/\s\s+/g, ' ');
+  return className.replace(/\s\s+/g, ' ').replace(/"/g, '\\"');
 }
 
 /**
@@ -13,7 +13,7 @@ function normaliseClassName(className: string) {
 export function generateXPath(element: HTMLElement): string {
   // Use ID if available for the most reliable selector
   if (element.id) {
-    return `//*[@id="${element.id}"]`;
+    return `//*[@id="${element.id.replace(/"/g, '\\"')}"]`;
   }
 
   const parts: string[] = [];
@@ -24,8 +24,8 @@ export function generateXPath(element: HTMLElement): string {
     let selector = current.tagName.toLowerCase();
 
     // Include class attribute if present for more specificity
-    if (current.className) {
-      selector += `[@class="${normaliseClassName(current.className)}]`;
+    if (current.className && typeof current.className === 'string') {
+      selector += `[@class="${normaliseClassName(current.className)}"]`;
     }
 
     // Calculate position among siblings of the same tag
@@ -101,7 +101,7 @@ export function generateXPathVariations(element: HTMLElement): string[] {
 
   // ID-based if available
   if (element.id) {
-    variations.push(`//*[@id="${element.id}"]`);
+    variations.push(`//*[@id="${element.id.replace(/"/g, '\\"')}"]`);
   }
 
   // Tag and text content if it's a text element

@@ -1,10 +1,10 @@
 import { ExtensionOptions } from './types';
 import {
-  getCaptureRules,
-  removeCaptureRule,
-  updateCaptureRule,
-  CaptureRule,
-} from './captureRules';
+  getSaveRules,
+  removeSaveRule,
+  updateSaveRule,
+  SaveRule,
+} from './saveRules';
 
 const defaultOptions: ExtensionOptions = {
   saveDirectory: '~/Downloads',
@@ -36,7 +36,7 @@ class OptionsManager {
     await this.loadOptions();
     this.setupEventListeners();
     this.updateFilenamePreview();
-    await this.loadCaptureRules();
+    await this.loadSaveRules();
   }
 
   private setupEventListeners(): void {
@@ -66,7 +66,6 @@ class OptionsManager {
       const result = await chrome.storage.sync.get(defaultOptions);
       this.populateForm(result as ExtensionOptions);
     } catch (error) {
-      console.error('Failed to load options:', error);
       this.showStatus('Failed to load options', 'error');
     }
   }
@@ -131,7 +130,6 @@ class OptionsManager {
       await chrome.storage.sync.set(options);
       this.showStatus('Options saved successfully!', 'success');
     } catch (error) {
-      console.error('Failed to save options:', error);
       this.showStatus('Failed to save options', 'error');
     }
   }
@@ -146,7 +144,6 @@ class OptionsManager {
         this.updateFilenamePreview();
         this.showStatus('Options reset to defaults', 'success');
       } catch (error) {
-        console.error('Failed to reset options:', error);
         this.showStatus('Failed to reset options', 'error');
       }
     }
@@ -165,7 +162,6 @@ class OptionsManager {
 
       this.showStatus('Settings exported successfully!', 'success');
     } catch (error) {
-      console.error('Failed to export options:', error);
       this.showStatus('Failed to export settings', 'error');
     }
   }
@@ -188,7 +184,6 @@ class OptionsManager {
       this.updateFilenamePreview();
       this.showStatus('Settings imported successfully!', 'success');
     } catch (error) {
-      console.error('Failed to import options:', error);
       this.showStatus(
         'Failed to import settings: Invalid file format',
         'error',
@@ -246,17 +241,17 @@ class OptionsManager {
     }, 3000);
   }
 
-  private async loadCaptureRules(): Promise<void> {
+  private async loadSaveRules(): Promise<void> {
     try {
-      const rules = await getCaptureRules();
-      this.displayCaptureRules(rules);
+      const rules = await getSaveRules();
+      this.displaySaveRules(rules);
     } catch (error) {
-      console.error('Failed to load capture rules:', error);
+      this.showStatus('Failed to load save rules', 'error');
     }
   }
 
-  private displayCaptureRules(rules: CaptureRule[]): void {
-    const container = document.getElementById('captureRules');
+  private displaySaveRules(rules: SaveRule[]): void {
+    const container = document.getElementById('saveRules');
     const noRulesMessage = document.getElementById('noRulesMessage');
 
     if (!container || !noRulesMessage) return;
@@ -286,10 +281,10 @@ class OptionsManager {
     });
   }
 
-  private createRuleHTML(rule: CaptureRule): string {
+  private createRuleHTML(rule: SaveRule): string {
     const date = new Date(rule.created).toLocaleDateString();
     return `
-      <div class="capture-rule" id="rule-${rule.id}">
+      <div class="save-rule" id="rule-${rule.id}">
         <div class="rule-header">
           <div class="rule-name">${rule.name}</div>
           <div class="rule-actions">
@@ -319,17 +314,16 @@ class OptionsManager {
   }
 
   private async deleteRule(id: string): Promise<void> {
-    if (!confirm('Are you sure you want to delete this capture rule?')) {
+    if (!confirm('Are you sure you want to delete this save rule?')) {
       return;
     }
 
     try {
-      await removeCaptureRule(id);
-      await this.loadCaptureRules();
-      this.showStatus('Capture rule deleted successfully', 'success');
+      await removeSaveRule(id);
+      await this.loadSaveRules();
+      this.showStatus('Save rule deleted successfully', 'success');
     } catch (error) {
-      console.error('Failed to delete rule:', error);
-      this.showStatus('Failed to delete capture rule', 'error');
+      this.showStatus('Failed to delete save rule', 'error');
     }
   }
 
@@ -355,8 +349,7 @@ class OptionsManager {
       contentElement.style.display = 'block';
       editFormElement.style.display = 'none';
 
-      // Reset form values (reload from current data)
-      this.loadCaptureRules();
+      this.loadSaveRules();
     }
   }
 
@@ -388,16 +381,15 @@ class OptionsManager {
     }
 
     try {
-      await updateCaptureRule(id, {
+      await updateSaveRule(id, {
         domain: newDomain,
         xpath: newXpath,
       });
 
-      await this.loadCaptureRules();
-      this.showStatus('Capture rule updated successfully', 'success');
+      await this.loadSaveRules();
+      this.showStatus('Save rule updated successfully', 'success');
     } catch (error) {
-      console.error('Failed to update rule:', error);
-      this.showStatus('Failed to update capture rule', 'error');
+      this.showStatus('Failed to update save rule', 'error');
     }
   }
 }
