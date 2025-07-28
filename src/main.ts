@@ -7,12 +7,13 @@ import {
 } from './debugElement';
 import { generateXPath, getElementByXPath } from './xpathGenerator';
 import {
-  SaveRule,
   createRuleFromElement,
   findSaveElements,
   findAllSaveElements,
   toggleSaveRule,
 } from './saveRules';
+import { findSuggestedElement } from './suggestedRules';
+import { SaveRule } from './types';
 
 let isCreateSaveRuleActive = false;
 let overlay: HTMLElement | null = null;
@@ -20,7 +21,12 @@ let selectedElement: HTMLElement | null = null;
 let lastHoveredElement: HTMLElement | null = null;
 
 interface TabMessage {
-  action: 'showDebug' | 'capture' | 'startCreateSaveRule' | 'stopAutoCapture';
+  action:
+    | 'showDebug'
+    | 'capture'
+    | 'startCreateSaveRule'
+    | 'stopAutoCapture'
+    | 'checkSuggestedStatus';
   message?: string;
   frameId?: number;
   pageUrl?: string;
@@ -105,6 +111,16 @@ chrome.runtime.onMessage.addListener(
           `Error stopping auto capture mode: ${(error as Error).message}`,
         );
         sendResponse({ success: false, error: (error as Error).message });
+      }
+      return true;
+    } else if (request.action === 'checkSuggestedStatus') {
+      try {
+        // Check if there's a suggested element on the page
+        const hasSuggestedElement =
+          document.querySelector('[data-markdown-suggested="true"]') !== null;
+        sendResponse({ hasSuggestedElement });
+      } catch (error) {
+        sendResponse({ hasSuggestedElement: false });
       }
       return true;
     }
@@ -224,10 +240,14 @@ async function createSaveRule(element: HTMLElement): Promise<void> {
 // Auto capture functions
 async function initializeAutoCapture(): Promise<void> {
   // Check if auto capture is enabled
-  const settings = await chrome.storage.sync.get(['enableAutoCapture']);
-  const isEnabled = settings.enableAutoCapture !== false; // Default to true
+  const settings = await chrome.storage.sync.get([
+    'enableAutoCapture',
+    'enableSuggestedRules',
+  ]);
+  const isAutoSaveEnabled = settings.enableAutoCapture !== false; // Default to true
+  const areSuggestedRulesEnabled = settings.enableSuggestedRules !== false; // Default to true
 
-  if (!isEnabled) {
+  if (!isAutoSaveEnabled) {
     showPageDebug('Auto capture is disabled');
     return;
   }
@@ -243,6 +263,14 @@ async function initializeAutoCapture(): Promise<void> {
     showPageDebug(`Auto capturing: ${match.rule.name}`);
     await capture(match.element);
   }
+
+  // If no auto save rules exist and suggested rules are enabled, check for suggested elements
+  if (allMatches.length === 0 && areSuggestedRulesEnabled) {
+    const suggestedMatch = await findSuggestedElement();
+    if (suggestedMatch) {
+      highlightSuggestedElement(suggestedMatch);
+    }
+  }
 }
 
 function highlightSaveElements(
@@ -257,6 +285,22 @@ function highlightSaveElements(
     // Add label div to top-right of element
     addAutoCaptureLabel(element, rule);
   });
+}
+
+function highlightSuggestedElement(match: {
+  element: HTMLElement;
+  rule: SaveRule;
+}): void {
+  const { element, rule } = match;
+
+  // Add dashed blue border
+  element.style.outline = '2px dashed #007cba';
+  element.style.outlineOffset = '2px';
+  element.setAttribute('data-markdown-suggested', 'true');
+  element.setAttribute('data-suggested-rule-id', rule.id);
+
+  // Add suggested save label
+  addSuggestedSaveLabel(element, rule);
 }
 
 function addAutoCaptureLabel(element: HTMLElement, rule: SaveRule): void {
@@ -342,7 +386,7 @@ function addAutoCaptureLabel(element: HTMLElement, rule: SaveRule): void {
     display: ${rule.enabled ? 'none' : 'block'};
     transition: background-color 0.2s ease;
   `;
-  manualCaptureButton.textContent = 'SAVE';
+  manualCaptureButton.textContent = 'SAVE (ONCE)';
 
   // Add click handler for toggle
   label.addEventListener('click', async e => {
@@ -423,6 +467,183 @@ function addAutoCaptureLabel(element: HTMLElement, rule: SaveRule): void {
 
   // Add container to element
   element.appendChild(container);
+}
+
+function addSuggestedSaveLabel(element: HTMLElement, rule: SaveRule): void {
+  // Create main container
+  const container = document.createElement('div');
+  container.className = 'markdown-suggested-container';
+  container.style.cssText = `
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    z-index: 10001;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  `;
+
+  // Create "SUGGESTED SAVE" label
+  const suggestedLabel = document.createElement('div');
+  suggestedLabel.className = 'markdown-suggested-label';
+  suggestedLabel.style.cssText = `
+    background: #007cba;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 0 0 0 4px;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-align: center;
+  `;
+  suggestedLabel.textContent = 'SUGGESTED SAVE';
+
+  // Create manual save button
+  const saveButton = document.createElement('div');
+  saveButton.className = 'suggested-save-button';
+  saveButton.style.cssText = `
+    background: #28a745;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 0 0 4px 0;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s ease;
+  `;
+  saveButton.textContent = 'SAVE (ONCE)';
+
+  // Create "ADD SAVE RULE" button
+  const addRuleButton = document.createElement('div');
+  addRuleButton.className = 'add-save-rule-button';
+  addRuleButton.style.cssText = `
+    background: #6c757d;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 0 0 4px 4px;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s ease;
+  `;
+  addRuleButton.textContent = 'ADD SAVE RULE';
+
+  // Add click handler for save button
+  saveButton.addEventListener('click', async e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      await capture(element);
+      showPageDebug(`Suggested save completed: ${rule.name}`);
+
+      // Brief visual feedback
+      saveButton.style.background = '#007cba';
+      setTimeout(() => {
+        saveButton.style.background = '#28a745';
+      }, 200);
+    } catch (error) {
+      showPageDebug(
+        `Failed to save suggested element: ${(error as Error).message}`,
+      );
+      saveButton.style.background = '#dc3545';
+      setTimeout(() => {
+        saveButton.style.background = '#28a745';
+      }, 1000);
+    }
+  });
+
+  // Add click handler for add rule button
+  addRuleButton.addEventListener('click', async e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      const domain = window.location.hostname.replace('www.', '');
+      const { addSaveRule } = await import('./saveRules');
+
+      // Create auto save rule from suggested rule
+      await addSaveRule(domain, rule.xpath, `Auto save: ${rule.name}`);
+
+      showPageDebug(`Auto save rule created for ${domain}: ${rule.name}`);
+
+      // Remove suggested highlighting and refresh auto capture
+      cleanupSuggestedElement(element, container);
+      await initializeAutoCapture();
+
+      // Brief visual feedback
+      addRuleButton.style.background = '#007cba';
+      setTimeout(() => {
+        addRuleButton.style.background = '#6c757d';
+      }, 200);
+    } catch (error) {
+      showPageDebug(
+        `Failed to create auto save rule: ${(error as Error).message}`,
+      );
+      addRuleButton.style.background = '#dc3545';
+      setTimeout(() => {
+        addRuleButton.style.background = '#6c757d';
+      }, 1000);
+    }
+  });
+
+  // Assemble container
+  container.appendChild(suggestedLabel);
+  container.appendChild(saveButton);
+  container.appendChild(addRuleButton);
+
+  // Make sure the parent element has relative positioning
+  const originalPosition = element.style.position;
+  if (!originalPosition || originalPosition === 'static') {
+    element.style.position = 'relative';
+    element.setAttribute(
+      'data-original-position',
+      originalPosition || 'static',
+    );
+  }
+
+  // Add container to element
+  element.appendChild(container);
+}
+
+function cleanupSuggestedElement(
+  element: HTMLElement,
+  container: HTMLElement,
+): void {
+  // Remove the suggested container
+  if (container && container.parentNode) {
+    container.parentNode.removeChild(container);
+  }
+
+  // Remove suggested-related attributes
+  element.removeAttribute('data-markdown-suggested');
+  element.removeAttribute('data-suggested-rule-id');
+
+  // Remove outline styling
+  element.style.outline = '';
+  element.style.outlineOffset = '';
+
+  // Restore original position if it was changed
+  const originalPosition = element.getAttribute('data-original-position');
+  if (originalPosition) {
+    element.style.position =
+      originalPosition === 'static' ? '' : originalPosition;
+    element.removeAttribute('data-original-position');
+  }
 }
 
 function showSaveRuleContextMenu(

@@ -12,9 +12,9 @@ import {
   createRuleFromElement,
   findSaveElements,
   findAllSaveElements,
-  extractDomain,
-  SaveRule,
 } from './saveRules';
+import { SaveRule } from './types';
+import { extractDomain } from './domain';
 
 // Mock chrome.storage.sync
 const mockStorage: { [key: string]: unknown } = {};
@@ -91,6 +91,7 @@ describe('saveRules', () => {
           name: 'Test Rule',
           created: '2024-01-01T00:00:00.000Z',
           enabled: true,
+          priority: 50,
         },
       ];
 
@@ -111,6 +112,7 @@ describe('saveRules', () => {
           name: 'Test Rule 1',
           created: '2024-01-01T00:00:00.000Z',
           enabled: true,
+          priority: 50,
         },
         {
           id: 'test2',
@@ -119,6 +121,7 @@ describe('saveRules', () => {
           name: 'Test Rule 2',
           created: '2024-01-01T00:00:00.000Z',
           enabled: true,
+          priority: 50,
         },
         {
           id: 'test3',
@@ -127,6 +130,7 @@ describe('saveRules', () => {
           name: 'Test Rule 3',
           created: '2024-01-01T00:00:00.000Z',
           enabled: false,
+          priority: 50,
         },
       ];
       mockStorage.saveRules = testRules;
@@ -169,6 +173,7 @@ describe('saveRules', () => {
         name: 'Test Rule',
         created: '2024-01-15T10:30:45.123Z',
         enabled: true,
+        priority: 50,
       });
       expect(rules[0]!.id).toMatch(/^rule_\d+_[a-z0-9]+$/);
     });
@@ -181,6 +186,7 @@ describe('saveRules', () => {
         name: 'Existing Rule',
         created: '2024-01-01T00:00:00.000Z',
         enabled: true,
+        priority: 50,
       };
       mockStorage.saveRules = [existingRule];
 
@@ -193,6 +199,7 @@ describe('saveRules', () => {
         domain: 'localhost',
         xpath: '//div[@id="new"]',
         name: 'New Rule',
+        priority: 50,
       });
     });
   });
@@ -207,6 +214,7 @@ describe('saveRules', () => {
           name: 'Rule 1',
           created: '2024-01-01T00:00:00.000Z',
           enabled: true,
+          priority: 50,
         },
         {
           id: 'rule2',
@@ -215,6 +223,7 @@ describe('saveRules', () => {
           name: 'Rule 2',
           created: '2024-01-01T00:00:00.000Z',
           enabled: true,
+          priority: 50,
         },
       ];
       mockStorage.saveRules = testRules;
@@ -246,6 +255,7 @@ describe('saveRules', () => {
           name: 'Original Rule',
           created: '2024-01-01T00:00:00.000Z',
           enabled: true,
+          priority: 50,
         },
       ];
       mockStorage.saveRules = testRules;
@@ -266,6 +276,7 @@ describe('saveRules', () => {
         name: 'Updated Rule',
         created: '2024-01-01T00:00:00.000Z',
         enabled: false,
+        priority: 50,
       });
     });
 
@@ -286,6 +297,7 @@ describe('saveRules', () => {
         name: 'New Name Only',
         created: '2024-01-01T00:00:00.000Z',
         enabled: true,
+        priority: 50,
       });
     });
   });
@@ -300,6 +312,7 @@ describe('saveRules', () => {
           name: 'Test Rule',
           created: '2024-01-01T00:00:00.000Z',
           enabled: true,
+          priority: 50,
         },
       ];
       mockStorage.saveRules = testRules;
@@ -356,6 +369,7 @@ describe('saveRules', () => {
         xpath: '//div',
         name: 'div: This is a test element with so...',
         enabled: true,
+        priority: 50,
       });
     });
 
@@ -371,6 +385,7 @@ describe('saveRules', () => {
         xpath: '//img',
         name: 'img element',
         enabled: true,
+        priority: 50,
       });
     });
 
@@ -409,6 +424,7 @@ describe('saveRules', () => {
           name: 'Enabled Rule',
           created: '2024-01-01T00:00:00.000Z',
           enabled: true,
+          priority: 50,
         },
         {
           id: 'rule2',
@@ -417,6 +433,7 @@ describe('saveRules', () => {
           name: 'Disabled Rule',
           created: '2024-01-01T00:00:00.000Z',
           enabled: false,
+          priority: 50,
         },
         {
           id: 'rule3',
@@ -425,6 +442,7 @@ describe('saveRules', () => {
           name: 'Other Domain Rule',
           created: '2024-01-01T00:00:00.000Z',
           enabled: true,
+          priority: 50,
         },
       ];
       mockStorage.saveRules = testRules;
@@ -478,6 +496,7 @@ describe('saveRules', () => {
           name: 'Enabled Rule',
           created: '2024-01-01T00:00:00.000Z',
           enabled: true,
+          priority: 50,
         },
         {
           id: 'rule2',
@@ -486,6 +505,7 @@ describe('saveRules', () => {
           name: 'Disabled Rule',
           created: '2024-01-01T00:00:00.000Z',
           enabled: false,
+          priority: 50,
         },
         {
           id: 'rule3',
@@ -494,6 +514,7 @@ describe('saveRules', () => {
           name: 'Other Domain Rule',
           created: '2024-01-01T00:00:00.000Z',
           enabled: true,
+          priority: 50,
         },
       ];
       mockStorage.saveRules = testRules;
