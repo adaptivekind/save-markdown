@@ -5,10 +5,11 @@
 import { getElementByXPath } from './xpathGenerator';
 import { SaveRule } from './types';
 import {
-  getSaveRules as getBaseRules,
-  addSaveRule as addBaseRule,
-  removeSaveRule as removeBaseRule,
-  updateSaveRule as updateBaseRule,
+  getSaveRules,
+  getSaveRulesForDomain,
+  addSaveRule,
+  removeSaveRule,
+  updateSaveRule,
 } from './saveRules';
 
 const STORAGE_KEY = 'suggestedRules';
@@ -30,7 +31,7 @@ const DEFAULT_SUGGESTED_RULES: SaveRule[] = [
  * Gets all suggested save rules from storage
  */
 export async function getSuggestedRules(): Promise<SaveRule[]> {
-  const storedRules = await getBaseRules(STORAGE_KEY);
+  const storedRules = await getSaveRules(STORAGE_KEY);
 
   // Merge with defaults if no custom rules exist
   if (storedRules.length === 0) {
@@ -67,14 +68,14 @@ export async function addSuggestedRule(
   name: string,
   priority: number = 50,
 ): Promise<void> {
-  await addBaseRule(domain, xpath, name, priority, STORAGE_KEY);
+  await addSaveRule(domain, xpath, name, priority, STORAGE_KEY);
 }
 
 /**
  * Removes a suggested save rule by ID
  */
 export async function removeSuggestedRule(id: string): Promise<void> {
-  await removeBaseRule(id, STORAGE_KEY);
+  await removeSaveRule(id, STORAGE_KEY);
 }
 
 /**
@@ -84,7 +85,7 @@ export async function updateSuggestedRule(
   id: string,
   updates: Partial<SaveRule>,
 ): Promise<void> {
-  await updateBaseRule(id, updates, STORAGE_KEY);
+  await updateSaveRule(id, updates, STORAGE_KEY);
 }
 
 /**
@@ -98,7 +99,6 @@ export async function findSuggestedElement(): Promise<{
   const domain = window.location.hostname.replace('www.', '');
 
   // Check if there are any auto save rules for this domain first
-  const { getSaveRulesForDomain } = await import('./saveRules');
   const autoSaveRules = await getSaveRulesForDomain(domain);
 
   // If there are auto save rules, don't show suggested rules
