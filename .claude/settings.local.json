@@ -25,7 +25,8 @@
       "mcp__markdown-reader__read_markdown_file",
       "Bash(npm run dev:*)",
       "Bash(npm run lint:*)",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "Bash(npm test:*)"
     ],
     "deny": []
   }
