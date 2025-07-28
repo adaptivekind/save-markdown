@@ -64,8 +64,6 @@ chrome.runtime.onMessage.addListener(
     _sender: chrome.runtime.MessageSender,
     sendResponse: (response?: unknown) => void,
   ) => {
-    console.log('onMessage content.ts', request);
-
     if (request.action === 'startSelection') {
       try {
         startElementSelection();
@@ -145,7 +143,6 @@ chrome.runtime.onMessage.addListener(
 
 function startElementSelection(): void {
   if (isSelectionActive) return;
-  console.log('Starting Element Selection');
 
   isSelectionActive = true;
   document.body.style.cursor = 'crosshair';
@@ -194,7 +191,6 @@ function stopElementSelection(): void {
 
 function startSelectCapture(): void {
   if (isAutoCaptureActive) return;
-  console.log('Starting Select Capture Mode');
 
   isAutoCaptureActive = true;
   document.body.style.cursor = 'copy';
@@ -268,7 +264,6 @@ function handleMouseOut(): void {
 
 function handleClick(e: MouseEvent): void {
   if (!isSelectionActive && !isAutoCaptureActive) return;
-  console.log('Handling Click');
 
   e.preventDefault();
   e.stopPropagation();
@@ -299,7 +294,6 @@ function handleKeyDown(e: KeyboardEvent): void {
 function captureElement(element: HTMLElement): void {
   // Convert element to markdown
   const markdown = htmlToMarkdown(element);
-  console.log('markdown', markdown);
 
   const xpath = generateXPath(element);
   showPageDebug(
@@ -331,29 +325,25 @@ async function createCaptureRule(element: HTMLElement): Promise<void> {
 
 // Auto capture functions
 async function initializeAutoCapture(): Promise<void> {
-  try {
-    // Check if auto capture is enabled
-    const settings = await chrome.storage.sync.get(['enableAutoCapture']);
-    const isEnabled = settings.enableAutoCapture !== false; // Default to true
+  // Check if auto capture is enabled
+  const settings = await chrome.storage.sync.get(['enableAutoCapture']);
+  const isEnabled = settings.enableAutoCapture !== false; // Default to true
 
-    if (!isEnabled) {
-      showPageDebug('Auto capture is disabled');
-      return;
-    }
+  if (!isEnabled) {
+    showPageDebug('Auto capture is disabled');
+    return;
+  }
 
-    const enabledMatches = await findCaptureElements();
-    const allMatches = await findAllCaptureElements();
+  const enabledMatches = await findCaptureElements();
+  const allMatches = await findAllCaptureElements();
 
-    // Highlight all auto capture elements (enabled and disabled)
-    highlightCaptureElements(allMatches);
+  // Highlight all auto capture elements (enabled and disabled)
+  highlightCaptureElements(allMatches);
 
-    // Auto capture only enabled elements on page load
-    for (const match of enabledMatches) {
-      showPageDebug(`Auto capturing: ${match.rule.name}`);
-      await capture(match.element);
-    }
-  } catch (error) {
-    console.error('Failed to initialize auto capture:', error);
+  // Auto capture only enabled elements on page load
+  for (const match of enabledMatches) {
+    showPageDebug(`Auto capturing: ${match.rule.name}`);
+    await capture(match.element);
   }
 }
 

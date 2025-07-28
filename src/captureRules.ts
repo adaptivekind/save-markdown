@@ -19,13 +19,8 @@ const STORAGE_KEY = 'captureRules';
  * Gets all auto capture rules from storage
  */
 export async function getCaptureRules(): Promise<CaptureRule[]> {
-  try {
-    const result = await chrome.storage.sync.get([STORAGE_KEY]);
-    return result[STORAGE_KEY] || [];
-  } catch (error) {
-    console.error('Failed to get auto capture rules:', error);
-    return [];
-  }
+  const result = await chrome.storage.sync.get([STORAGE_KEY]);
+  return result[STORAGE_KEY] || [];
 }
 
 /**
@@ -46,37 +41,27 @@ export async function addCaptureRule(
   xpath: string,
   name: string,
 ): Promise<void> {
-  try {
-    const rules = await getCaptureRules();
-    const newRule: CaptureRule = {
-      id: generateRuleId(),
-      domain,
-      xpath,
-      name,
-      created: new Date().toISOString(),
-      enabled: true,
-    };
+  const rules = await getCaptureRules();
+  const newRule: CaptureRule = {
+    id: generateRuleId(),
+    domain,
+    xpath,
+    name,
+    created: new Date().toISOString(),
+    enabled: true,
+  };
 
-    rules.push(newRule);
-    await chrome.storage.sync.set({ [STORAGE_KEY]: rules });
-  } catch (error) {
-    console.error('Failed to add auto capture rule:', error);
-    throw error;
-  }
+  rules.push(newRule);
+  await chrome.storage.sync.set({ [STORAGE_KEY]: rules });
 }
 
 /**
  * Removes an auto capture rule by ID
  */
 export async function removeCaptureRule(id: string): Promise<void> {
-  try {
-    const rules = await getCaptureRules();
-    const filteredRules = rules.filter(rule => rule.id !== id);
-    await chrome.storage.sync.set({ [STORAGE_KEY]: filteredRules });
-  } catch (error) {
-    console.error('Failed to remove auto capture rule:', error);
-    throw error;
-  }
+  const rules = await getCaptureRules();
+  const filteredRules = rules.filter(rule => rule.id !== id);
+  await chrome.storage.sync.set({ [STORAGE_KEY]: filteredRules });
 }
 
 /**
@@ -86,41 +71,31 @@ export async function updateCaptureRule(
   id: string,
   updates: Partial<CaptureRule>,
 ): Promise<void> {
-  try {
-    const rules = await getCaptureRules();
-    const ruleIndex = rules.findIndex(rule => rule.id === id);
+  const rules = await getCaptureRules();
+  const ruleIndex = rules.findIndex(rule => rule.id === id);
 
-    if (ruleIndex === -1) {
-      throw new Error('Rule not found');
-    }
-
-    rules[ruleIndex] = { ...rules[ruleIndex], ...updates };
-    await chrome.storage.sync.set({ [STORAGE_KEY]: rules });
-  } catch (error) {
-    console.error('Failed to update auto capture rule:', error);
-    throw error;
+  if (ruleIndex === -1) {
+    throw new Error('Rule not found');
   }
+
+  rules[ruleIndex] = { ...rules[ruleIndex], ...updates };
+  await chrome.storage.sync.set({ [STORAGE_KEY]: rules });
 }
 
 /**
  * Toggles the enabled state of an auto capture rule
  */
 export async function toggleCaptureRule(id: string): Promise<boolean> {
-  try {
-    const rules = await getCaptureRules();
-    const rule = rules.find(rule => rule.id === id);
+  const rules = await getCaptureRules();
+  const rule = rules.find(rule => rule.id === id);
 
-    if (!rule) {
-      throw new Error(`Rule with id ${id} not found`);
-    }
-
-    const newEnabledState = !rule.enabled;
-    await updateCaptureRule(id, { enabled: newEnabledState });
-    return newEnabledState;
-  } catch (error) {
-    console.error('Failed to toggle auto capture rule:', error);
-    throw error;
+  if (!rule) {
+    throw new Error(`Rule with id ${id} not found`);
   }
+
+  const newEnabledState = !rule.enabled;
+  await updateCaptureRule(id, { enabled: newEnabledState });
+  return newEnabledState;
 }
 
 /**

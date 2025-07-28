@@ -1,5 +1,3 @@
-console.log('Loading background.ts');
-
 import { generateFilename, generateDownloadPath } from './filename';
 import { wrapWithMetadata } from './htmlToMarkdown';
 
@@ -40,56 +38,23 @@ function createContextMenu(): void {
         contexts: ['page', 'selection', 'link', 'image'],
       },
       () => {
-        if (chrome.runtime.lastError) {
-          console.error(
-            'Parent context menu creation failed:',
-            chrome.runtime.lastError,
-          );
-        } else {
-          console.log('Parent context menu created successfully');
+        // Create select capture menu item (always visible)
+        chrome.contextMenus.create({
+          id: 'markdown-capture-auto',
+          parentId: 'markdown-capture-parent',
+          title: 'Auto Save',
+          contexts: ['page', 'selection', 'link', 'image'],
+          visible: true, // Always visible
+        });
 
-          // Create select capture menu item (always visible)
-          chrome.contextMenus.create(
-            {
-              id: 'markdown-capture-auto',
-              parentId: 'markdown-capture-parent',
-              title: 'Auto Save',
-              contexts: ['page', 'selection', 'link', 'image'],
-              visible: true, // Always visible
-            },
-            () => {
-              if (chrome.runtime.lastError) {
-                console.error(
-                  'Select capture menu creation failed:',
-                  chrome.runtime.lastError,
-                );
-              } else {
-                console.log('Select capture menu created successfully');
-              }
-            },
-          );
-
-          // Create options menu item
-          chrome.contextMenus.create(
-            {
-              id: 'markdown-capture-options',
-              parentId: 'markdown-capture-parent',
-              title: 'Options',
-              contexts: ['page', 'selection', 'link', 'image'],
-              visible: true,
-            },
-            () => {
-              if (chrome.runtime.lastError) {
-                console.error(
-                  'Options menu creation failed:',
-                  chrome.runtime.lastError,
-                );
-              } else {
-                console.log('Options menu created successfully');
-              }
-            },
-          );
-        }
+        // Create options menu item
+        chrome.contextMenus.create({
+          id: 'markdown-capture-options',
+          parentId: 'markdown-capture-parent',
+          title: 'Options',
+          contexts: ['page', 'selection', 'link', 'image'],
+          visible: true,
+        });
       },
     );
   });
@@ -97,57 +62,41 @@ function createContextMenu(): void {
 
 // Create context menu when extension is installed or updated
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('Extension installed/updated - creating context menu');
   createContextMenu();
   updateIcon();
 });
 
 // Create context menu when extension starts up
 chrome.runtime.onStartup.addListener(() => {
-  console.log('Extension startup - creating context menu');
   createContextMenu();
   updateIcon();
 });
 
 // Update icon based on auto capture state
 async function updateIcon(): Promise<void> {
-  try {
-    const settings = await chrome.storage.sync.get(['enableAutoCapture']);
-    const isEnabled = settings.enableAutoCapture !== false; // Default to true
+  const settings = await chrome.storage.sync.get(['enableAutoCapture']);
+  const isEnabled = settings.enableAutoCapture !== false; // Default to true
 
-    console.log('Updating icon based on auto capture state:', isEnabled);
+  const iconPath = isEnabled
+    ? {
+        16: 'icons/icon16.png',
+        48: 'icons/icon48.png',
+        128: 'icons/icon128.png',
+      }
+    : {
+        16: 'icons/icon16-disabled.png',
+        48: 'icons/icon48-disabled.png',
+        128: 'icons/icon128-disabled.png',
+      };
 
-    const iconPath = isEnabled
-      ? {
-          16: 'icons/icon16.png',
-          48: 'icons/icon48.png',
-          128: 'icons/icon128.png',
-        }
-      : {
-          16: 'icons/icon16-disabled.png',
-          48: 'icons/icon48-disabled.png',
-          128: 'icons/icon128-disabled.png',
-        };
-
-    console.log('Setting icon paths:', iconPath);
-
-    if (chrome.action && chrome.action.setIcon) {
-      await chrome.action.setIcon({ path: iconPath });
-      console.log(
-        `Icon updated successfully: ${isEnabled ? 'enabled' : 'disabled'} state`,
-      );
-    } else {
-      console.error('chrome.action.setIcon is not available');
-    }
-  } catch (error) {
-    console.error('Failed to update icon:', error);
+  if (chrome.action && chrome.action.setIcon) {
+    await chrome.action.setIcon({ path: iconPath });
   }
 }
 
 // Listen for storage changes to update icon
 chrome.storage.onChanged.addListener((changes, namespace) => {
   if (namespace === 'sync' && changes.enableAutoCapture) {
-    console.log('Auto capture setting changed, updating icon');
     updateIcon();
   }
 });
@@ -158,12 +107,9 @@ updateIcon();
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(
   (info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab) => {
-    console.log('Context menu clicked:', info.menuItemId);
     if (info.menuItemId === 'markdown-capture-auto' && tab?.id) {
-      console.log('Starting select capture mode from context menu');
       chrome.tabs.sendMessage(tab.id, { action: 'startAutoCapture' });
     } else if (info.menuItemId === 'markdown-capture-options') {
-      console.log('Opening options page from context menu');
       chrome.runtime.openOptionsPage();
     }
   },
@@ -176,7 +122,6 @@ chrome.runtime.onMessage.addListener(
     sender: chrome.runtime.MessageSender,
     sendResponse: (response?: unknown) => void,
   ) => {
-    console.log('Background received message:', message);
     if (message.action === 'saveMarkdown' && sender.tab?.id) {
       saveMarkdownFile(
         message.content,
@@ -197,7 +142,6 @@ async function saveMarkdownFile(
   title: string,
   tabId: number,
 ): Promise<void> {
-  console.log('Saving markdown', url);
   try {
     // Get configuration
     const config = (await chrome.storage.sync.get([
@@ -238,7 +182,6 @@ async function saveMarkdownFile(
     const dataUrl =
       'data:text/markdown;charset=utf-8,' + encodeURIComponent(fullContent);
 
-    console.log('Saving markdown to ', filename);
     chrome.downloads.download(
       {
         url: dataUrl,
@@ -246,22 +189,19 @@ async function saveMarkdownFile(
         saveAs: false,
         conflictAction: 'overwrite',
       },
-      (downloadId?: number) => {
+      () => {
         if (chrome.runtime.lastError) {
-          console.error('Download failed:', chrome.runtime.lastError);
           notifyCapture(
             tabId,
             'captureError',
             chrome.runtime.lastError.message,
           );
         } else {
-          console.log('Download started with ID:', downloadId);
           notifyCapture(tabId, 'captureComplete', null, filename);
         }
       },
     );
   } catch (error) {
-    console.error('Error saving markdown:', error);
     notifyCapture(tabId, 'captureError', (error as Error).message);
   }
 }

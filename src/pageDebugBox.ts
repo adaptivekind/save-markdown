@@ -12,10 +12,8 @@ export function initializePageDebugBox(): void {
   chrome.storage.sync.get(
     ['debugMode'],
     (result: { [key: string]: boolean }) => {
-      console.log('storage debugMode', result);
       debugMode = result.debugMode === undefined ? true : result.debugMode;
       if (debugMode) {
-        console.log('Showing page debug box');
         createPageDebugBox();
         showPageDebug('Debug mode enabled on page load');
       }
@@ -58,7 +56,6 @@ function createPageDebugBox(): void {
  * Shows a debug message in the page debug box
  */
 export function showPageDebug(message: string): void {
-  console.log('debug mode', debugMode);
   if (!debugMode) return;
 
   if (!pageDebugBox) {
