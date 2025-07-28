@@ -61,8 +61,20 @@ export function generateFilename(options: FilenameOptions): string {
 export function generateDownloadPath(
   directory: string,
   filename: string,
-  domainSubfolder?: string,
+  url?: string,
+  useDomainSubfolder = false,
 ): string {
+  // Extract domain for subfolder if enabled and URL provided
+  let domainSubfolder: string | undefined;
+  if (useDomainSubfolder && url) {
+    try {
+      domainSubfolder = new URL(url).hostname
+        .replace('www.', '')
+        .replace(/\./g, '-');
+    } catch {
+      domainSubfolder = undefined;
+    }
+  }
   // Chrome downloads API has limitations with custom paths
   // We can only suggest a relative path from the default download directory
   if (directory === '~/Downloads' || directory === '') {

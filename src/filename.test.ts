@@ -191,6 +191,57 @@ describe('filename utilities', () => {
       );
       expect(result).toBe('/Documents//captures//final/test.md');
     });
+
+    it('should add domain subfolder when enabled', () => {
+      const result = generateDownloadPath(
+        '~/Downloads',
+        'test.md',
+        'https://www.example.com/path',
+        true,
+      );
+      expect(result).toBe('example-com/test.md');
+    });
+
+    it('should not add domain subfolder when disabled', () => {
+      const result = generateDownloadPath(
+        '~/Downloads',
+        'test.md',
+        'https://www.example.com/path',
+        false,
+      );
+      expect(result).toBe('test.md');
+    });
+
+    it('should handle domain subfolder with custom directory', () => {
+      const result = generateDownloadPath(
+        '~/Documents/captures',
+        'test.md',
+        'https://github.com/user/repo',
+        true,
+      );
+      expect(result).toBe('Documents/captures/github-com/test.md');
+    });
+
+    it('should not add domain subfolder without URL', () => {
+      const result = generateDownloadPath(
+        '~/Downloads',
+        'test.md',
+        undefined,
+        true,
+      );
+      expect(result).toBe('test.md');
+    });
+
+    it('should handle invalid URL gracefully', () => {
+      const result = generateDownloadPath(
+        '~/Downloads',
+        'test.md',
+        'not-a-valid-url',
+        true,
+      );
+      // Should not throw an error and return filename without domain subfolder
+      expect(result).toBe('test.md');
+    });
   });
 
   describe('integration tests', () => {

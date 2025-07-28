@@ -40,15 +40,11 @@ export async function saveMarkdownFile(
       maxTitleLength: 50,
     });
 
-    // Extract domain for subfolder if enabled
-    const domainSubfolder = useDomainSubfolder
-      ? new URL(url).hostname.replace('www.', '').replace(/\./g, '-')
-      : undefined;
-
     const filename = generateDownloadPath(
       directory,
       baseFilename,
-      domainSubfolder,
+      url,
+      useDomainSubfolder,
     );
 
     // Add metadata to content
