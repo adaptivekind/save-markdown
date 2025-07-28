@@ -12,7 +12,7 @@ import {
   findSaveElements,
   findAllSaveElements,
   toggleSaveRule,
-} from './captureRules';
+} from './saveRules';
 
 let isCreateSaveRuleActive = false;
 let overlay: HTMLElement | null = null;
@@ -877,7 +877,7 @@ async function updateSaveRuleXPath(
   container: HTMLElement,
 ): Promise<void> {
   // Import the updateSaveRule function
-  const { updateSaveRule } = await import('./captureRules');
+  const { updateSaveRule } = await import('./saveRules');
 
   // Validate the new XPath first
   const testElement = getElementByXPath(newXPath);
@@ -902,7 +902,7 @@ async function removeSaveRuleAndElement(
   container: HTMLElement,
 ): Promise<void> {
   // Import the removeSaveRule function
-  const { removeSaveRule } = await import('./captureRules');
+  const { removeSaveRule } = await import('./saveRules');
 
   // Remove the rule from storage
   await removeSaveRule(rule.id);

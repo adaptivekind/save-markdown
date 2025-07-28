@@ -4,7 +4,7 @@ import {
   removeSaveRule,
   updateSaveRule,
   SaveRule,
-} from './captureRules';
+} from './saveRules';
 
 const defaultOptions: ExtensionOptions = {
   saveDirectory: '~/Downloads',
