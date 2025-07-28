@@ -32,23 +32,23 @@ function createContextMenu(): void {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create(
       {
-        id: 'markdown-capture-parent',
+        id: 'save-markdown-parent',
         title: 'Save Markdown',
         contexts: ['page', 'selection', 'link', 'image'],
       },
       () => {
         chrome.contextMenus.create({
-          id: 'markdown-capture-auto',
-          parentId: 'markdown-capture-parent',
-          title: 'Auto Save',
+          id: 'create-save-rule',
+          parentId: 'save-markdown-parent',
+          title: 'Create Save Rule',
           contexts: ['page', 'selection', 'link', 'image'],
           visible: true,
         });
 
         chrome.contextMenus.create({
           id: 'markdown-capture-options',
-          parentId: 'markdown-capture-parent',
-          title: 'Options',
+          parentId: 'save-markdown-parent',
+          title: 'Edit Options',
           contexts: ['page', 'selection', 'link', 'image'],
           visible: true,
         });
@@ -98,9 +98,9 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
 chrome.contextMenus.onClicked.addListener(
   (info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab) => {
-    if (info.menuItemId === 'markdown-capture-auto' && tab?.id) {
-      chrome.tabs.sendMessage(tab.id, { action: 'startAutoCapture' });
-    } else if (info.menuItemId === 'markdown-capture-options') {
+    if (info.menuItemId === 'create-save-rule' && tab?.id) {
+      chrome.tabs.sendMessage(tab.id, { action: 'startCreateSaveRule' });
+    } else if (info.menuItemId === 'edit-save-markdown') {
       chrome.runtime.openOptionsPage();
     }
   },

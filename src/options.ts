@@ -1,9 +1,9 @@
 import { ExtensionOptions } from './types';
 import {
-  getCaptureRules,
-  removeCaptureRule,
-  updateCaptureRule,
-  CaptureRule,
+  getSaveRules,
+  removeSaveRule,
+  updateSaveRule,
+  SaveRule,
 } from './captureRules';
 
 const defaultOptions: ExtensionOptions = {
@@ -36,7 +36,7 @@ class OptionsManager {
     await this.loadOptions();
     this.setupEventListeners();
     this.updateFilenamePreview();
-    await this.loadCaptureRules();
+    await this.loadSaveRules();
   }
 
   private setupEventListeners(): void {
@@ -241,17 +241,17 @@ class OptionsManager {
     }, 3000);
   }
 
-  private async loadCaptureRules(): Promise<void> {
+  private async loadSaveRules(): Promise<void> {
     try {
-      const rules = await getCaptureRules();
-      this.displayCaptureRules(rules);
+      const rules = await getSaveRules();
+      this.displaySaveRules(rules);
     } catch (error) {
-      this.showStatus('Failed to load capture rule', 'error');
+      this.showStatus('Failed to load save rules', 'error');
     }
   }
 
-  private displayCaptureRules(rules: CaptureRule[]): void {
-    const container = document.getElementById('captureRules');
+  private displaySaveRules(rules: SaveRule[]): void {
+    const container = document.getElementById('saveRules');
     const noRulesMessage = document.getElementById('noRulesMessage');
 
     if (!container || !noRulesMessage) return;
@@ -281,10 +281,10 @@ class OptionsManager {
     });
   }
 
-  private createRuleHTML(rule: CaptureRule): string {
+  private createRuleHTML(rule: SaveRule): string {
     const date = new Date(rule.created).toLocaleDateString();
     return `
-      <div class="capture-rule" id="rule-${rule.id}">
+      <div class="save-rule" id="rule-${rule.id}">
         <div class="rule-header">
           <div class="rule-name">${rule.name}</div>
           <div class="rule-actions">
@@ -314,16 +314,16 @@ class OptionsManager {
   }
 
   private async deleteRule(id: string): Promise<void> {
-    if (!confirm('Are you sure you want to delete this capture rule?')) {
+    if (!confirm('Are you sure you want to delete this save rule?')) {
       return;
     }
 
     try {
-      await removeCaptureRule(id);
-      await this.loadCaptureRules();
-      this.showStatus('Capture rule deleted successfully', 'success');
+      await removeSaveRule(id);
+      await this.loadSaveRules();
+      this.showStatus('Save rule deleted successfully', 'success');
     } catch (error) {
-      this.showStatus('Failed to delete capture rule', 'error');
+      this.showStatus('Failed to delete save rule', 'error');
     }
   }
 
@@ -349,8 +349,7 @@ class OptionsManager {
       contentElement.style.display = 'block';
       editFormElement.style.display = 'none';
 
-      // Reset form values (reload from current data)
-      this.loadCaptureRules();
+      this.loadSaveRules();
     }
   }
 
@@ -382,15 +381,15 @@ class OptionsManager {
     }
 
     try {
-      await updateCaptureRule(id, {
+      await updateSaveRule(id, {
         domain: newDomain,
         xpath: newXpath,
       });
 
-      await this.loadCaptureRules();
-      this.showStatus('Capture rule updated successfully', 'success');
+      await this.loadSaveRules();
+      this.showStatus('Save rule updated successfully', 'success');
     } catch (error) {
-      this.showStatus('Failed to update capture rule', 'error');
+      this.showStatus('Failed to update save rule', 'error');
     }
   }
 }

@@ -7,15 +7,15 @@ import {
 } from './elementDebugBox';
 import { generateXPath, getElementByXPath } from './xpathGenerator';
 import {
-  CaptureRule,
+  SaveRule,
   createRuleFromElement,
-  findCaptureElements,
-  findAllCaptureElements,
-  toggleCaptureRule,
+  findSaveElements,
+  findAllSaveElements,
+  toggleSaveRule,
 } from './captureRules';
 
 let isSelectionActive = false;
-let isAutoCaptureActive = false;
+let isCreateSaveRuleActive = false;
 let overlay: HTMLElement | null = null;
 let selectedElement: HTMLElement | null = null;
 let lastHoveredElement: HTMLElement | null = null;
@@ -26,7 +26,7 @@ interface TabMessage {
     | 'stopSelection'
     | 'showDebug'
     | 'capture'
-    | 'startAutoCapture'
+    | 'startCreateSaveRule'
     | 'stopAutoCapture';
   message?: string;
   frameId?: number;
@@ -110,9 +110,9 @@ chrome.runtime.onMessage.addListener(
         sendResponse({ success: false, error: (error as Error).message });
       }
       return true;
-    } else if (request.action === 'startAutoCapture') {
+    } else if (request.action === 'startCreateSaveRule') {
       try {
-        startSelectCapture();
+        startCreateSaveRule();
         showPageDebug('Auto capture mode started');
         sendResponse({ success: true, message: 'Auto capture mode started' });
       } catch (error) {
@@ -189,10 +189,10 @@ function stopElementSelection(): void {
   document.removeEventListener('keydown', handleKeyDown);
 }
 
-function startSelectCapture(): void {
-  if (isAutoCaptureActive) return;
+function startCreateSaveRule(): void {
+  if (isCreateSaveRuleActive) return;
 
-  isAutoCaptureActive = true;
+  isCreateSaveRuleActive = true;
   document.body.style.cursor = 'copy';
 
   // Create overlay with different styling for select capture
@@ -216,9 +216,9 @@ function startSelectCapture(): void {
 }
 
 function stopAutoCapture(): void {
-  if (!isAutoCaptureActive) return;
+  if (!isCreateSaveRuleActive) return;
 
-  isAutoCaptureActive = false;
+  isCreateSaveRuleActive = false;
   document.body.style.cursor = '';
 
   // Remove overlay
@@ -238,7 +238,7 @@ function stopAutoCapture(): void {
 }
 
 function handleMouseOver(e: MouseEvent): void {
-  if ((!isSelectionActive && !isAutoCaptureActive) || !overlay) return;
+  if ((!isSelectionActive && !isCreateSaveRuleActive) || !overlay) return;
 
   const element = e.target as HTMLElement;
   if (element === overlay || element === getElementDebugBoxElement()) return;
@@ -257,13 +257,13 @@ function handleMouseOver(e: MouseEvent): void {
 }
 
 function handleMouseOut(): void {
-  if ((!isSelectionActive && !isAutoCaptureActive) || !overlay) return;
+  if ((!isSelectionActive && !isCreateSaveRuleActive) || !overlay) return;
   overlay.style.display = 'none';
   removeElementDebugBox();
 }
 
 function handleClick(e: MouseEvent): void {
-  if (!isSelectionActive && !isAutoCaptureActive) return;
+  if (!isSelectionActive && !isCreateSaveRuleActive) return;
 
   e.preventDefault();
   e.stopPropagation();
@@ -274,9 +274,9 @@ function handleClick(e: MouseEvent): void {
     // Regular capture mode
     captureElement(selectedElement);
     stopElementSelection();
-  } else if (isAutoCaptureActive) {
+  } else if (isCreateSaveRuleActive) {
     // Auto capture mode - create rule instead of capturing
-    createCaptureRule(selectedElement);
+    createSaveRule(selectedElement);
     stopAutoCapture();
   }
 }
@@ -285,7 +285,7 @@ function handleKeyDown(e: KeyboardEvent): void {
   if (e.key === 'Escape') {
     if (isSelectionActive) {
       stopElementSelection();
-    } else if (isAutoCaptureActive) {
+    } else if (isCreateSaveRuleActive) {
       stopAutoCapture();
     }
   }
@@ -310,7 +310,7 @@ function captureElement(element: HTMLElement): void {
   chrome.runtime.sendMessage(message);
 }
 
-async function createCaptureRule(element: HTMLElement): Promise<void> {
+async function createSaveRule(element: HTMLElement): Promise<void> {
   // Generate and show XPath before creating the rule
   const xpath = generateXPath(element);
   showPageDebug(
@@ -334,11 +334,11 @@ async function initializeAutoCapture(): Promise<void> {
     return;
   }
 
-  const enabledMatches = await findCaptureElements();
-  const allMatches = await findAllCaptureElements();
+  const enabledMatches = await findSaveElements();
+  const allMatches = await findAllSaveElements();
 
   // Highlight all auto capture elements (enabled and disabled)
-  highlightCaptureElements(allMatches);
+  highlightSaveElements(allMatches);
 
   // Auto capture only enabled elements on page load
   for (const match of enabledMatches) {
@@ -347,8 +347,8 @@ async function initializeAutoCapture(): Promise<void> {
   }
 }
 
-function highlightCaptureElements(
-  matches: { element: HTMLElement; rule: CaptureRule }[],
+function highlightSaveElements(
+  matches: { element: HTMLElement; rule: SaveRule }[],
 ): void {
   matches.forEach(({ element, rule }) => {
     element.style.outline = '2px solid #007cba';
@@ -361,7 +361,7 @@ function highlightCaptureElements(
   });
 }
 
-function addAutoCaptureLabel(element: HTMLElement, rule: CaptureRule): void {
+function addAutoCaptureLabel(element: HTMLElement, rule: SaveRule): void {
   // Create main container
   const container = document.createElement('div');
   container.className = 'markdown-capture-container';
@@ -452,7 +452,7 @@ function addAutoCaptureLabel(element: HTMLElement, rule: CaptureRule): void {
     e.stopPropagation();
 
     try {
-      const newState = await toggleCaptureRule(rule.id);
+      const newState = await toggleSaveRule(rule.id);
 
       // Update visual state
       toggle.style.background = newState ? '#28a745' : '#dc3545';
@@ -479,7 +479,7 @@ function addAutoCaptureLabel(element: HTMLElement, rule: CaptureRule): void {
     e.preventDefault();
     e.stopPropagation();
 
-    showCaptureRuleContextMenu(e, rule, element, container);
+    showSaveRuleContextMenu(e, rule, element, container);
   });
 
   // Add click handler for manual capture button
@@ -527,9 +527,9 @@ function addAutoCaptureLabel(element: HTMLElement, rule: CaptureRule): void {
   element.appendChild(container);
 }
 
-function showCaptureRuleContextMenu(
+function showSaveRuleContextMenu(
   e: MouseEvent,
-  rule: CaptureRule,
+  rule: SaveRule,
   element: HTMLElement,
   container: HTMLElement,
 ): void {
@@ -628,7 +628,7 @@ function showCaptureRuleContextMenu(
   // Add click handler for remove option
   removeOption.addEventListener('click', async () => {
     try {
-      await removeCaptureRuleAndElement(rule, element, container);
+      await removeSaveRuleAndElement(rule, element, container);
       removeExistingContextMenu();
       showPageDebug(`Capture rule removed: ${rule.name}`);
     } catch (error) {
@@ -690,7 +690,7 @@ function removeExistingContextMenu(): void {
 }
 
 function showXPathEditModal(
-  rule: CaptureRule,
+  rule: SaveRule,
   element: HTMLElement,
   container: HTMLElement,
 ): void {
@@ -860,7 +860,7 @@ function showXPathEditModal(
     const newXPath = xpathInput.value.trim();
     if (newXPath && newXPath !== rule.xpath) {
       try {
-        await updateCaptureRuleXPath(rule, newXPath, element, container);
+        await updateSaveRuleXPath(rule, newXPath, element, container);
         removeExistingModal();
         showPageDebug(`XPath updated for rule: ${rule.name}`);
       } catch (error) {
@@ -972,14 +972,14 @@ function showErrorMessage(element: HTMLElement, message: string): void {
   element.textContent = message;
 }
 
-async function updateCaptureRuleXPath(
-  rule: CaptureRule,
+async function updateSaveRuleXPath(
+  rule: SaveRule,
   newXPath: string,
   element: HTMLElement,
   container: HTMLElement,
 ): Promise<void> {
-  // Import the updateCaptureRule function
-  const { updateCaptureRule } = await import('./captureRules');
+  // Import the updateSaveRule function
+  const { updateSaveRule } = await import('./captureRules');
 
   // Validate the new XPath first
   const testElement = getElementByXPath(newXPath);
@@ -989,7 +989,7 @@ async function updateCaptureRuleXPath(
   }
 
   // Update the rule in storage
-  await updateCaptureRule(rule.id, { xpath: newXPath });
+  await updateSaveRule(rule.id, { xpath: newXPath });
 
   // Clean up the current element
   cleanupCaptureElement(element, container);
@@ -998,16 +998,16 @@ async function updateCaptureRuleXPath(
   await initializeAutoCapture();
 }
 
-async function removeCaptureRuleAndElement(
-  rule: CaptureRule,
+async function removeSaveRuleAndElement(
+  rule: SaveRule,
   element: HTMLElement,
   container: HTMLElement,
 ): Promise<void> {
-  // Import the removeCaptureRule function
-  const { removeCaptureRule } = await import('./captureRules');
+  // Import the removeSaveRule function
+  const { removeSaveRule } = await import('./captureRules');
 
   // Remove the rule from storage
-  await removeCaptureRule(rule.id);
+  await removeSaveRule(rule.id);
 
   // Clean up the element
   cleanupCaptureElement(element, container);
