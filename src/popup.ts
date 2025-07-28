@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', function () {
     'autoCaptureToggle',
   ) as HTMLDivElement;
 
+  // Check for suggested rules status on page load
+  checkSuggestedRulesStatus();
+
   settingsLink.addEventListener('click', function (e) {
     e.preventDefault();
     chrome.runtime.openOptionsPage();
@@ -101,4 +104,34 @@ document.addEventListener('DOMContentLoaded', function () {
       );
     }
   });
+
+  async function checkSuggestedRulesStatus(): Promise<void> {
+    try {
+      chrome.tabs.query(
+        { active: true, currentWindow: true },
+        async function (tabs) {
+          const activeTab = tabs[0];
+          if (!activeTab?.id) return;
+
+          // Send message to content script to check for suggested rules
+          chrome.tabs.sendMessage(
+            activeTab.id,
+            { action: 'checkSuggestedStatus' },
+            response => {
+              if (chrome.runtime.lastError) {
+                // Content script might not be ready, ignore error
+                return;
+              }
+
+              if (response?.hasSuggestedElement) {
+                showStatus('Suggested save element found on page', 'success');
+              }
+            },
+          );
+        },
+      );
+    } catch (error) {
+      // Ignore errors - this is just informational
+    }
+  }
 });
