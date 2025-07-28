@@ -30,7 +30,6 @@ interface Config {
 // Function to create context menu
 function createContextMenu(): void {
   chrome.contextMenus.removeAll(() => {
-    // Create parent menu item
     chrome.contextMenus.create(
       {
         id: 'markdown-capture-parent',
@@ -38,16 +37,14 @@ function createContextMenu(): void {
         contexts: ['page', 'selection', 'link', 'image'],
       },
       () => {
-        // Create select capture menu item (always visible)
         chrome.contextMenus.create({
           id: 'markdown-capture-auto',
           parentId: 'markdown-capture-parent',
           title: 'Auto Save',
           contexts: ['page', 'selection', 'link', 'image'],
-          visible: true, // Always visible
+          visible: true,
         });
 
-        // Create options menu item
         chrome.contextMenus.create({
           id: 'markdown-capture-options',
           parentId: 'markdown-capture-parent',
@@ -60,13 +57,11 @@ function createContextMenu(): void {
   });
 }
 
-// Create context menu when extension is installed or updated
 chrome.runtime.onInstalled.addListener(() => {
   createContextMenu();
   updateIcon();
 });
 
-// Create context menu when extension starts up
 chrome.runtime.onStartup.addListener(() => {
   createContextMenu();
   updateIcon();
@@ -75,7 +70,7 @@ chrome.runtime.onStartup.addListener(() => {
 // Update icon based on auto capture state
 async function updateIcon(): Promise<void> {
   const settings = await chrome.storage.sync.get(['enableAutoCapture']);
-  const isEnabled = settings.enableAutoCapture !== false; // Default to true
+  const isEnabled = settings.enableAutoCapture !== false;
 
   const iconPath = isEnabled
     ? {
@@ -101,10 +96,6 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
   }
 });
 
-// Initialize icon immediately when script loads
-updateIcon();
-
-// Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(
   (info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab) => {
     if (info.menuItemId === 'markdown-capture-auto' && tab?.id) {
@@ -151,7 +142,7 @@ async function saveMarkdownFile(
     ])) as Config;
     const directory = config.saveDirectory || '~/Downloads';
     const template = config.filenameTemplate || '{title}_{timestamp}.md';
-    const useDomainSubfolder = config.useDomainSubfolder !== false; // Default to true
+    const useDomainSubfolder = config.useDomainSubfolder !== false;
 
     // Generate filename with directory path
     const baseFilename = generateFilename({

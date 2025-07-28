@@ -74,11 +74,12 @@ export async function updateCaptureRule(
   const rules = await getCaptureRules();
   const ruleIndex = rules.findIndex(rule => rule.id === id);
 
-  if (ruleIndex === -1) {
+  const rule = rules[ruleIndex];
+  if (!rule) {
     throw new Error('Rule not found');
   }
 
-  rules[ruleIndex] = { ...rules[ruleIndex], ...updates };
+  rules[ruleIndex] = { ...rule, ...updates };
   await chrome.storage.sync.set({ [STORAGE_KEY]: rules });
 }
 
