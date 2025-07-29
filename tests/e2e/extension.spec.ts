@@ -114,7 +114,7 @@ test.describe('Save Markdown Extension E2E', () => {
 
     // Extract the filename from the status window for verification
     const downloadedFilename = (await filenameElement.textContent())?.trim();
-    expect(downloadedFilename).toBe('XXtest-page-for-markdown-extension.md');
+    expect(downloadedFilename).toBe('test-page-for-markdown-extension.md');
 
     // Playwright sets GUID for download file https://playwright.dev/docs/api/class-download. Currently can't find a way to get
     // this progromatically. page.waitForEvent('download') does not work for calls
