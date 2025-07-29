@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const autoCaptureToggle = document.getElementById(
     'autoCaptureToggle',
   ) as HTMLDivElement;
+  const statusWindowToggle = document.getElementById(
+    'statusWindowToggle',
+  ) as HTMLDivElement;
 
   // Check for suggested rules status on page load
   checkSuggestedRulesStatus();
@@ -32,7 +35,13 @@ document.addEventListener('DOMContentLoaded', function () {
   // Load current auto capture setting and set toggle state
   chrome.storage.sync.get(['enableAutoCapture'], function (result) {
     const isEnabled = result.enableAutoCapture !== false; // Default to true
-    updateToggleState(isEnabled);
+    updateToggleState(autoCaptureToggle, isEnabled);
+  });
+
+  // Load current status window setting and set toggle state
+  chrome.storage.sync.get(['showStatusWindow'], function (result) {
+    const isEnabled = result.showStatusWindow === true; // Default to false
+    updateToggleState(statusWindowToggle, isEnabled);
   });
 
   // Handle auto capture toggle click
@@ -42,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const newState = !currentState;
 
       chrome.storage.sync.set({ enableAutoCapture: newState }, function () {
-        updateToggleState(newState);
+        updateToggleState(autoCaptureToggle, newState);
         showStatus(
           `Markdown saving ${newState ? 'enabled' : 'disabled'}`,
           'success',
@@ -51,11 +60,48 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  function updateToggleState(isEnabled: boolean): void {
+  // Handle status window toggle click
+  statusWindowToggle.addEventListener('click', function () {
+    chrome.storage.sync.get(['showStatusWindow'], function (result) {
+      const currentState = result.showStatusWindow === true; // Default to false
+      const newState = !currentState;
+
+      chrome.storage.sync.set({ showStatusWindow: newState }, function () {
+        updateToggleState(statusWindowToggle, newState);
+        showStatus(
+          `Status window ${newState ? 'enabled' : 'disabled'}`,
+          'success',
+        );
+
+        // Notify content script about the change
+        chrome.tabs.query(
+          { active: true, currentWindow: true },
+          function (tabs) {
+            const activeTab = tabs[0];
+            if (activeTab?.id) {
+              chrome.tabs
+                .sendMessage(activeTab.id, {
+                  action: 'updateStatusWindow',
+                  enabled: newState,
+                })
+                .catch(() => {
+                  // Content script might not be ready, ignore error
+                });
+            }
+          },
+        );
+      });
+    });
+  });
+
+  function updateToggleState(
+    toggleElement: HTMLDivElement,
+    isEnabled: boolean,
+  ): void {
     if (isEnabled) {
-      autoCaptureToggle.classList.add('active');
+      toggleElement.classList.add('active');
     } else {
-      autoCaptureToggle.classList.remove('active');
+      toggleElement.classList.remove('active');
     }
   }
 

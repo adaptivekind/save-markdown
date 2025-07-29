@@ -95,3 +95,21 @@ export function setDebugMode(enabled: boolean): void {
 export function isDebugModeEnabled(): boolean {
   return debugMode;
 }
+
+/**
+ * Sends debug messages to content script for display
+ */
+export function sendDebugMessage(
+  tabId: number,
+  action?: string,
+  message: string | null = null,
+): void {
+  chrome.tabs
+    .sendMessage(tabId, {
+      action: 'showDebug',
+      message: `Background: ${action}${message ? ` - ${message}` : ''}`,
+    })
+    .catch(() => {
+      // Content script might not be ready, ignore error
+    });
+}

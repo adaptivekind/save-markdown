@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const downloadsPath = './target/e2e-downloads';
 
 test.describe('Save Markdown Extension E2E', () => {
   let context: BrowserContext;
@@ -25,7 +26,7 @@ test.describe('Save Markdown Extension E2E', () => {
         '--no-sandbox',
         '--disable-dev-shm-usage',
       ],
-      acceptDownloads: true,
+      downloadsPath,
     });
 
     // Get extension ID from chrome://extensions
@@ -76,19 +77,28 @@ test.describe('Save Markdown Extension E2E', () => {
     // Wait for success message or form to close
     await page.waitForTimeout(1000);
 
-    // Close popup and navigate to test page
+    // Enable status window using the toggle in options page
+    const statusWindowSelect = page.locator('#showStatusWindow');
+    await statusWindowSelect.selectOption('true');
+
+    // Save the options to ensure the setting is persisted
+    await page.click('#saveOptions');
+
+    // Wait for save confirmation
+    await page.waitForTimeout(1000);
+
+    // Close options page and navigate to test page
     await page.close();
 
     // Serve the test HTML file and navigate to it
     const testPagePath = path.join(__dirname, 'fixtures/test-page.html');
     const testPage = await context.newPage();
     const session = await context.newCDPSession(testPage);
-    const downloadPath = './target/e2e-downloads';
     await session.send('Browser.setDownloadBehavior', {
-      behavior: 'allow',
-      downloadPath,
-      eventsEnabled: true,
+      downloadPath: downloadsPath,
+      behavior: 'allowAndName',
     });
+
     await testPage.goto(`file://${testPagePath}`);
 
     // Wait for the extension to process the page and show suggested elements
@@ -102,33 +112,58 @@ test.describe('Save Markdown Extension E2E', () => {
     testPage.on('download', download => download.path().then(console.log));
     await suggestedElement.click();
 
-    // console.log('Awaiting download');
-    // const download = await downloadPromise;
-    // console.log(download);
+    // Check if the status window is visible on the page
+    const statusWindow = testPage.locator('#markdown-save-status-window');
+    await expect(statusWindow).toBeVisible({ timeout: 5000 });
 
-    // Check if markdown file was saved in Downloads folder
-    await testPage.waitForTimeout(2000);
-    const files = fs.readdirSync(downloadPath);
-    console.log(downloadPath);
+    // Verify the status window contains a success message
+    const statusItem = statusWindow.locator('div[role="status"]').first();
+    await expect(statusItem).toBeVisible();
 
-    // Look for a markdown file that was recently created
-    const markdownFiles = files.filter(
-      file => file.endsWith('.md') && file.toLowerCase().includes('test'),
-    );
+    // Debug: Log the status window content
+    const statusWindowContent = await statusWindow.innerHTML();
+    console.log('Status window content:', statusWindowContent);
 
-    // Verify at least one markdown file was created
-    expect(markdownFiles.length).toBeGreaterThan(0);
+    // Check if status item contains expected elements
+    const filenameElement = statusItem.locator('.filename');
+    await expect(filenameElement).toBeVisible();
 
-    // Read the content of the most recent markdown file
-    const mostRecentFile = markdownFiles
+    // Extract the filename from the status window for verification
+    const downloadedFilename = (await filenameElement.textContent())?.trim();
+    console.log('Downloaded filename from status window:', downloadedFilename);
+
+    // Playwright sets GUID for download file https://playwright.dev/docs/api/class-download. Currently can't find a way to get
+    // this progromatically. page.waitForEvent('download') does not work for calls
+    // dow Chrome download API in background. For we'll find a recent download in the last
+    // 5 seconds.
+
+    // Find the latest markdown file in the downloads directory
+    const files = fs.readdirSync(downloadsPath);
+    const markdownFiles = files
       .map(file => ({
         name: file,
-        path: path.join(downloadPath, file),
-        mtime: fs.statSync(path.join(downloadPath, file)).mtime,
+        path: path.join(downloadsPath, file),
+        mtime: fs.statSync(path.join(downloadsPath, file)).mtime,
       }))
-      .sort((a, b) => b.mtime.getTime() - a.mtime.getTime())[0];
+      .sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
 
-    const markdownContent = fs.readFileSync(mostRecentFile.path, 'utf-8');
+    // Verify at least one markdown file was found
+    expect(markdownFiles.length).toBeGreaterThan(0);
+
+    const latestFile = markdownFiles[0];
+    console.log('Latest markdown file:', latestFile.name);
+    console.log('File modification time:', latestFile.mtime);
+
+    // Assert that the file was created in the last 10 seconds
+    const now = new Date();
+    const fileAge = now.getTime() - latestFile.mtime.getTime();
+    const tenSecondsInMs = 5 * 1000;
+
+    console.log('File age in milliseconds:', fileAge);
+    expect(fileAge).toBeLessThan(tenSecondsInMs);
+
+    // Read the content of the latest downloaded file
+    const markdownContent = fs.readFileSync(latestFile.path, 'utf-8');
 
     // Verify the markdown content contains expected elements
     expect(markdownContent).toContain('# Introduction');
@@ -140,7 +175,7 @@ test.describe('Save Markdown Extension E2E', () => {
     expect(markdownContent).toContain('> This is a blockquote');
 
     // Clean up - remove the test file
-    fs.unlinkSync(mostRecentFile.path);
+    fs.unlinkSync(latestFile.path);
 
     await testPage.close();
   });
