@@ -27,7 +27,8 @@
       "Bash(npm run lint:*)",
       "Bash(bash:*)",
       "Bash(npm test:*)",
-      "Bash(npm run test:e2e:*)"
+      "Bash(npm run test:e2e:*)",
+      "Bash(npm run test:cucumber:*)"
     ],
     "deny": []
   }

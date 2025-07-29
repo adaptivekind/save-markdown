@@ -57,8 +57,9 @@ jobs:
 
       - name: Run e2e tests
         run: npm run test:e2e
-        env:
-          CI: true
+
+      - name: Run cucumber e2e tests
+        run: npm run test:cucumber
 
       - name: Check test results
         if: always()
