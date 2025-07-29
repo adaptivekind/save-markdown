@@ -54,12 +54,13 @@ jobs:
         run: |
           mkdir -p ./target/e2e-downloads
           mkdir -p ./test-results
+          mkdir -p ./reports
 
       - name: Run e2e tests
         run: npm run test:e2e
 
       - name: Run cucumber e2e tests
-        run: npm run test:cucumber
+        run: npm run test:cucumber:report
 
       - name: Check test results
         if: always()
@@ -85,4 +86,12 @@ jobs:
         with:
           name: playwright-test-results
           path: test-results/
+          retention-days: 30
+
+      - name: Upload cucumber reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cucumber-reports
+          path: reports/
           retention-days: 30
