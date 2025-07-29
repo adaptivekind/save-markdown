@@ -32,7 +32,7 @@ function createPageDebugBox(): void {
   pageDebugBox.style.cssText = `
     position: fixed;
     bottom: 10px;
-    right: 10px;
+    left: 10px;
     width: 300px;
     max-height: 500px;
     background: rgba(45, 45, 45, 0.95);

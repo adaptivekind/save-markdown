@@ -10,7 +10,7 @@ export async function getDownloadPath(downloadId: number): Promise<string> {
     const tryGetDownloadPath = (attempt: number = 1) => {
       chrome.downloads.search({ id: downloadId }, items => {
         const filename = items.shift()?.filename;
-        if (filename && filename.startsWith('/')) {
+        if (filename) {
           resolve(filename);
         } else if (attempt < 10) {
           setTimeout(() => tryGetDownloadPath(attempt + 1), attempt * 100);

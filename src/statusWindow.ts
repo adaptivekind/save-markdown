@@ -33,7 +33,7 @@ function createStatusWindow(): void {
   statusWindow.style.cssText = `
     position: fixed;
     bottom: 10px;
-    left: 10px;
+    right: 10px;
     width: 350px;
     max-height: 400px;
     background: rgba(255, 255, 255, 0.95);
@@ -55,7 +55,7 @@ function createStatusWindow(): void {
 /**
  * Shows a download completion status with the absolute file path
  */
-export function showDownloadStatus(filename?: string): void {
+export function showDownloadStatus(filename: string, mode: string): void {
   if (!statusEnabled) return;
 
   if (!statusWindow) {
@@ -77,7 +77,7 @@ export function showDownloadStatus(filename?: string): void {
   const timestamp = new Date().toLocaleTimeString();
   statusItem.innerHTML = `
     <div style="color: #28a745; font-weight: 500; margin-bottom: 4px;">
-      ✓ File saved at <span class="timestamp">${timestamp}</span>
+      ✓ File saved at <span class="timestamp">${timestamp}</span> (${mode})
     </div>
     <div class="filename" style="color: #666; font-family: monospace; font-size: 12px;">
       ${filename}

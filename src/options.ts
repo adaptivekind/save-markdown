@@ -25,7 +25,7 @@ Title: {title}
   debugMode: false,
   enableAutoCapture: true,
   enableSuggestedRules: true,
-  showStatusWindow: false,
+  showStatusWindow: true,
 };
 
 class OptionsManager {
