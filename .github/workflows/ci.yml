@@ -225,11 +225,11 @@ jobs:
           # Replace placeholders with actual values
           sed -i.bak "s/\$GITHUB_SHA/$GITHUB_SHA/g" gh-pages/index.html && rm gh-pages/index.html.bak
 
-      - name: Deploy to GitHub Pages
-        if: always() && github.ref == 'refs/heads/main'
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./gh-pages
-          destination_dir: reports
-          keep_files: false
+      # - name: Deploy to GitHub Pages
+      #   if: always() && github.ref == 'refs/heads/main'
+      #   uses: peaceiris/actions-gh-pages@v4
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./gh-pages
+      #     destination_dir: reports
+      #     keep_files: false
