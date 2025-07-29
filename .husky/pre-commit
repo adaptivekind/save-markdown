@@ -15,4 +15,4 @@ npx lint-staged
 npm run build
 npm test
 npm run test:e2e
-
+npm run test:cucumber
