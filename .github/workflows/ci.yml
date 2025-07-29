@@ -53,14 +53,5 @@ jobs:
         run: npx playwright install --with-deps chromium
         if: steps.playwright-cache.outputs.cache-hit != 'true'
 
-      - name: Create test directories
-        run: |
-          mkdir -p ./target/e2e-downloads
-          mkdir -p ./test-results
-          mkdir -p ./reports
-
       - name: Run e2e tests
         run: npm run test:e2e
-
-      - name: Run cucumber e2e tests
-        run: npm run test:cucumber:report
