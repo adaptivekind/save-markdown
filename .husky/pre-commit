@@ -14,5 +14,5 @@ npx lint-staged
 # Build and test
 npm run build
 npm test
-npm run test:e2e
+# npm run test:e2e
 

@@ -50,13 +50,25 @@ jobs:
         run: npx playwright install --with-deps chromium
         if: steps.playwright-cache.outputs.cache-hit != 'true'
 
-      - name: Create downloads directory
-        run: mkdir -p ./target/e2e-downloads
+      - name: Create test directories
+        run: |
+          mkdir -p ./target/e2e-downloads
+          mkdir -p ./test-results
 
       - name: Run e2e tests
         run: npm run test:e2e
         env:
           CI: true
+
+      - name: Check test results
+        if: always()
+        run: |
+          if [ -f "test-results/junit.xml" ]; then
+            echo "Test results file exists"
+            cat test-results/junit.xml
+          else
+            echo "No test results file found"
+          fi
 
       - name: Upload test reports
         uses: actions/upload-artifact@v4
