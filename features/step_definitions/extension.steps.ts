@@ -130,10 +130,7 @@ When('I navigate to the test page', async function (this: CustomWorld) {
   await page.close();
 
   // Serve the test HTML file and navigate to it
-  const testPagePath = join(
-    __dirname,
-    '../../tests/e2e/fixtures/test-page.html',
-  );
+  const testPagePath = join(__dirname, '../fixtures/test-page.html');
   page = await context.newPage();
   this.page = page; // Set page reference for screenshots
   const session = await context.newCDPSession(page);
