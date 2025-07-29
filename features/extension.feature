@@ -3,21 +3,17 @@ Feature: Save Markdown Extension E2E
   I want to create save rules and automatically save markdown content
   So that I can capture web content as markdown files
   
-  Scenario: Create save rule and save markdown when page is visited
+  Scenario: Manually save markdown for default suggested rules
     Given I have the extension loaded in the browser
     When I open the extension options page
-    And I add a new suggested rule with the following details:
-      | name   | Test Article Rule              |
-      | domain | *                              |
-      | xpath  | //article[@id="main-content"]  |
     And I enable the status window
     And I save the options
     And I navigate to the test page
     And I click the save rule button
     Then the status window should be visible
     And the status window should show a success message
-    And a markdown file should be created
-    And the markdown content should contain:
+    And a markdown file should be saved
+    And the markdown file should contain:
       | # Introduction                          |
       | ## Features                             |
       | **Bold text**                           |
@@ -25,3 +21,16 @@ Feature: Save Markdown Extension E2E
       | `Inline code`                           |
       | [External links](https://example.com)   |
       | > This is a blockquote                  |
+  
+  Scenario: Add save rule for default suggested rule and then save on reload
+    Given I have the extension loaded in the browser
+    When I open the extension options page
+    And I enable the status window
+    And I save the options
+    And I navigate to the test page
+    And I enable auto save for the suggested rule
+    Then a markdown file should be saved
+    When I reload the page
+    Then a markdown file should be saved
+    And the markdown file should contain:
+      | # Introduction                          |
