@@ -33,7 +33,7 @@ function createStatusWindow(): void {
   statusWindow.style.cssText = `
     position: fixed;
     bottom: 10px;
-    left: 10px;
+    right: 10px;
     width: 350px;
     max-height: 400px;
     background: rgba(255, 255, 255, 0.95);
