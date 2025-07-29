@@ -12,6 +12,7 @@ import { chromium, BrowserContext, Page, devices } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import fs from 'node:fs';
+import { CustomWorld } from '../support/world';
 
 setDefaultTimeout(60_000);
 
@@ -69,14 +70,18 @@ After({ tags: '@extension' }, async function () {
   }
 });
 
-Given('I have the extension loaded in the browser', async function () {
-  // Extension is already loaded in the Before hook
-  assert(extensionId, 'Extension should be loaded');
-});
+Given(
+  'I have the extension loaded in the browser',
+  async function (this: CustomWorld) {
+    // Extension is already loaded in the Before hook
+    assert(extensionId, 'Extension should be loaded');
+  },
+);
 
-When('I open the extension options page', async function () {
+When('I open the extension options page', async function (this: CustomWorld) {
   const optionsUrl = `chrome-extension://${extensionId}/options.html`;
   page = await context.newPage();
+  this.page = page; // Set page reference for screenshots
   await page.goto(optionsUrl);
 
   // Wait for options page to load
@@ -85,7 +90,7 @@ When('I open the extension options page', async function () {
 
 When(
   'I add a new suggested rule with the following details:',
-  async function (dataTable: DataTable) {
+  async function (this: CustomWorld, dataTable: DataTable) {
     const data = dataTable.rowsHash();
 
     // Click "Add Suggested Rule" button
@@ -109,18 +114,18 @@ When(
   },
 );
 
-When('I enable the status window', async function () {
+When('I enable the status window', async function (this: CustomWorld) {
   // Enable status window using the toggle in options page
   const statusWindowSelect = page.locator('#showStatusWindow');
   await statusWindowSelect.selectOption('true');
 });
 
-When('I save the options', async function () {
+When('I save the options', async function (this: CustomWorld) {
   // Save the options to ensure the setting is persisted
   await page.click('#saveOptions');
 });
 
-When('I navigate to the test page', async function () {
+When('I navigate to the test page', async function (this: CustomWorld) {
   // Close options page and navigate to test page
   await page.close();
 
@@ -130,6 +135,7 @@ When('I navigate to the test page', async function () {
     '../../tests/e2e/fixtures/test-page.html',
   );
   page = await context.newPage();
+  this.page = page; // Set page reference for screenshots
   const session = await context.newCDPSession(page);
   await session.send('Browser.setDownloadBehavior', {
     downloadPath: downloadsPath,
@@ -139,33 +145,36 @@ When('I navigate to the test page', async function () {
   await page.goto(`file://${testPagePath}`);
 });
 
-When('I click the save rule button', async function () {
+When('I click the save rule button', async function (this: CustomWorld) {
   // Look for the suggested save element and click "ADD SAVE RULE" to convert it to auto-save
   const suggestedElement = page.locator('.add-save-rule-button').first();
   await suggestedElement.click();
 });
 
-Then('the status window should be visible', async function () {
+Then('the status window should be visible', async function (this: CustomWorld) {
   // Check if the status window is visible on the page
   const statusWindow = page.locator('#markdown-save-status-window');
   const isVisible = await statusWindow.isVisible({ timeout: 5000 });
   assert(isVisible, 'Status window should be visible');
 });
 
-Then('the status window should show a success message', async function () {
-  // Verify the status window contains a success message
-  const statusWindow = page.locator('#markdown-save-status-window');
+Then(
+  'the status window should show a success message',
+  async function (this: CustomWorld) {
+    // Verify the status window contains a success message
+    const statusWindow = page.locator('#markdown-save-status-window');
 
-  // Wait for status item to appear with timeout
-  const statusItem = statusWindow.locator('div[role="status"]').first();
-  await statusItem.waitFor({ state: 'visible', timeout: 10000 });
+    // Wait for status item to appear with timeout
+    const statusItem = statusWindow.locator('div[role="status"]').first();
+    await statusItem.waitFor({ state: 'visible', timeout: 10000 });
 
-  // Check if status item contains expected elements
-  const filenameElement = statusItem.locator('.filename');
-  await filenameElement.waitFor({ state: 'visible', timeout: 5000 });
-});
+    // Check if status item contains expected elements
+    const filenameElement = statusItem.locator('.filename');
+    await filenameElement.waitFor({ state: 'visible', timeout: 5000 });
+  },
+);
 
-Then('a markdown file should be created', async function () {
+Then('a markdown file should be created', async function (this: CustomWorld) {
   // Extract the filename from the status window for verification
   const statusWindow = page.locator('#markdown-save-status-window');
   const statusItem = statusWindow.locator('div[role="status"]').first();
@@ -185,7 +194,7 @@ Then('a markdown file should be created', async function () {
 
 Then(
   'the markdown content should contain:',
-  async function (dataTable: DataTable) {
+  async function (this: CustomWorld, dataTable: DataTable) {
     assert(downloadedFilename, 'Downloaded filename should be available');
 
     // Read the content of the downloaded file
