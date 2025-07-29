@@ -1,12 +1,8 @@
-@extension
 Feature: Save Markdown Extension E2E
   As a user of the Save Markdown extension
   I want to create save rules and automatically save markdown content
   So that I can capture web content as markdown files
   
-  # Note: Extension tests run in headed mode due to Chrome extension limitations in headless mode
-
-  @extension
   Scenario: Create save rule and save markdown when page is visited
     Given I have the extension loaded in the browser
     When I open the extension options page

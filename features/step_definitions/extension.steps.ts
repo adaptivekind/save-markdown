@@ -25,7 +25,7 @@ let page: Page;
 let extensionId: string;
 let downloadedFilename: string | null = null;
 
-Before({ tags: '@extension' }, async function () {
+Before(async function () {
   // Build the extension first
   const pathToExtension = join(__dirname, '../../dist');
 
@@ -56,7 +56,7 @@ Before({ tags: '@extension' }, async function () {
   extensionId = background.url().split('/')[2] || '';
 });
 
-After({ tags: '@extension' }, async function () {
+After(async function () {
   // Clean up downloaded file if it exists
   if (downloadedFilename && fs.existsSync(downloadedFilename)) {
     fs.unlinkSync(downloadedFilename);
@@ -130,10 +130,7 @@ When('I navigate to the test page', async function (this: CustomWorld) {
   await page.close();
 
   // Serve the test HTML file and navigate to it
-  const testPagePath = join(
-    __dirname,
-    '../../tests/e2e/fixtures/test-page.html',
-  );
+  const testPagePath = join(__dirname, '../fixtures/test-page.html');
   page = await context.newPage();
   this.page = page; // Set page reference for screenshots
   const session = await context.newCDPSession(page);

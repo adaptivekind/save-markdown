@@ -18,14 +18,9 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --watchAll=false",
-    "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug",
-    "test:e2e:wait-after": "WAIT_AFTER_TEST=true playwright test --headed",
-    "test:cucumber": "cucumber-js",
-    "test:cucumber:headed": "HEADED=true cucumber-js",
-    "test:cucumber:report": "cucumber-js --tags @extension && echo 'Report generated at: reports/cucumber_report.html'",
+    "test:e2e": "cucumber-js",
+    "test:e2e:headed": "HEADED=true cucumber-js",
+    "test:e2e:report": "cucumber-js --profile report && echo 'Report generated at: reports/cucumber_report.html'",
     "prepare": "husky"
   },
   "devDependencies": {
