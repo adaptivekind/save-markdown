@@ -89,6 +89,28 @@ Given(
   },
 );
 
+Given('I have enabled the status window', async function (this: CustomWorld) {
+  // Open the extension options page
+  const optionsUrl = `chrome-extension://${extensionId}/options.html`;
+  page = await context.newPage();
+  this.page = page; // Set page reference for screenshots
+  await page.goto(optionsUrl);
+
+  // Wait for options page to load
+  await page.waitForSelector('#addSuggestedRule', { timeout: 10000 });
+
+  // Enable status window using the toggle in options page - check current state first
+  const statusWindowSelect = page.locator('#showStatusWindow');
+  const currentValue = await statusWindowSelect.inputValue();
+
+  if (currentValue !== 'true') {
+    await statusWindowSelect.selectOption('true');
+  }
+
+  // Save the options to ensure the setting is persisted
+  await page.click('#saveOptions');
+});
+
 When('I open the extension options page', async function (this: CustomWorld) {
   const optionsUrl = `chrome-extension://${extensionId}/options.html`;
   page = await context.newPage();
