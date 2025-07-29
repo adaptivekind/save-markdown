@@ -5,6 +5,7 @@
 .vite/
 coverage/
 dist/
+gh-pages/
 node_modules/
 playwright-report/
 release/

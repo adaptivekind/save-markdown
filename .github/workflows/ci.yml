@@ -3,6 +3,12 @@ name: CI
 on:
   push:
 
+# Permissions needed for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   test:
     name: Build and Test
@@ -72,6 +78,21 @@ jobs:
             echo "No test results file found"
           fi
 
+      - name: Check cucumber reports
+        if: always()
+        run: |
+          if [ -f "reports/cucumber_report.html" ]; then
+            echo "✅ Cucumber HTML report generated"
+            ls -la reports/
+          else
+            echo "❌ Cucumber HTML report not found"
+          fi
+          if [ -f "reports/cucumber_report.json" ]; then
+            echo "✅ Cucumber JSON report generated"
+          else
+            echo "❌ Cucumber JSON report not found"
+          fi
+
       - name: Upload test reports
         uses: actions/upload-artifact@v4
         if: always()
@@ -95,3 +116,120 @@ jobs:
           name: cucumber-reports
           path: reports/
           retention-days: 30
+
+      - name: Create GitHub Pages site structure
+        if: always()
+        run: |
+          mkdir -p gh-pages
+          cp -r reports/* gh-pages/ 2>/dev/null || true
+          
+          # Create an index.html that redirects to the cucumber report
+          cat > gh-pages/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Test Reports - Save Markdown Extension</title>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <style>
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                      max-width: 800px;
+                      margin: 2rem auto;
+                      padding: 0 1rem;
+                      line-height: 1.6;
+                  }
+                  .header {
+                      text-align: center;
+                      margin-bottom: 2rem;
+                      padding-bottom: 1rem;
+                      border-bottom: 1px solid #eee;
+                  }
+                  .report-links {
+                      display: grid;
+                      gap: 1rem;
+                      margin-top: 2rem;
+                  }
+                  .report-card {
+                      border: 1px solid #ddd;
+                      border-radius: 8px;
+                      padding: 1.5rem;
+                      background: #f9f9f9;
+                      transition: transform 0.2s;
+                  }
+                  .report-card:hover {
+                      transform: translateY(-2px);
+                      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                  }
+                  .report-card h3 {
+                      margin-top: 0;
+                      color: #333;
+                  }
+                  .report-card p {
+                      color: #666;
+                      margin-bottom: 1rem;
+                  }
+                  .btn {
+                      display: inline-block;
+                      padding: 0.75rem 1.5rem;
+                      background: #0066cc;
+                      color: white;
+                      text-decoration: none;
+                      border-radius: 4px;
+                      transition: background-color 0.2s;
+                  }
+                  .btn:hover {
+                      background: #0052a3;
+                  }
+                  .timestamp {
+                      color: #888;
+                      font-size: 0.9em;
+                      margin-top: 1rem;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="header">
+                  <h1>🧪 Test Reports</h1>
+                  <h2>Save Markdown Extension</h2>
+                  <p>Automated test results from CI/CD pipeline</p>
+              </div>
+              
+              <div class="report-links">
+                  <div class="report-card">
+                      <h3>🥒 Cucumber E2E Test Report</h3>
+                      <p>Interactive HTML report with screenshots showing the complete extension workflow from creating save rules to saving markdown files.</p>
+                      <a href="cucumber_report.html" class="btn">View Cucumber Report</a>
+                  </div>
+                  
+                  <div class="report-card">
+                      <h3>📊 Cucumber JSON Data</h3>
+                      <p>Machine-readable test results in JSON format for further processing or integration with other tools.</p>
+                      <a href="cucumber_report.json" class="btn">View JSON Data</a>
+                  </div>
+              </div>
+              
+              <div class="timestamp">
+                  <p>Generated: <span id="timestamp"></span></p>
+                  <p>Commit: <span id="commit">$GITHUB_SHA</span></p>
+              </div>
+              
+              <script>
+                  document.getElementById('timestamp').textContent = new Date().toLocaleString();
+                  document.getElementById('commit').textContent = '$GITHUB_SHA'.substring(0, 7);
+              </script>
+          </body>
+          </html>
+          EOF
+          
+          # Replace placeholders with actual values
+          sed -i.bak "s/\$GITHUB_SHA/$GITHUB_SHA/g" gh-pages/index.html && rm gh-pages/index.html.bak
+
+      - name: Deploy to GitHub Pages
+        if: always() && github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages
+          destination_dir: reports
+          keep_files: false
