@@ -200,9 +200,6 @@ When('I click the save rule button', async function (this: CustomWorld) {
     );
     throw new Error('Could not find save rule button on the page');
   }
-
-  // Wait for the action to complete
-  await page.waitForTimeout(1000);
 });
 
 Then('the status window should be visible', async function (this: CustomWorld) {
@@ -281,63 +278,10 @@ When('I enable auto save for the rule', async function (this: CustomWorld) {
 When(
   'I enable auto save for the suggested rule',
   async function (this: CustomWorld) {
-    // On the test page, look for the suggested rule and enable auto save
-    // This could be a toggle, checkbox, or button to enable auto save for the suggestion
-    const possibleSelectors = [
-      '.suggested-save-rule input[type="checkbox"]',
-      '.add-save-rule-button',
-      'button:has-text("Enable Auto Save")',
-      'button:has-text("ADD SAVE RULE")',
-      '[data-action="enable-auto-save"]',
-      '.suggested-rule .auto-save-toggle',
-    ];
-
-    let elementFound = false;
-
-    for (const selector of possibleSelectors) {
-      try {
-        const element = page.locator(selector).first();
-        await element.waitFor({ state: 'visible', timeout: 2000 });
-
-        // Check if it's a checkbox that needs to be checked
-        if (selector.includes('checkbox')) {
-          const isChecked = await element.isChecked();
-          if (!isChecked) {
-            await element.check();
-          }
-        } else {
-          // It's a button, click it
-          await element.click();
-        }
-
-        elementFound = true;
-        break;
-      } catch (error) {
-        // Continue to next selector
-        continue;
-      }
-    }
-
-    if (!elementFound) {
-      // If no element found, log current page state for debugging
-      console.log('Current page URL:', await page.url());
-      console.log('Available elements on page:');
-      console.log('Buttons:', await page.locator('button').allTextContents());
-      console.log(
-        'Checkboxes:',
-        await page.locator('input[type="checkbox"]').count(),
-      );
-      console.log(
-        'Elements with "save" text:',
-        await page.locator(':has-text("save")').allTextContents(),
-      );
-      throw new Error(
-        'Could not find element to enable auto save for the suggested rule',
-      );
-    }
-
-    // Wait for the action to complete
-    await page.waitForTimeout(1000);
+    // On the test page, look for the "ADD SAVE RULE" button for the suggested rule
+    const addSaveRuleButton = page.locator('.add-save-rule-button').first();
+    await addSaveRuleButton.waitFor({ state: 'visible', timeout: 5000 });
+    await addSaveRuleButton.click();
   },
 );
 
@@ -380,9 +324,6 @@ When(
       );
       throw new Error('Could not find "Add Save Rule" button on the page');
     }
-
-    // Wait for the action to complete
-    await page.waitForTimeout(1000);
   },
 );
 
