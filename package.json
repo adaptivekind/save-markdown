@@ -25,8 +25,7 @@
     "test:e2e:wait-after": "WAIT_AFTER_TEST=true playwright test --headed",
     "test:cucumber": "cucumber-js",
     "test:cucumber:headed": "HEADED=true cucumber-js",
-    "test:cucumber:report": "cucumber-js --tags @extension && node scripts/expand-screenshots.cjs && echo 'Report generated at: reports/cucumber_report.html'",
-    "test:cucumber:report:open": "npm run test:cucumber:report && open reports/cucumber_report.html",
+    "test:cucumber:report": "cucumber-js --tags @extension && echo 'Report generated at: reports/cucumber_report.html'",
     "prepare": "husky"
   },
   "devDependencies": {
