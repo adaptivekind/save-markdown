@@ -24,6 +24,7 @@
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:wait-after": "WAIT_AFTER_TEST=true playwright test --headed",
     "test:cucumber": "cucumber-js",
+    "test:cucumber:headed": "HEADED=true cucumber-js",
     "prepare": "husky"
   },
   "devDependencies": {
