@@ -42,6 +42,7 @@ interface TabMessage {
   filename?: string;
   downloadId?: number;
   relativeFilename?: string;
+  absolutePath?: string;
   targetElementInfo?: {
     linkUrl?: string;
     srcUrl?: string;
@@ -88,7 +89,6 @@ chrome.runtime.onMessage.addListener(
       );
       if (filename) {
         showCaptureCompleteNotification(filename);
-        showDownloadStatus(filename);
       }
       return false;
     } else if (request.action === 'captureError') {
@@ -153,13 +153,16 @@ chrome.runtime.onMessage.addListener(
     } else if (request.action === 'fileSaved') {
       try {
         // Handle file saved notification
-        if (request.downloadId && request.relativeFilename) {
-          // Resolve absolute filename from downloadId
+        if (request.absolutePath) {
+          // Use absolute path if provided
+          showPageDebug(`File saved: ${request.relativeFilename}`);
+          showDownloadStatus(request.absolutePath);
+        } else if (request.downloadId && request.relativeFilename) {
+          // Fallback: resolve absolute filename from downloadId if absolute path not provided
           getDownloadPath(request.downloadId)
             .then(absolutePath => {
-              const finalPath = absolutePath || request.relativeFilename;
               showPageDebug(`File saved: ${request.relativeFilename}`);
-              showDownloadStatus(finalPath);
+              showDownloadStatus(absolutePath);
             })
             .catch(() => {
               // Fallback to relative filename if resolution fails

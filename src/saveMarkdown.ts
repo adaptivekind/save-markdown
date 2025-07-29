@@ -6,6 +6,7 @@ import { sendDebugMessage } from './debugPage';
 import { generateFilename, generateDownloadPath } from './filename';
 import { wrapWithMetadata } from './htmlToMarkdown';
 import { notify } from './notify';
+import { getDownloadPath } from './downloadUtils';
 
 interface Config {
   saveDirectory?: string;
@@ -73,23 +74,23 @@ export async function saveMarkdownFile(
         if (chrome.runtime.lastError) {
           notify(tabId, 'captureError', chrome.runtime.lastError.message);
         } else if (downloadId) {
-          // Query the download item to get the absolute file path
-          sendDebugMessage(
-            tabId,
-            'captureComplete',
-            `Download ID : ${downloadId}`,
-          );
-
-          // Send fileSaved message to content script with downloadId and relative filename
-          chrome.tabs
-            .sendMessage(tabId, {
+          try {
+            // Get absolute download path and send in fileSaved message
+            const absolutePath = await getDownloadPath(downloadId);
+            chrome.tabs.sendMessage(tabId, {
               action: 'fileSaved',
               downloadId: downloadId,
               relativeFilename: filename,
-            })
-            .catch(() => {
-              // Content script might not be ready, ignore error
+              absolutePath: absolutePath,
             });
+          } catch (error) {
+            // Fallback to sending without absolute path if resolution fails
+            chrome.tabs.sendMessage(tabId, {
+              action: 'fileSaved',
+              downloadId: downloadId,
+              relativeFilename: filename,
+            });
+          }
 
           // Also send legacy notification for backward compatibility
           notify(tabId, 'captureComplete', null, filename);

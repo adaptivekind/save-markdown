@@ -114,39 +114,14 @@ test.describe('Save Markdown Extension E2E', () => {
 
     // Extract the filename from the status window for verification
     const downloadedFilename = (await filenameElement.textContent())?.trim();
-    expect(downloadedFilename).toBe('test-page-for-markdown-extension.md');
+    expect(downloadedFilename).toMatch(/e2e-downloads/);
+    console.log(`Downloaded filename : ${downloadedFilename}`);
 
-    // Playwright sets GUID for download file https://playwright.dev/docs/api/class-download. Currently can't find a way to get
-    // this progromatically. page.waitForEvent('download') does not work for calls
-    // dow Chrome download API in background. For we'll find a recent download in the last
-    // 5 seconds. This is not as robust as we would like, however this can be refactored later
-    // when a better way is found.
+    // Verify the file exists and read its content directly from the downloadedFilename path
+    expect(fs.existsSync(downloadedFilename!)).toBe(true);
 
-    // Find the latest markdown file in the downloads directory
-    const files = fs.readdirSync(downloadsPath);
-    const markdownFiles = files
-      .map(file => ({
-        name: file,
-        path: path.join(downloadsPath, file),
-        mtime: fs.statSync(path.join(downloadsPath, file)).mtime,
-      }))
-      .sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
-
-    // Verify at least one markdown file was found
-    expect(markdownFiles.length).toBeGreaterThan(0);
-
-    const latestFile = markdownFiles[0];
-
-    // Assert that the file was created in the last 10 seconds
-    const now = new Date();
-    const fileAge = now.getTime() - latestFile.mtime.getTime();
-    const tenSecondsInMs = 5 * 1000;
-
-    console.log('File age in milliseconds:', fileAge);
-    expect(fileAge).toBeLessThan(tenSecondsInMs);
-
-    // Read the content of the latest downloaded file
-    const markdownContent = fs.readFileSync(latestFile.path, 'utf-8');
+    // Read the content of the downloaded file directly from the absolute path
+    const markdownContent = fs.readFileSync(downloadedFilename!, 'utf-8');
 
     // Verify the markdown content contains expected elements
     expect(markdownContent).toContain('# Introduction');
@@ -158,7 +133,7 @@ test.describe('Save Markdown Extension E2E', () => {
     expect(markdownContent).toContain('> This is a blockquote');
 
     // Clean up - remove the test file
-    fs.unlinkSync(latestFile.path);
+    fs.unlinkSync(downloadedFilename!);
 
     await testPage.close();
   });
