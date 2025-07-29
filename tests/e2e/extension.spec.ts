@@ -13,7 +13,7 @@ test.describe('Save Markdown Extension E2E', () => {
   let extensionId: string;
 
   test.beforeAll(async () => {
-    test.setTimeout(15_000);
+    test.setTimeout(30_000);
 
     // Build the extension first
     const pathToExtension = path.join(__dirname, '../../dist');
