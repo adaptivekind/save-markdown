@@ -25,7 +25,7 @@ let page: Page;
 let extensionId: string;
 let downloadedFilename: string | null = null;
 
-Before({ tags: '@extension' }, async function () {
+Before(async function () {
   // Build the extension first
   const pathToExtension = join(__dirname, '../../dist');
 
@@ -56,7 +56,7 @@ Before({ tags: '@extension' }, async function () {
   extensionId = background.url().split('/')[2] || '';
 });
 
-After({ tags: '@extension' }, async function () {
+After(async function () {
   // Clean up downloaded file if it exists
   if (downloadedFilename && fs.existsSync(downloadedFilename)) {
     fs.unlinkSync(downloadedFilename);
