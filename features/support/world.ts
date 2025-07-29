@@ -1,7 +1,7 @@
-import { World, setWorldConstructor } from '@cucumber/cucumber';
+import { World, setWorldConstructor, IWorldOptions } from '@cucumber/cucumber';
 
 class CustomWorld extends World {
-  constructor(options: any) {
+  constructor(options: IWorldOptions) {
     super(options);
   }
 }

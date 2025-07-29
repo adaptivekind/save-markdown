@@ -4,9 +4,9 @@ module.exports = {
     loader: ['ts-node/esm'],
     format: ['progress', 'json:reports/cucumber_report.json'],
     formatOptions: {
-      snippetInterface: 'async-await'
+      snippetInterface: 'async-await',
     },
     publishQuiet: true,
-    timeout: 30000
-  }
+    timeout: 30000,
+  },
 };
