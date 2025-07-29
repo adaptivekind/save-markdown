@@ -122,7 +122,7 @@ jobs:
         run: |
           mkdir -p gh-pages
           cp -r reports/* gh-pages/ 2>/dev/null || true
-          
+
           # Create an index.html that redirects to the cucumber report
           cat > gh-pages/index.html << 'EOF'
           <!DOCTYPE html>
@@ -221,7 +221,7 @@ jobs:
           </body>
           </html>
           EOF
-          
+
           # Replace placeholders with actual values
           sed -i.bak "s/\$GITHUB_SHA/$GITHUB_SHA/g" gh-pages/index.html && rm gh-pages/index.html.bak
 
