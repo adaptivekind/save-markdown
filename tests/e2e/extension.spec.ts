@@ -74,18 +74,12 @@ test.describe('Save Markdown Extension E2E', () => {
     // Save the rule
     await page.click('#saveSuggestedRule');
 
-    // Wait for success message or form to close
-    await page.waitForTimeout(1000);
-
     // Enable status window using the toggle in options page
     const statusWindowSelect = page.locator('#showStatusWindow');
     await statusWindowSelect.selectOption('true');
 
     // Save the options to ensure the setting is persisted
     await page.click('#saveOptions');
-
-    // Wait for save confirmation
-    await page.waitForTimeout(1000);
 
     // Close options page and navigate to test page
     await page.close();
@@ -101,15 +95,9 @@ test.describe('Save Markdown Extension E2E', () => {
 
     await testPage.goto(`file://${testPagePath}`);
 
-    // Wait for the extension to process the page and show suggested elements
-    await testPage.waitForTimeout(2000);
-
     // Look for the suggested save element and click "ADD SAVE RULE" to convert it to auto-save
     const suggestedElement = testPage.locator('.add-save-rule-button').first();
 
-    // const downloadPromise = testPage.waitForEvent('download');
-    console.log('Download promise set up');
-    testPage.on('download', download => download.path().then(console.log));
     await suggestedElement.click();
 
     // Check if the status window is visible on the page
@@ -120,22 +108,19 @@ test.describe('Save Markdown Extension E2E', () => {
     const statusItem = statusWindow.locator('div[role="status"]').first();
     await expect(statusItem).toBeVisible();
 
-    // Debug: Log the status window content
-    const statusWindowContent = await statusWindow.innerHTML();
-    console.log('Status window content:', statusWindowContent);
-
     // Check if status item contains expected elements
     const filenameElement = statusItem.locator('.filename');
     await expect(filenameElement).toBeVisible();
 
     // Extract the filename from the status window for verification
     const downloadedFilename = (await filenameElement.textContent())?.trim();
-    console.log('Downloaded filename from status window:', downloadedFilename);
+    expect(downloadedFilename).toBe('test-page-for-markdown-extension.md');
 
     // Playwright sets GUID for download file https://playwright.dev/docs/api/class-download. Currently can't find a way to get
     // this progromatically. page.waitForEvent('download') does not work for calls
     // dow Chrome download API in background. For we'll find a recent download in the last
-    // 5 seconds.
+    // 5 seconds. This is not as robust as we would like, however this can be refactored later
+    // when a better way is found.
 
     // Find the latest markdown file in the downloads directory
     const files = fs.readdirSync(downloadsPath);
@@ -151,8 +136,6 @@ test.describe('Save Markdown Extension E2E', () => {
     expect(markdownFiles.length).toBeGreaterThan(0);
 
     const latestFile = markdownFiles[0];
-    console.log('Latest markdown file:', latestFile.name);
-    console.log('File modification time:', latestFile.mtime);
 
     // Assert that the file was created in the last 10 seconds
     const now = new Date();
