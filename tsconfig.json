@@ -14,8 +14,8 @@
     "exactOptionalPropertyTypes": true,
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "types": ["chrome", "jest", "vite/client"]
+    "types": ["chrome", "jest", "vite/client", "node"]
   },
-  "include": ["src/**/*", "vite.config.ts"],
+  "include": ["src/**/*", "vite.config.ts", "features/**/*"],
   "exclude": ["node_modules", "dist"]
 }

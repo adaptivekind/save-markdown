@@ -8,5 +8,6 @@ dist/
 node_modules/
 playwright-report/
 release/
+reports/
 target/
 test-results/
