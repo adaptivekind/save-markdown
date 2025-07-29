@@ -1,6 +1,12 @@
 import { htmlToMarkdown } from './htmlToMarkdown';
 import { initializePageDebugBox, showPageDebug } from './debugPage';
 import {
+  initializeStatusWindow,
+  showDownloadStatus,
+  setStatusWindowEnabled,
+} from './statusWindow';
+import { getDownloadPath } from './downloadUtils';
+import {
   createElementDebugBox,
   removeElementDebugBox,
   getElementDebugBoxElement,
@@ -26,10 +32,16 @@ interface TabMessage {
     | 'capture'
     | 'startCreateSaveRule'
     | 'stopAutoCapture'
-    | 'checkSuggestedStatus';
+    | 'checkSuggestedStatus'
+    | 'updateStatusWindow'
+    | 'fileSaved';
   message?: string;
   frameId?: number;
   pageUrl?: string;
+  enabled?: boolean;
+  filename?: string;
+  downloadId?: number;
+  relativeFilename?: string;
   targetElementInfo?: {
     linkUrl?: string;
     srcUrl?: string;
@@ -53,6 +65,9 @@ interface RuntimeMessage {
 // Initialize page debug box
 initializePageDebugBox();
 
+// Initialize status window
+initializeStatusWindow();
+
 // Initialize auto capture on page load
 initializeAutoCapture();
 
@@ -73,6 +88,7 @@ chrome.runtime.onMessage.addListener(
       );
       if (filename) {
         showCaptureCompleteNotification(filename);
+        showDownloadStatus(filename);
       }
       return false;
     } else if (request.action === 'captureError') {
@@ -121,6 +137,47 @@ chrome.runtime.onMessage.addListener(
         sendResponse({ hasSuggestedElement });
       } catch (error) {
         sendResponse({ hasSuggestedElement: false });
+      }
+      return true;
+    } else if (request.action === 'updateStatusWindow') {
+      try {
+        // Update status window enabled state
+        if (typeof request.enabled === 'boolean') {
+          setStatusWindowEnabled(request.enabled);
+        }
+        sendResponse({ success: true });
+      } catch (error) {
+        sendResponse({ success: false });
+      }
+      return true;
+    } else if (request.action === 'fileSaved') {
+      try {
+        // Handle file saved notification
+        if (request.downloadId && request.relativeFilename) {
+          // Resolve absolute filename from downloadId
+          getDownloadPath(request.downloadId)
+            .then(absolutePath => {
+              const finalPath = absolutePath || request.relativeFilename;
+              showPageDebug(`File saved: ${request.relativeFilename}`);
+              showDownloadStatus(finalPath);
+            })
+            .catch(() => {
+              // Fallback to relative filename if resolution fails
+              showPageDebug(`File saved: ${request.relativeFilename}`);
+              showDownloadStatus(request.relativeFilename);
+            });
+        } else if (request.relativeFilename) {
+          // Fallback case without downloadId
+          showPageDebug(`File saved: ${request.relativeFilename}`);
+          showDownloadStatus(request.relativeFilename);
+        } else if (request.filename) {
+          // Legacy support for direct filename
+          showPageDebug(`File saved: ${request.filename}`);
+          showDownloadStatus(request.filename);
+        }
+        sendResponse({ success: true });
+      } catch (error) {
+        sendResponse({ success: false });
       }
       return true;
     }

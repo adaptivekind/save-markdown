@@ -6,4 +6,7 @@
 coverage/
 dist/
 node_modules/
+playwright-report/
 release/
+target/
+test-results/

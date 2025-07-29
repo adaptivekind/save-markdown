@@ -9,6 +9,7 @@ export interface ExtensionOptions {
   debugMode: boolean;
   enableAutoCapture: boolean;
   enableSuggestedRules: boolean;
+  showStatusWindow: boolean;
 }
 
 export interface SaveRule {

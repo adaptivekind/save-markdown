@@ -25,6 +25,7 @@ Title: {title}
   debugMode: false,
   enableAutoCapture: true,
   enableSuggestedRules: true,
+  showStatusWindow: false,
 };
 
 class OptionsManager {
@@ -124,6 +125,8 @@ class OptionsManager {
     (
       document.getElementById('enableSuggestedRules') as HTMLSelectElement
     ).value = String(options.enableSuggestedRules);
+    (document.getElementById('showStatusWindow') as HTMLSelectElement).value =
+      String(options.showStatusWindow);
   }
 
   private getFormData(): ExtensionOptions {
@@ -157,6 +160,9 @@ class OptionsManager {
           .value === 'true',
       enableSuggestedRules:
         (document.getElementById('enableSuggestedRules') as HTMLSelectElement)
+          .value === 'true',
+      showStatusWindow:
+        (document.getElementById('showStatusWindow') as HTMLSelectElement)
           .value === 'true',
     };
   }
