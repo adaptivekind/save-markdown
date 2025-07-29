@@ -99,35 +99,6 @@ When('I open the extension options page', async function (this: CustomWorld) {
   await page.waitForSelector('#addSuggestedRule', { timeout: 10000 });
 });
 
-When(
-  'I add a new suggested rule with the following details:',
-  async function (this: CustomWorld, dataTable: DataTable) {
-    const data = dataTable.rowsHash();
-
-    // Click "Add Suggested Rule" button
-    await page.click('#addSuggestedRule');
-
-    // Wait for the form to appear
-    await page.waitForSelector('#addSuggestedRuleForm', { timeout: 5000 });
-
-    // Clear and fill in the form fields
-    const nameInput = page.locator('#suggestedRuleName');
-    await nameInput.clear();
-    await nameInput.fill(data.name || '');
-
-    const domainInput = page.locator('#suggestedRuleDomain');
-    await domainInput.clear();
-    await domainInput.fill(data.domain || '');
-
-    const xpathInput = page.locator('#suggestedRuleXPath');
-    await xpathInput.clear();
-    await xpathInput.fill(data.xpath || '');
-
-    // Save the rule
-    await page.click('#saveSuggestedRule');
-  },
-);
-
 When('I enable the status window', async function (this: CustomWorld) {
   // Enable status window using the toggle in options page - check current state first
   const statusWindowSelect = page.locator('#showStatusWindow');
@@ -263,18 +234,6 @@ Then(
   },
 );
 
-When('I enable auto save for the rule', async function (this: CustomWorld) {
-  // Enable auto save for the last added rule - check if it's already enabled
-  const autoSaveCheckbox = page
-    .locator('input[type="checkbox"][name="autoSave"]')
-    .last();
-  const isChecked = await autoSaveCheckbox.isChecked();
-
-  if (!isChecked) {
-    await autoSaveCheckbox.check();
-  }
-});
-
 When(
   'I enable auto save for the suggested rule',
   async function (this: CustomWorld) {
@@ -282,48 +241,6 @@ When(
     const addSaveRuleButton = page.locator('.add-save-rule-button').first();
     await addSaveRuleButton.waitFor({ state: 'visible', timeout: 5000 });
     await addSaveRuleButton.click();
-  },
-);
-
-When(
-  'I add the save rule for the suggested rule',
-  async function (this: CustomWorld) {
-    // Look for the suggested save rule element that appears on the page
-    // This could be a button, link, or other element that allows adding the rule
-    // Try multiple possible selectors that might be used for adding a save rule
-    const possibleSelectors = [
-      'button:has-text("Add Save Rule")',
-      'button:has-text("ADD SAVE RULE")',
-      '.add-save-rule-button',
-      '.suggested-save-rule button',
-      '[data-action="add-save-rule"]',
-      'button[title*="Add Save Rule"]',
-    ];
-
-    let elementFound = false;
-
-    for (const selector of possibleSelectors) {
-      try {
-        const element = page.locator(selector).first();
-        await element.waitFor({ state: 'visible', timeout: 2000 });
-        await element.click();
-        elementFound = true;
-        break;
-      } catch (error) {
-        // Continue to next selector
-        continue;
-      }
-    }
-
-    if (!elementFound) {
-      // If no button found, log current page state for debugging
-      console.log('Current page URL:', await page.url());
-      console.log(
-        'Available buttons:',
-        await page.locator('button').allTextContents(),
-      );
-      throw new Error('Could not find "Add Save Rule" button on the page');
-    }
   },
 );
 
