@@ -3,6 +3,8 @@
  */
 
 import { SaveRule } from './types';
+import { htmlToMarkdown } from './htmlToMarkdown';
+import { toggleSaveRule, createRuleFromElement } from './saveRules';
 
 // Common font and styling constants
 const COMMON_FONT_FAMILY =
@@ -124,8 +126,15 @@ export function createAutoCaptureLabel(
     text: 'SAVE',
     backgroundColor: '#28a745',
     clickHandler: async () => {
-      const { saveMarkdownFile } = await import('./saveMarkdown');
-      await saveMarkdownFile(element);
+      const markdown = htmlToMarkdown(element);
+
+      // Send to background script for saving
+      chrome.runtime.sendMessage({
+        action: 'saveMarkdown',
+        content: markdown,
+        url: window.location.href,
+        title: document.title,
+      });
     },
   });
 
@@ -134,7 +143,6 @@ export function createAutoCaptureLabel(
     text: rule.enabled ? 'DISABLE' : 'ENABLE',
     backgroundColor: rule.enabled ? '#dc3545' : '#28a745',
     clickHandler: async () => {
-      const { toggleSaveRule } = await import('./saveRules');
       await toggleSaveRule(rule.id);
       // Remove and recreate the label to reflect new state
       container.remove();
@@ -183,8 +191,15 @@ export function createSuggestedSaveLabel(element: HTMLElement): void {
     text: 'SAVE',
     backgroundColor: '#28a745',
     clickHandler: async () => {
-      const { saveMarkdownFile } = await import('./saveMarkdown');
-      await saveMarkdownFile(element);
+      const markdown = htmlToMarkdown(element);
+
+      // Send to background script for saving
+      chrome.runtime.sendMessage({
+        action: 'saveMarkdown',
+        content: markdown,
+        url: window.location.href,
+        title: document.title,
+      });
     },
   });
 
@@ -195,7 +210,6 @@ export function createSuggestedSaveLabel(element: HTMLElement): void {
     borderRadius: '0 0 4px 4px',
     additionalStyles: 'font-size: 8px;',
     clickHandler: async () => {
-      const { createRuleFromElement } = await import('./saveRules');
       await createRuleFromElement(element);
       // Remove suggested label since we now have an auto rule
       container.remove();
