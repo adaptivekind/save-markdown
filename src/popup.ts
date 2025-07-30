@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
           );
         },
       );
-    } catch (error) {
+    } catch (_error) {
       // Ignore errors - this is just informational
     }
   }

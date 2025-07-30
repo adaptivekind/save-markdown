@@ -133,7 +133,7 @@ chrome.runtime.onMessage.addListener(
         const hasSuggestedElement =
           document.querySelector('[data-markdown-suggested="true"]') !== null;
         sendResponse({ hasSuggestedElement });
-      } catch (error) {
+      } catch (_error) {
         sendResponse({ hasSuggestedElement: false });
       }
       return true;
@@ -144,7 +144,7 @@ chrome.runtime.onMessage.addListener(
           setStatusWindowEnabled(request.enabled);
         }
         sendResponse({ success: true });
-      } catch (error) {
+      } catch (_error) {
         sendResponse({ success: false });
       }
       return true;
@@ -177,7 +177,7 @@ chrome.runtime.onMessage.addListener(
           showDownloadStatus(request.filename);
         }
         sendResponse({ success: true });
-      } catch (error) {
+      } catch (_error) {
         sendResponse({ success: false });
       }
       return true;

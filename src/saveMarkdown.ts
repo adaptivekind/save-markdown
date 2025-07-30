@@ -83,7 +83,7 @@ export async function saveMarkdownFile(
               relativeFilename: filename,
               absolutePath: absolutePath,
             });
-          } catch (error) {
+          } catch (_error) {
             // Fallback to sending without absolute path if resolution fails
             chrome.tabs.sendMessage(tabId, {
               action: 'fileSaved',

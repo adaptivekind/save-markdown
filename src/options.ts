@@ -97,7 +97,7 @@ class OptionsManager {
     try {
       const result = await chrome.storage.sync.get(defaultOptions);
       this.populateForm(result as ExtensionOptions);
-    } catch (error) {
+    } catch (_error) {
       this.showStatus('Failed to load options', 'error');
     }
   }
@@ -172,7 +172,7 @@ class OptionsManager {
       const options = this.getFormData();
       await chrome.storage.sync.set(options);
       this.showStatus('Options saved successfully!', 'success');
-    } catch (error) {
+    } catch (_error) {
       this.showStatus('Failed to save options', 'error');
     }
   }
@@ -186,7 +186,7 @@ class OptionsManager {
         this.populateForm(defaultOptions);
         this.updateFilenamePreview();
         this.showStatus('Options reset to defaults', 'success');
-      } catch (error) {
+      } catch (_error) {
         this.showStatus('Failed to reset options', 'error');
       }
     }
@@ -204,7 +204,7 @@ class OptionsManager {
       link.click();
 
       this.showStatus('Settings exported successfully!', 'success');
-    } catch (error) {
+    } catch (_error) {
       this.showStatus('Failed to export settings', 'error');
     }
   }
@@ -226,7 +226,7 @@ class OptionsManager {
       this.populateForm(options);
       this.updateFilenamePreview();
       this.showStatus('Settings imported successfully!', 'success');
-    } catch (error) {
+    } catch (_error) {
       this.showStatus(
         'Failed to import settings: Invalid file format',
         'error',
@@ -364,7 +364,7 @@ class OptionsManager {
       await removeSaveRule(id);
       await this.loadSaveRules();
       this.showStatus('Save rule deleted successfully', 'success');
-    } catch (error) {
+    } catch (_error) {
       this.showStatus('Failed to delete save rule', 'error');
     }
   }
@@ -440,7 +440,7 @@ class OptionsManager {
 
       await this.loadSaveRules();
       this.showStatus('Save rule updated successfully', 'success');
-    } catch (error) {
+    } catch (_error) {
       this.showStatus('Failed to update save rule', 'error');
     }
   }
@@ -619,7 +619,7 @@ class OptionsManager {
       await this.loadSuggestedRules();
       this.hideAddSuggestedRuleForm();
       this.showStatus('Suggested rule added successfully', 'success');
-    } catch (error) {
+    } catch (_error) {
       this.showStatus('Failed to add suggested rule', 'error');
     }
   }
@@ -633,7 +633,7 @@ class OptionsManager {
       await removeSuggestedRule(id);
       await this.loadSuggestedRules();
       this.showStatus('Suggested rule deleted successfully', 'success');
-    } catch (error) {
+    } catch (_error) {
       this.showStatus('Failed to delete suggested rule', 'error');
     }
   }
@@ -727,7 +727,7 @@ class OptionsManager {
 
       await this.loadSuggestedRules();
       this.showStatus('Suggested rule updated successfully', 'success');
-    } catch (error) {
+    } catch (_error) {
       this.showStatus('Failed to update suggested rule', 'error');
     }
   }

@@ -232,7 +232,7 @@ export abstract class BaseRuleManager {
       await this.deleteRule(id);
       await this.loadAndDisplayRules();
       this.statusCallback('Rule deleted successfully', 'success');
-    } catch (error) {
+    } catch (_error) {
       this.statusCallback('Failed to delete rule', 'error');
     }
   }
@@ -297,7 +297,7 @@ export abstract class BaseRuleManager {
       await this.updateRule(id, updates);
       await this.loadAndDisplayRules();
       this.statusCallback('Rule updated successfully', 'success');
-    } catch (error) {
+    } catch (_error) {
       this.statusCallback('Failed to update rule', 'error');
     }
   }
@@ -309,7 +309,7 @@ export abstract class BaseRuleManager {
     try {
       const rules = await this.getRules();
       this.displayRules(rules);
-    } catch (error) {
+    } catch (_error) {
       this.statusCallback('Failed to load rules', 'error');
     }
   }
