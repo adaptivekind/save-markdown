@@ -18,9 +18,9 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --watchAll=false",
-    "test:e2e": "cucumber-js",
-    "test:e2e:headed": "HEADED=true cucumber-js",
-    "test:e2e:report": "cucumber-js --profile report && echo 'Report generated at: reports/cucumber_report.html'",
+    "test:e2e": "NODE_OPTIONS='--no-deprecation' cucumber-js",
+    "test:e2e:headed": "NODE_OPTIONS='--no-deprecation' HEADED=true cucumber-js",
+    "test:e2e:report": "NODE_OPTIONS='--no-deprecation' cucumber-js --profile report && echo 'Report generated at: reports/cucumber_report.html'",
     "prepare": "husky"
   },
   "devDependencies": {

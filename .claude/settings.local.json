@@ -29,7 +29,8 @@
       "Bash(npm test:*)",
       "Bash(npm run test:e2e:*)",
       "Bash(npm run test:cucumber:*)",
-      "Bash(open /Users/ian/projects/my/save-markdown/reports/cucumber_report.html)"
+      "Bash(open /Users/ian/projects/my/save-markdown/reports/cucumber_report.html)",
+      "Bash(node:*)"
     ],
     "deny": []
   }
