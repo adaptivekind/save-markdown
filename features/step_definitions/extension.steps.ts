@@ -131,6 +131,12 @@ When('I enable the status window', async function (this: CustomWorld) {
   }
 });
 
+When('I disable the status window', async function (this: CustomWorld) {
+  // Disable status window using the toggle in options page
+  const statusWindowSelect = page.locator('#showStatusWindow');
+  await statusWindowSelect.selectOption('false');
+});
+
 When('I save the options', async function (this: CustomWorld) {
   // Save the options to ensure the setting is persisted
   await page.click('#saveOptions');
@@ -154,45 +160,10 @@ When('I navigate to the test page', async function (this: CustomWorld) {
 });
 
 When('I click the save rule button', async function (this: CustomWorld) {
-  // Look for various possible save rule buttons on the test page
-  const possibleSelectors = [
-    '.add-save-rule-button',
-    'button:has-text("Save Rule")',
-    'button:has-text("ADD SAVE RULE")',
-    'button:has-text("Save")',
-    '[data-action="save-rule"]',
-    '.save-rule-btn',
-    '.suggested-save-rule button',
-  ];
-
-  let elementFound = false;
-
-  for (const selector of possibleSelectors) {
-    try {
-      const element = page.locator(selector).first();
-      await element.waitFor({ state: 'visible', timeout: 3000 });
-      await element.click();
-      elementFound = true;
-      break;
-    } catch (error) {
-      // Continue to next selector
-      continue;
-    }
-  }
-
-  if (!elementFound) {
-    // If no button found, log current page state for debugging
-    console.log('Current page URL:', await page.url());
-    console.log(
-      'Available buttons:',
-      await page.locator('button').allTextContents(),
-    );
-    console.log(
-      'Available clickable elements:',
-      await page.locator('[role="button"], .button, .btn').allTextContents(),
-    );
-    throw new Error('Could not find save rule button on the page');
-  }
+  // Look for the save rule button on the test page
+  const addSaveRuleButton = page.locator('.add-save-rule-button').first();
+  await addSaveRuleButton.waitFor({ state: 'visible', timeout: 5000 });
+  await addSaveRuleButton.click();
 });
 
 Then('the status window should be visible', async function (this: CustomWorld) {
@@ -269,3 +240,194 @@ When(
 When('I reload the page', async function (this: CustomWorld) {
   await page.reload();
 });
+
+When('I open the extension popup', async function (this: CustomWorld) {
+  // Open the extension popup
+  const popupUrl = `chrome-extension://${extensionId}/popup.html`;
+  page = await context.newPage();
+  this.page = page; // Set page reference for screenshots
+  await page.goto(popupUrl);
+
+  // Wait for popup to load
+  await page.waitForSelector('body', { timeout: 5000 });
+});
+
+When('I toggle the extension off', async function (this: CustomWorld) {
+  // Check if extension is currently enabled by looking at the hidden checkbox
+  const extensionCheckbox = page.locator('#extensionEnabled').first();
+  await extensionCheckbox.waitFor({ state: 'attached', timeout: 5000 });
+
+  const isChecked = await extensionCheckbox.isChecked();
+  if (isChecked) {
+    // Click the visible toggle UI to turn off the extension
+    const toggleSwitch = page.locator('#autoCaptureToggle').first();
+    await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+    await toggleSwitch.click();
+  }
+});
+
+When('I toggle the extension on', async function (this: CustomWorld) {
+  // Check if extension is currently disabled by looking at the hidden checkbox
+  const extensionCheckbox = page.locator('#extensionEnabled').first();
+  await extensionCheckbox.waitFor({ state: 'attached', timeout: 5000 });
+
+  const isChecked = await extensionCheckbox.isChecked();
+  if (!isChecked) {
+    // Click the visible toggle UI to turn on the extension
+    const toggleSwitch = page.locator('#autoCaptureToggle').first();
+    await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+    await toggleSwitch.click();
+  }
+});
+
+Given('the extension is toggled off', async function (this: CustomWorld) {
+  // Open popup and toggle extension off as a precondition
+  const popupUrl = `chrome-extension://${extensionId}/popup.html`;
+  const popupPage = await context.newPage();
+  await popupPage.goto(popupUrl);
+  await popupPage.waitForSelector('body', { timeout: 5000 });
+
+  // Check if extension is currently enabled by looking at the hidden checkbox
+  const extensionCheckbox = popupPage.locator('#extensionEnabled').first();
+  await extensionCheckbox.waitFor({ state: 'attached', timeout: 5000 });
+
+  const isChecked = await extensionCheckbox.isChecked();
+  if (isChecked) {
+    // Click the visible toggle UI to turn off the extension
+    const toggleSwitch = popupPage.locator('#autoCaptureToggle').first();
+    await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+    await toggleSwitch.click();
+  }
+
+  await popupPage.close();
+});
+
+When('I close the popup', async function (this: CustomWorld) {
+  // Close the current popup page
+  if (page) {
+    await page.close();
+  }
+});
+
+Then(
+  'no suggested save rules should appear',
+  async function (this: CustomWorld) {
+    // Check that no suggested save rule elements appear on the page
+    const suggestedElements = page.locator(
+      '.markdown-suggested-container, .add-save-rule-button',
+    );
+    const count = await suggestedElements.count();
+    assert(count === 0, `Expected no suggested save rules, but found ${count}`);
+  },
+);
+
+Then('the extension should be inactive', async function (this: CustomWorld) {
+  // Verify that the extension is not adding any UI elements to the page
+  const extensionElements = page.locator(
+    '.markdown-capture-container, .markdown-suggested-container',
+  );
+  const count = await extensionElements.count();
+  assert(count === 0, `Expected no extension elements, but found ${count}`);
+});
+
+Then('suggested save rules should appear', async function (this: CustomWorld) {
+  // Check that suggested save rule elements appear on the page
+  const suggestedElements = page.locator(
+    '.markdown-suggested-container, .add-save-rule-button',
+  );
+  await suggestedElements.first().waitFor({ state: 'visible', timeout: 5000 });
+
+  const count = await suggestedElements.count();
+  assert(
+    count > 0,
+    `Expected suggested save rules to appear, but found ${count}`,
+  );
+});
+
+Then(
+  'the extension toggle should be in the off state',
+  async function (this: CustomWorld) {
+    // Verify the toggle switch is in the off/unchecked state (checkbox may be hidden)
+    const extensionCheckbox = page.locator('#extensionEnabled').first();
+    await extensionCheckbox.waitFor({ state: 'attached', timeout: 5000 });
+
+    const isChecked = await extensionCheckbox.isChecked();
+    assert(
+      !isChecked,
+      'Expected extension toggle to be in the off state, but it was on',
+    );
+  },
+);
+
+Then(
+  'the debug panel should not be visible',
+  async function (this: CustomWorld) {
+    // Check that no debug panel elements are visible on the page
+    const debugElements = page.locator(
+      '#element-debug-box, .element-debug-box, [data-debug="true"]',
+    );
+    const count = await debugElements.count();
+    assert(count === 0, `Expected no debug panel elements, but found ${count}`);
+  },
+);
+
+Then(
+  'the status panel should not be visible',
+  async function (this: CustomWorld) {
+    // Check that no status window/panel elements are visible on the page
+    const statusElements = page.locator(
+      '#markdown-save-status-window, .markdown-save-status-window, .status-window',
+    );
+    const count = await statusElements.count();
+    assert(
+      count === 0,
+      `Expected no status panel elements, but found ${count}`,
+    );
+  },
+);
+
+Then('I can click the save rule button', async function (this: CustomWorld) {
+  // Look for the save rule button and click it
+  const addSaveRuleButton = page.locator('.add-save-rule-button').first();
+  await addSaveRuleButton.waitFor({ state: 'visible', timeout: 5000 });
+  await addSaveRuleButton.click();
+});
+
+Then(
+  'no elements should have extension outlines',
+  async function (this: CustomWorld) {
+    // Check that no elements have extension-added outline styling
+    const result = await page.evaluate(() => {
+      const elementsWithOutlines = Array.from(
+        document.querySelectorAll('*'),
+      ).filter(element => {
+        const htmlElement = element as HTMLElement;
+        const outline = htmlElement.style.outline;
+        const outlineOffset = htmlElement.style.outlineOffset;
+
+        // Check for extension-specific outline patterns
+        return (
+          outline.includes('#007cba') || // Extension blue color
+          outline.includes('2px solid') ||
+          outline.includes('2px dashed') ||
+          outlineOffset === '2px'
+        );
+      });
+
+      return {
+        count: elementsWithOutlines.length,
+        elements: elementsWithOutlines.map(el => ({
+          tagName: el.tagName,
+          className: el.className,
+          outline: (el as HTMLElement).style.outline,
+          outlineOffset: (el as HTMLElement).style.outlineOffset,
+        })),
+      };
+    });
+
+    assert(
+      result.count === 0,
+      `Expected no elements with extension outlines, but found ${result.count}: ${JSON.stringify(result.elements)}`,
+    );
+  },
+);

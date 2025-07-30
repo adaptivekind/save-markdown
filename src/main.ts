@@ -1,5 +1,9 @@
 import { htmlToMarkdown } from './htmlToMarkdown';
-import { initializePageDebugBox, showPageDebug } from './debugPage';
+import {
+  initializePageDebugBox,
+  showPageDebug,
+  setDebugEnabled,
+} from './debugPage';
 import {
   initializeStatusWindow,
   showDownloadStatus,
@@ -63,14 +67,8 @@ interface RuntimeMessage {
   filename?: string;
 }
 
-// Initialize page debug box
-initializePageDebugBox();
-
-// Initialize status window
-initializeStatusWindow();
-
-// Initialize auto capture on page load
-initializeAutoCapture();
+// Initialize extension based on enabled state
+initializeExtension();
 
 // Listen for messages from popup and background
 chrome.runtime.onMessage.addListener(
@@ -295,6 +293,73 @@ async function createSaveRule(element: HTMLElement): Promise<void> {
 
   // Refresh auto capture elements
   await initializeAutoCapture();
+}
+
+// Initialize extension based on settings
+async function initializeExtension(): Promise<void> {
+  const settings = await chrome.storage.sync.get(['enableAutoCapture']);
+  const isEnabled = settings.enableAutoCapture !== false; // Default to true
+
+  if (isEnabled) {
+    // Enable debug functionality
+    setDebugEnabled(true);
+
+    // Initialize page debug box
+    initializePageDebugBox();
+
+    // Initialize status window (respects user's showStatusWindow setting)
+    initializeStatusWindow();
+
+    // Initialize auto capture
+    await initializeAutoCapture();
+  }
+}
+
+// Listen for storage changes to react to extension toggle
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'sync' && changes.enableAutoCapture) {
+    const newValue = changes.enableAutoCapture.newValue;
+    if (newValue === false) {
+      // Extension was disabled - clean up all extension functionality
+      cleanupExtensionUI();
+    } else {
+      // Extension was enabled - reinitialize everything
+      initializeExtension();
+    }
+  }
+});
+
+function cleanupExtensionUI(): void {
+  // Remove all extension-added UI elements
+  const extensionElements = document.querySelectorAll(
+    '.markdown-capture-container, .markdown-suggested-container, .markdown-save-status-window, #element-debug-box',
+  );
+  extensionElements.forEach(element => element.remove());
+
+  // Remove outlines from highlighted elements
+  const highlightedElements = document.querySelectorAll(
+    '[data-markdown-capture], [data-markdown-suggested]',
+  );
+  highlightedElements.forEach(element => {
+    const htmlElement = element as HTMLElement;
+    htmlElement.style.outline = '';
+    htmlElement.style.outlineOffset = '';
+  });
+
+  // Remove any data attributes we added
+  const elementsWithRuleId = document.querySelectorAll(
+    '[data-suggested-rule-id], [data-rule-id], [data-markdown-capture], [data-markdown-suggested]',
+  );
+  elementsWithRuleId.forEach(element => {
+    element.removeAttribute('data-suggested-rule-id');
+    element.removeAttribute('data-rule-id');
+    element.removeAttribute('data-markdown-capture');
+    element.removeAttribute('data-markdown-suggested');
+  });
+
+  // Disable debug and status functionality
+  setDebugEnabled(false);
+  setStatusWindowEnabled(false);
 }
 
 // Auto capture functions
