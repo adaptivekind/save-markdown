@@ -9,7 +9,7 @@ import { SaveRuleManager } from './saveRuleManager';
 import { SuggestedRuleManager } from './suggestedRuleManager';
 
 const defaultOptions: ExtensionOptions = {
-  saveDirectory: '~/Downloads',
+  saveDirectory: '~/Downloads/markdown',
   filenameTemplate: '{title}.md',
   useDomainSubfolder: true,
   includeMetadata: true,

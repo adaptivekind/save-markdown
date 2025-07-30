@@ -32,7 +32,7 @@ export async function saveMarkdownFile(
       'useDomainSubfolder',
       'showStatusWindow',
     ])) as Config;
-    const directory = config.saveDirectory || '~/Downloads';
+    const directory = config.saveDirectory || '~/Downloads/markdown';
     const template = config.filenameTemplate || '{title}_{timestamp}.md';
     const useDomainSubfolder = config.useDomainSubfolder !== false;
 
