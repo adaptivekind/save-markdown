@@ -293,21 +293,16 @@ Given('the extension is toggled off', async function (this: CustomWorld) {
   await popupPage.goto(popupUrl);
   await popupPage.waitForSelector('body', { timeout: 5000 });
 
+  // Check if extension is currently enabled by looking at the hidden checkbox
   const extensionCheckbox = popupPage.locator('#extensionEnabled').first();
   await extensionCheckbox.waitFor({ state: 'attached', timeout: 5000 });
 
   const isChecked = await extensionCheckbox.isChecked();
   if (isChecked) {
-    // Use JavaScript to directly set the checkbox state and trigger change event
-    await popupPage.evaluate(() => {
-      const checkbox = document.getElementById(
-        'extensionEnabled',
-      ) as HTMLInputElement;
-      if (checkbox && checkbox.checked) {
-        checkbox.checked = false;
-        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
+    // Click the visible toggle UI to turn off the extension
+    const toggleSwitch = popupPage.locator('#autoCaptureToggle').first();
+    await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+    await toggleSwitch.click();
   }
 
   await popupPage.close();
