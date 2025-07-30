@@ -247,42 +247,30 @@ When('I open the extension popup', async function (this: CustomWorld) {
 });
 
 When('I toggle the extension off', async function (this: CustomWorld) {
-  // Find the extension toggle checkbox (it may be hidden)
+  // Check if extension is currently enabled by looking at the hidden checkbox
   const extensionCheckbox = page.locator('#extensionEnabled').first();
   await extensionCheckbox.waitFor({ state: 'attached', timeout: 5000 });
 
   const isChecked = await extensionCheckbox.isChecked();
   if (isChecked) {
-    // Use JavaScript to directly set the checkbox state and trigger change event
-    await page.evaluate(() => {
-      const checkbox = document.getElementById(
-        'extensionEnabled',
-      ) as HTMLInputElement;
-      if (checkbox && checkbox.checked) {
-        checkbox.checked = false;
-        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
+    // Click the visible toggle UI to turn off the extension
+    const toggleSwitch = page.locator('#autoCaptureToggle').first();
+    await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+    await toggleSwitch.click();
   }
 });
 
 When('I toggle the extension on', async function (this: CustomWorld) {
-  // Find and click the extension toggle to turn it on (checkbox may be hidden)
+  // Check if extension is currently disabled by looking at the hidden checkbox
   const extensionCheckbox = page.locator('#extensionEnabled').first();
   await extensionCheckbox.waitFor({ state: 'attached', timeout: 5000 });
 
   const isChecked = await extensionCheckbox.isChecked();
   if (!isChecked) {
-    // Use JavaScript to directly set the checkbox state and trigger change event
-    await page.evaluate(() => {
-      const checkbox = document.getElementById(
-        'extensionEnabled',
-      ) as HTMLInputElement;
-      if (checkbox && !checkbox.checked) {
-        checkbox.checked = true;
-        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
+    // Click the visible toggle UI to turn on the extension
+    const toggleSwitch = page.locator('#autoCaptureToggle').first();
+    await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+    await toggleSwitch.click();
   }
 });
 
