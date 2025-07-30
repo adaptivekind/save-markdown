@@ -269,3 +269,138 @@ When(
 When('I reload the page', async function (this: CustomWorld) {
   await page.reload();
 });
+
+When('I open the extension popup', async function (this: CustomWorld) {
+  // Open the extension popup
+  const popupUrl = `chrome-extension://${extensionId}/popup.html`;
+  page = await context.newPage();
+  this.page = page; // Set page reference for screenshots
+  await page.goto(popupUrl);
+
+  // Wait for popup to load
+  await page.waitForSelector('body', { timeout: 5000 });
+});
+
+When('I toggle the extension off', async function (this: CustomWorld) {
+  // Find and click the extension toggle to turn it off
+  const toggleSwitch = page
+    .locator(
+      '#extensionEnabled, input[type="checkbox"][name="enabled"], .extension-toggle',
+    )
+    .first();
+  await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+
+  const isChecked = await toggleSwitch.isChecked();
+  if (isChecked) {
+    await toggleSwitch.uncheck();
+  }
+});
+
+When('I toggle the extension on', async function (this: CustomWorld) {
+  // Find and click the extension toggle to turn it on
+  const toggleSwitch = page
+    .locator(
+      '#extensionEnabled, input[type="checkbox"][name="enabled"], .extension-toggle',
+    )
+    .first();
+  await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+
+  const isChecked = await toggleSwitch.isChecked();
+  if (!isChecked) {
+    await toggleSwitch.check();
+  }
+});
+
+Given('the extension is toggled off', async function (this: CustomWorld) {
+  // Open popup and toggle extension off as a precondition
+  const popupUrl = `chrome-extension://${extensionId}/popup.html`;
+  const popupPage = await context.newPage();
+  await popupPage.goto(popupUrl);
+  await popupPage.waitForSelector('body', { timeout: 5000 });
+
+  const toggleSwitch = popupPage
+    .locator(
+      '#extensionEnabled, input[type="checkbox"][name="enabled"], .extension-toggle',
+    )
+    .first();
+  await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+
+  const isChecked = await toggleSwitch.isChecked();
+  if (isChecked) {
+    await toggleSwitch.uncheck();
+  }
+
+  await popupPage.close();
+});
+
+When('I close the popup', async function (this: CustomWorld) {
+  // Close the current popup page
+  if (page) {
+    await page.close();
+  }
+});
+
+When('I open the extension popup again', async function (this: CustomWorld) {
+  // Open the extension popup again
+  const popupUrl = `chrome-extension://${extensionId}/popup.html`;
+  page = await context.newPage();
+  this.page = page; // Set page reference for screenshots
+  await page.goto(popupUrl);
+
+  // Wait for popup to load
+  await page.waitForSelector('body', { timeout: 5000 });
+});
+
+Then(
+  'no suggested save rules should appear',
+  async function (this: CustomWorld) {
+    // Check that no suggested save rule elements appear on the page
+    const suggestedElements = page.locator(
+      '.markdown-suggested-container, .add-save-rule-button',
+    );
+    const count = await suggestedElements.count();
+    assert(count === 0, `Expected no suggested save rules, but found ${count}`);
+  },
+);
+
+Then('the extension should be inactive', async function (this: CustomWorld) {
+  // Verify that the extension is not adding any UI elements to the page
+  const extensionElements = page.locator(
+    '.markdown-capture-container, .markdown-suggested-container',
+  );
+  const count = await extensionElements.count();
+  assert(count === 0, `Expected no extension elements, but found ${count}`);
+});
+
+Then('suggested save rules should appear', async function (this: CustomWorld) {
+  // Check that suggested save rule elements appear on the page
+  const suggestedElements = page.locator(
+    '.markdown-suggested-container, .add-save-rule-button',
+  );
+  await suggestedElements.first().waitFor({ state: 'visible', timeout: 5000 });
+
+  const count = await suggestedElements.count();
+  assert(
+    count > 0,
+    `Expected suggested save rules to appear, but found ${count}`,
+  );
+});
+
+Then(
+  'the extension toggle should be in the off state',
+  async function (this: CustomWorld) {
+    // Verify the toggle switch is in the off/unchecked state
+    const toggleSwitch = page
+      .locator(
+        '#extensionEnabled, input[type="checkbox"][name="enabled"], .extension-toggle',
+      )
+      .first();
+    await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+
+    const isChecked = await toggleSwitch.isChecked();
+    assert(
+      !isChecked,
+      'Expected extension toggle to be in the off state, but it was on',
+    );
+  },
+);
