@@ -154,45 +154,10 @@ When('I navigate to the test page', async function (this: CustomWorld) {
 });
 
 When('I click the save rule button', async function (this: CustomWorld) {
-  // Look for various possible save rule buttons on the test page
-  const possibleSelectors = [
-    '.add-save-rule-button',
-    'button:has-text("Save Rule")',
-    'button:has-text("ADD SAVE RULE")',
-    'button:has-text("Save")',
-    '[data-action="save-rule"]',
-    '.save-rule-btn',
-    '.suggested-save-rule button',
-  ];
-
-  let elementFound = false;
-
-  for (const selector of possibleSelectors) {
-    try {
-      const element = page.locator(selector).first();
-      await element.waitFor({ state: 'visible', timeout: 3000 });
-      await element.click();
-      elementFound = true;
-      break;
-    } catch (error) {
-      // Continue to next selector
-      continue;
-    }
-  }
-
-  if (!elementFound) {
-    // If no button found, log current page state for debugging
-    console.log('Current page URL:', await page.url());
-    console.log(
-      'Available buttons:',
-      await page.locator('button').allTextContents(),
-    );
-    console.log(
-      'Available clickable elements:',
-      await page.locator('[role="button"], .button, .btn').allTextContents(),
-    );
-    throw new Error('Could not find save rule button on the page');
-  }
+  // Look for the save rule button on the test page
+  const addSaveRuleButton = page.locator('.add-save-rule-button').first();
+  await addSaveRuleButton.waitFor({ state: 'visible', timeout: 5000 });
+  await addSaveRuleButton.click();
 });
 
 Then('the status window should be visible', async function (this: CustomWorld) {
@@ -282,32 +247,42 @@ When('I open the extension popup', async function (this: CustomWorld) {
 });
 
 When('I toggle the extension off', async function (this: CustomWorld) {
-  // Find and click the extension toggle to turn it off
-  const toggleSwitch = page
-    .locator(
-      '#extensionEnabled, input[type="checkbox"][name="enabled"], .extension-toggle',
-    )
-    .first();
-  await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+  // Find the extension toggle checkbox (it may be hidden)
+  const extensionCheckbox = page.locator('#extensionEnabled').first();
+  await extensionCheckbox.waitFor({ state: 'attached', timeout: 5000 });
 
-  const isChecked = await toggleSwitch.isChecked();
+  const isChecked = await extensionCheckbox.isChecked();
   if (isChecked) {
-    await toggleSwitch.uncheck();
+    // Use JavaScript to directly set the checkbox state and trigger change event
+    await page.evaluate(() => {
+      const checkbox = document.getElementById(
+        'extensionEnabled',
+      ) as HTMLInputElement;
+      if (checkbox && checkbox.checked) {
+        checkbox.checked = false;
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
   }
 });
 
 When('I toggle the extension on', async function (this: CustomWorld) {
-  // Find and click the extension toggle to turn it on
-  const toggleSwitch = page
-    .locator(
-      '#extensionEnabled, input[type="checkbox"][name="enabled"], .extension-toggle',
-    )
-    .first();
-  await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+  // Find and click the extension toggle to turn it on (checkbox may be hidden)
+  const extensionCheckbox = page.locator('#extensionEnabled').first();
+  await extensionCheckbox.waitFor({ state: 'attached', timeout: 5000 });
 
-  const isChecked = await toggleSwitch.isChecked();
+  const isChecked = await extensionCheckbox.isChecked();
   if (!isChecked) {
-    await toggleSwitch.check();
+    // Use JavaScript to directly set the checkbox state and trigger change event
+    await page.evaluate(() => {
+      const checkbox = document.getElementById(
+        'extensionEnabled',
+      ) as HTMLInputElement;
+      if (checkbox && !checkbox.checked) {
+        checkbox.checked = true;
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
   }
 });
 
@@ -318,16 +293,21 @@ Given('the extension is toggled off', async function (this: CustomWorld) {
   await popupPage.goto(popupUrl);
   await popupPage.waitForSelector('body', { timeout: 5000 });
 
-  const toggleSwitch = popupPage
-    .locator(
-      '#extensionEnabled, input[type="checkbox"][name="enabled"], .extension-toggle',
-    )
-    .first();
-  await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+  const extensionCheckbox = popupPage.locator('#extensionEnabled').first();
+  await extensionCheckbox.waitFor({ state: 'attached', timeout: 5000 });
 
-  const isChecked = await toggleSwitch.isChecked();
+  const isChecked = await extensionCheckbox.isChecked();
   if (isChecked) {
-    await toggleSwitch.uncheck();
+    // Use JavaScript to directly set the checkbox state and trigger change event
+    await popupPage.evaluate(() => {
+      const checkbox = document.getElementById(
+        'extensionEnabled',
+      ) as HTMLInputElement;
+      if (checkbox && checkbox.checked) {
+        checkbox.checked = false;
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
   }
 
   await popupPage.close();
@@ -389,15 +369,11 @@ Then('suggested save rules should appear', async function (this: CustomWorld) {
 Then(
   'the extension toggle should be in the off state',
   async function (this: CustomWorld) {
-    // Verify the toggle switch is in the off/unchecked state
-    const toggleSwitch = page
-      .locator(
-        '#extensionEnabled, input[type="checkbox"][name="enabled"], .extension-toggle',
-      )
-      .first();
-    await toggleSwitch.waitFor({ state: 'visible', timeout: 5000 });
+    // Verify the toggle switch is in the off/unchecked state (checkbox may be hidden)
+    const extensionCheckbox = page.locator('#extensionEnabled').first();
+    await extensionCheckbox.waitFor({ state: 'attached', timeout: 5000 });
 
-    const isChecked = await toggleSwitch.isChecked();
+    const isChecked = await extensionCheckbox.isChecked();
     assert(
       !isChecked,
       'Expected extension toggle to be in the off state, but it was on',
@@ -405,16 +381,36 @@ Then(
   },
 );
 
-Then('the debug panel should not be visible', async function (this: CustomWorld) {
-  // Check that no debug panel elements are visible on the page
-  const debugElements = page.locator('#element-debug-box, .element-debug-box, [data-debug="true"]');
-  const count = await debugElements.count();
-  assert(count === 0, `Expected no debug panel elements, but found ${count}`);
-});
+Then(
+  'the debug panel should not be visible',
+  async function (this: CustomWorld) {
+    // Check that no debug panel elements are visible on the page
+    const debugElements = page.locator(
+      '#element-debug-box, .element-debug-box, [data-debug="true"]',
+    );
+    const count = await debugElements.count();
+    assert(count === 0, `Expected no debug panel elements, but found ${count}`);
+  },
+);
 
-Then('the status panel should not be visible', async function (this: CustomWorld) {
-  // Check that no status window/panel elements are visible on the page
-  const statusElements = page.locator('#markdown-save-status-window, .markdown-save-status-window, .status-window');
-  const count = await statusElements.count();
-  assert(count === 0, `Expected no status panel elements, but found ${count}`);
+Then(
+  'the status panel should not be visible',
+  async function (this: CustomWorld) {
+    // Check that no status window/panel elements are visible on the page
+    const statusElements = page.locator(
+      '#markdown-save-status-window, .markdown-save-status-window, .status-window',
+    );
+    const count = await statusElements.count();
+    assert(
+      count === 0,
+      `Expected no status panel elements, but found ${count}`,
+    );
+  },
+);
+
+Then('I can click the save rule button', async function (this: CustomWorld) {
+  // Look for the save rule button and click it
+  const addSaveRuleButton = page.locator('.add-save-rule-button').first();
+  await addSaveRuleButton.waitFor({ state: 'visible', timeout: 5000 });
+  await addSaveRuleButton.click();
 });

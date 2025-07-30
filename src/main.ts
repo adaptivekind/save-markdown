@@ -1,5 +1,9 @@
 import { htmlToMarkdown } from './htmlToMarkdown';
-import { initializePageDebugBox, showPageDebug, setDebugEnabled } from './debugPage';
+import {
+  initializePageDebugBox,
+  showPageDebug,
+  setDebugEnabled,
+} from './debugPage';
 import {
   initializeStatusWindow,
   showDownloadStatus,
@@ -295,14 +299,18 @@ async function createSaveRule(element: HTMLElement): Promise<void> {
 async function initializeExtension(): Promise<void> {
   const settings = await chrome.storage.sync.get(['enableAutoCapture']);
   const isEnabled = settings.enableAutoCapture !== false; // Default to true
-  
+
   if (isEnabled) {
+    // Enable debug and status functionality
+    setDebugEnabled(true);
+    setStatusWindowEnabled(true);
+
     // Initialize page debug box
     initializePageDebugBox();
-    
+
     // Initialize status window
     initializeStatusWindow();
-    
+
     // Initialize auto capture
     await initializeAutoCapture();
   }
@@ -325,16 +333,18 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 function cleanupExtensionUI(): void {
   // Remove all extension-added UI elements
   const extensionElements = document.querySelectorAll(
-    '.markdown-capture-container, .markdown-suggested-container, .markdown-save-status-window, #element-debug-box'
+    '.markdown-capture-container, .markdown-suggested-container, .markdown-save-status-window, #element-debug-box',
   );
   extensionElements.forEach(element => element.remove());
-  
+
   // Remove any data attributes we added
-  const elementsWithRuleId = document.querySelectorAll('[data-suggested-rule-id]');
+  const elementsWithRuleId = document.querySelectorAll(
+    '[data-suggested-rule-id]',
+  );
   elementsWithRuleId.forEach(element => {
     element.removeAttribute('data-suggested-rule-id');
   });
-  
+
   // Disable debug and status functionality
   setDebugEnabled(false);
   setStatusWindowEnabled(false);

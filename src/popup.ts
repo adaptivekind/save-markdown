@@ -57,10 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
       chrome.storage.sync.set({ enableAutoCapture: newState }, function () {
         updateToggleState(autoCaptureToggle, newState);
         extensionEnabledCheckbox.checked = newState;
-        showStatus(
-          `Extension ${newState ? 'enabled' : 'disabled'}`,
-          'success',
-        );
+        showStatus(`Extension ${newState ? 'enabled' : 'disabled'}`, 'success');
       });
     });
   });
@@ -70,10 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const newState = extensionEnabledCheckbox.checked;
     chrome.storage.sync.set({ enableAutoCapture: newState }, function () {
       updateToggleState(autoCaptureToggle, newState);
-      showStatus(
-        `Extension ${newState ? 'enabled' : 'disabled'}`,
-        'success',
-      );
+      showStatus(`Extension ${newState ? 'enabled' : 'disabled'}`, 'success');
     });
   });
 
