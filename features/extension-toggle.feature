@@ -11,6 +11,8 @@ Feature: Extension Toggle in Popup
     And I navigate to the test page
     Then no suggested save rules should appear
     And the extension should be inactive
+    And the debug panel should not be visible
+    And the status panel should not be visible
 
   Scenario: Toggle extension on from popup when disabled
     Given I have the extension loaded in the browser

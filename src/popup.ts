@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const statusWindowToggle = document.getElementById(
     'statusWindowToggle',
   ) as HTMLDivElement;
+  const extensionEnabledCheckbox = document.getElementById(
+    'extensionEnabled',
+  ) as HTMLInputElement;
 
   // Check for suggested rules status on page load
   checkSuggestedRulesStatus();
@@ -36,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
   chrome.storage.sync.get(['enableAutoCapture'], function (result) {
     const isEnabled = result.enableAutoCapture !== false; // Default to true
     updateToggleState(autoCaptureToggle, isEnabled);
+    extensionEnabledCheckbox.checked = isEnabled;
   });
 
   // Load current status window setting and set toggle state
@@ -52,11 +56,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
       chrome.storage.sync.set({ enableAutoCapture: newState }, function () {
         updateToggleState(autoCaptureToggle, newState);
+        extensionEnabledCheckbox.checked = newState;
         showStatus(
-          `Markdown saving ${newState ? 'enabled' : 'disabled'}`,
+          `Extension ${newState ? 'enabled' : 'disabled'}`,
           'success',
         );
       });
+    });
+  });
+
+  // Also handle checkbox changes (for tests)
+  extensionEnabledCheckbox.addEventListener('change', function () {
+    const newState = extensionEnabledCheckbox.checked;
+    chrome.storage.sync.set({ enableAutoCapture: newState }, function () {
+      updateToggleState(autoCaptureToggle, newState);
+      showStatus(
+        `Extension ${newState ? 'enabled' : 'disabled'}`,
+        'success',
+      );
     });
   });
 

@@ -404,3 +404,17 @@ Then(
     );
   },
 );
+
+Then('the debug panel should not be visible', async function (this: CustomWorld) {
+  // Check that no debug panel elements are visible on the page
+  const debugElements = page.locator('#element-debug-box, .element-debug-box, [data-debug="true"]');
+  const count = await debugElements.count();
+  assert(count === 0, `Expected no debug panel elements, but found ${count}`);
+});
+
+Then('the status panel should not be visible', async function (this: CustomWorld) {
+  // Check that no status window/panel elements are visible on the page
+  const statusElements = page.locator('#markdown-save-status-window, .markdown-save-status-window, .status-window');
+  const count = await statusElements.count();
+  assert(count === 0, `Expected no status panel elements, but found ${count}`);
+});

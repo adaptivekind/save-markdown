@@ -4,6 +4,7 @@
 
 let pageDebugBox: HTMLElement | null = null;
 let debugMode = true;
+let debugEnabled = true;
 
 /**
  * Initializes the page debug box with settings from storage
@@ -56,7 +57,7 @@ function createPageDebugBox(): void {
  * Shows a debug message in the page debug box
  */
 export function showPageDebug(message: string): void {
-  if (!debugMode) return;
+  if (!debugMode || !debugEnabled) return;
 
   if (!pageDebugBox) {
     createPageDebugBox();
@@ -94,6 +95,17 @@ export function setDebugMode(enabled: boolean): void {
  */
 export function isDebugModeEnabled(): boolean {
   return debugMode;
+}
+
+/**
+ * Sets whether debug functionality is enabled (different from debug mode)
+ */
+export function setDebugEnabled(enabled: boolean): void {
+  debugEnabled = enabled;
+  if (!enabled && pageDebugBox) {
+    pageDebugBox.remove();
+    pageDebugBox = null;
+  }
 }
 
 /**
