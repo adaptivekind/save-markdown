@@ -21,7 +21,25 @@ const DEFAULT_SUGGESTED_RULES: SaveRule[] = [
     id: 'default_article',
     domain: '*', // All domains
     xpath: '//article',
-    name: 'Article element',
+    name: 'Article Element',
+    priority: 100,
+    created: new Date().toISOString(),
+    enabled: true,
+  },
+  {
+    id: 'article_class',
+    domain: '*', // All domains
+    xpath: '//*[contains(@class,"article")]',
+    name: 'Article Class',
+    priority: 100,
+    created: new Date().toISOString(),
+    enabled: true,
+  },
+  {
+    id: 'article_id',
+    domain: '*', // All domains
+    xpath: '//*[contains(@id,"article")]',
+    name: 'Article ID',
     priority: 100,
     created: new Date().toISOString(),
     enabled: true,
@@ -87,6 +105,13 @@ export async function updateSuggestedRule(
   updates: Partial<SaveRule>,
 ): Promise<void> {
   await updateSaveRule(id, updates, STORAGE_KEY);
+}
+
+/**
+ * Resets suggested rules to defaults
+ */
+export async function resetSuggestedRulesToDefaults(): Promise<void> {
+  await chrome.storage.sync.set({ [STORAGE_KEY]: DEFAULT_SUGGESTED_RULES });
 }
 
 /**

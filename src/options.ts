@@ -4,6 +4,7 @@ import {
   addSuggestedRule,
   removeSuggestedRule,
   updateSuggestedRule,
+  resetSuggestedRulesToDefaults,
 } from './suggestedRules';
 import { SaveRuleManager } from './saveRuleManager';
 import { SuggestedRuleManager } from './suggestedRuleManager';
@@ -183,8 +184,10 @@ class OptionsManager {
     ) {
       try {
         await chrome.storage.sync.set(defaultOptions);
+        await resetSuggestedRulesToDefaults();
         this.populateForm(defaultOptions);
         this.updateFilenamePreview();
+        await this.loadSuggestedRules();
         this.showStatus('Options reset to defaults', 'success');
       } catch (_error) {
         this.showStatus('Failed to reset options', 'error');
