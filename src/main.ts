@@ -301,14 +301,13 @@ async function initializeExtension(): Promise<void> {
   const isEnabled = settings.enableAutoCapture !== false; // Default to true
 
   if (isEnabled) {
-    // Enable debug and status functionality
+    // Enable debug functionality
     setDebugEnabled(true);
-    setStatusWindowEnabled(true);
 
     // Initialize page debug box
     initializePageDebugBox();
 
-    // Initialize status window
+    // Initialize status window (respects user's showStatusWindow setting)
     initializeStatusWindow();
 
     // Initialize auto capture
@@ -337,12 +336,25 @@ function cleanupExtensionUI(): void {
   );
   extensionElements.forEach(element => element.remove());
 
+  // Remove outlines from highlighted elements
+  const highlightedElements = document.querySelectorAll(
+    '[data-markdown-capture], [data-markdown-suggested]',
+  );
+  highlightedElements.forEach(element => {
+    const htmlElement = element as HTMLElement;
+    htmlElement.style.outline = '';
+    htmlElement.style.outlineOffset = '';
+  });
+
   // Remove any data attributes we added
   const elementsWithRuleId = document.querySelectorAll(
-    '[data-suggested-rule-id]',
+    '[data-suggested-rule-id], [data-rule-id], [data-markdown-capture], [data-markdown-suggested]',
   );
   elementsWithRuleId.forEach(element => {
     element.removeAttribute('data-suggested-rule-id');
+    element.removeAttribute('data-rule-id');
+    element.removeAttribute('data-markdown-capture');
+    element.removeAttribute('data-markdown-suggested');
   });
 
   // Disable debug and status functionality

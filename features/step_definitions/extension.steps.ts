@@ -131,6 +131,12 @@ When('I enable the status window', async function (this: CustomWorld) {
   }
 });
 
+When('I disable the status window', async function (this: CustomWorld) {
+  // Disable status window using the toggle in options page
+  const statusWindowSelect = page.locator('#showStatusWindow');
+  await statusWindowSelect.selectOption('false');
+});
+
 When('I save the options', async function (this: CustomWorld) {
   // Save the options to ensure the setting is persisted
   await page.click('#saveOptions');
@@ -386,3 +392,42 @@ Then('I can click the save rule button', async function (this: CustomWorld) {
   await addSaveRuleButton.waitFor({ state: 'visible', timeout: 5000 });
   await addSaveRuleButton.click();
 });
+
+Then(
+  'no elements should have extension outlines',
+  async function (this: CustomWorld) {
+    // Check that no elements have extension-added outline styling
+    const result = await page.evaluate(() => {
+      const elementsWithOutlines = Array.from(
+        document.querySelectorAll('*'),
+      ).filter(element => {
+        const htmlElement = element as HTMLElement;
+        const outline = htmlElement.style.outline;
+        const outlineOffset = htmlElement.style.outlineOffset;
+
+        // Check for extension-specific outline patterns
+        return (
+          outline.includes('#007cba') || // Extension blue color
+          outline.includes('2px solid') ||
+          outline.includes('2px dashed') ||
+          outlineOffset === '2px'
+        );
+      });
+
+      return {
+        count: elementsWithOutlines.length,
+        elements: elementsWithOutlines.map(el => ({
+          tagName: el.tagName,
+          className: el.className,
+          outline: (el as HTMLElement).style.outline,
+          outlineOffset: (el as HTMLElement).style.outlineOffset,
+        })),
+      };
+    });
+
+    assert(
+      result.count === 0,
+      `Expected no elements with extension outlines, but found ${result.count}: ${JSON.stringify(result.elements)}`,
+    );
+  },
+);
