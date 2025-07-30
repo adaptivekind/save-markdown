@@ -31,5 +31,5 @@ Feature: Extension Toggle in Popup
     When I open the extension popup
     And I toggle the extension off
     And I close the popup
-    And I open the extension popup again
+    And I open the extension popup
     Then the extension toggle should be in the off state

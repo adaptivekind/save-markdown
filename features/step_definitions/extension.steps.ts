@@ -320,17 +320,6 @@ When('I close the popup', async function (this: CustomWorld) {
   }
 });
 
-When('I open the extension popup again', async function (this: CustomWorld) {
-  // Open the extension popup again
-  const popupUrl = `chrome-extension://${extensionId}/popup.html`;
-  page = await context.newPage();
-  this.page = page; // Set page reference for screenshots
-  await page.goto(popupUrl);
-
-  // Wait for popup to load
-  await page.waitForSelector('body', { timeout: 5000 });
-});
-
 Then(
   'no suggested save rules should appear',
   async function (this: CustomWorld) {
