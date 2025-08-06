@@ -24,7 +24,10 @@ Store. It can be if there is interest. To install from source:
 ![suggested save](./docs/suggested-save.png)
 
 10. Click save once to save
-11. Click "Add Save Rule" to automatically save this rule on the current website.
+11. Click "Add Save Rule" to automatically save this rule on the current
+    website.
+12. Toggle it on and off easily from the pop up menu so you can enable it when
+    you want it.
 
 ## Core Capabilities
 
@@ -35,18 +38,6 @@ Create automated save rules for frequently accessed content. The extension can a
 ### Element Selection
 
 The extension provides visual feedback when selecting elements. Hover over any element to see a blue dashed overlay indicating the save boundary. Click to save the element, or press Escape to cancel selection.
-
-### Markdown Conversion
-
-The extension preserves the structure and formatting of HTML elements during conversion:
-
-- Headers maintain their hierarchy (H1-H6)
-- Text formatting (bold, italic, code, strikethrough) carries over
-- Links and images convert with proper markdown syntax
-- Lists preserve nesting and ordering
-- Tables maintain headers and alignment
-- Blockquotes and code blocks retain their structure
-- Complex nested elements are handled recursively
 
 ### Configuration Options
 
@@ -70,13 +61,9 @@ For technical users, the extension provides additional tools:
 
 ## Installation
 
-### Chrome Web Store
+### Local Dev Mode Installation
 
-The extension will be available on the Chrome Web Store once development stabilizes.
-
-### Local Installation
-
-If you prefer to install from source or want to contribute:
+Load in dev mode with hot reloading of local changes:
 
 1. Clone and build the extension:
 
@@ -84,7 +71,7 @@ If you prefer to install from source or want to contribute:
    git clone https://github.com/your-repo/save-markdown.git
    cd save-markdown
    npm install
-   npm run build
+   npm run dev
    ```
 
 2. Load in Chrome:
@@ -195,43 +182,6 @@ Domain: { domain }
 - Use context menu for quickest access
 - Create save rules for frequently visited content
 - Toggle rules to MANUAL SAVE mode when you want selective saving
-
-## Troubleshooting
-
-### Common Issues
-
-**"Content script not ready" error**
-
-- Solution: Refresh the page and try again
-- Cause: Page loaded before extension was ready
-
-**Element selection not working**
-
-- Check: Some pages (like chrome:// pages) block extensions
-- Try: Regular websites instead of internal Chrome pages
-- Solution: Refresh the page if save rule creation fails
-
-**Files not saving automatically**
-
-- Check: Enable Auto Save in extension settings
-- Enable auto-download: Chrome Settings - Downloads - Turn off "Ask where to save"
-- Verify: Save rules are set to AUTO SAVE mode, not MANUAL SAVE
-- Or: Allow downloads when Chrome prompts you
-
-**Files saving to wrong location**
-
-- Remember: Chrome extensions can only save to Downloads subfolders
-- Solution: Manually move files or use automated file organization tools
-
-### Debug Mode
-
-Enable debug mode in settings to see detailed information about:
-
-- Extension communication between scripts
-- Save rule creation and XPath generation
-- Auto save rule matching and execution
-- Error details and troubleshooting information
-- File save operations and success notifications
 
 ## Privacy and Security
 
