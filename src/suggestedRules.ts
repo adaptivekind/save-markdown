@@ -31,7 +31,7 @@ const DEFAULT_SUGGESTED_RULES: SaveRule[] = [
     domain: '*', // All domains
     xpath: '//*[contains(@class,"article")]',
     name: 'Article Class',
-    priority: 100,
+    priority: 80,
     created: new Date().toISOString(),
     enabled: true,
   },
@@ -40,7 +40,25 @@ const DEFAULT_SUGGESTED_RULES: SaveRule[] = [
     domain: '*', // All domains
     xpath: '//*[contains(@id,"article")]',
     name: 'Article ID',
-    priority: 100,
+    priority: 90,
+    created: new Date().toISOString(),
+    enabled: true,
+  },
+  {
+    id: 'post_class',
+    domain: '*', // All domains
+    xpath: '//*[contains(@class,"post")]',
+    name: 'Article Class',
+    priority: 80,
+    created: new Date().toISOString(),
+    enabled: true,
+  },
+  {
+    id: 'post_id',
+    domain: '*', // All domains
+    xpath: '//*[contains(@id,"post")]',
+    name: 'Article ID',
+    priority: 90,
     created: new Date().toISOString(),
     enabled: true,
   },

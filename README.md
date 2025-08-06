@@ -1,20 +1,30 @@
 # Save Markdown
 
-A Chrome extension that helps you select HTML elements on web pages and convert them to clean markdown files. This tool bridges the gap between web content and your local markdown workflow.
+A Chrome extension that allows you auto save sections of web sites to Markdown.
 
 ## Getting Started
 
-The extension provides multiple ways to save content depending on your needs. You can use the popup interface for quick saves, or use context menus for workflow efficiency.
+The extension provides multiple ways to save content depending on your needs. You can use the popup interface for quick saves, or define rule to allow certain areas of certain web sites to be saved automatically as you browse around.
 
 ### Quick Start
 
-1. Install the extension and pin it to your Chrome toolbar
-2. Click the extension icon and select "Create Save Rule"
-3. Navigate to any webpage and hover over elements to see selection boundaries
-4. Click the element you want to save as markdown
-5. The markdown file saves automatically to your Downloads folder
+Only released as source code for now, it has not been released to Chrome Web
+Store. It can be if there is interest. To install from source:
 
-Future visits to similar pages can trigger automatic saves based on the rules you create.
+1. Clone Repository
+2. `npm i` to install
+3. `npm build` to build extension
+4. Unpack the generated `release/release.zip` to a local directory
+5. Go to extension manager in browser, e.g. `chrome://extensions/`
+6. Switch on Developer mode
+7. Click "Load unpacked"
+8. Browse to the local directory containing the unpacked release.
+9. Browse to a website, you may see suggested saves (if the web site has a known article structure)
+
+![suggested save](./docs/suggested-save.png)
+
+10. Click save once to save
+11. Click "Add Save Rule" to automatically save this rule on the current website.
 
 ## Core Capabilities
 
