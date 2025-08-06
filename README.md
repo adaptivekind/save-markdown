@@ -1,20 +1,33 @@
 # Save Markdown
 
-A Chrome extension that helps you select HTML elements on web pages and convert them to clean markdown files. This tool bridges the gap between web content and your local markdown workflow.
+A Chrome extension that allows you auto save sections of web sites to Markdown.
 
 ## Getting Started
 
-The extension provides multiple ways to save content depending on your needs. You can use the popup interface for quick saves, or use context menus for workflow efficiency.
+The extension provides multiple ways to save content depending on your needs. You can use the popup interface for quick saves, or define rule to allow certain areas of certain web sites to be saved automatically as you browse around.
 
 ### Quick Start
 
-1. Install the extension and pin it to your Chrome toolbar
-2. Click the extension icon and select "Create Save Rule"
-3. Navigate to any webpage and hover over elements to see selection boundaries
-4. Click the element you want to save as markdown
-5. The markdown file saves automatically to your Downloads folder
+Only released as source code for now, it has not been released to Chrome Web
+Store. It can be if there is interest. To install from source:
 
-Future visits to similar pages can trigger automatic saves based on the rules you create.
+1. Clone Repository
+2. `npm i` to install
+3. `npm build` to build extension
+4. Unpack the generated `release/release.zip` to a local directory
+5. Go to extension manager in browser, e.g. `chrome://extensions/`
+6. Switch on Developer mode
+7. Click "Load unpacked"
+8. Browse to the local directory containing the unpacked release.
+9. Browse to a website, you may see suggested saves (if the web site has a known article structure)
+
+![suggested save](./docs/suggested-save.png)
+
+10. Click save once to save
+11. Click "Add Save Rule" to automatically save this rule on the current
+    website.
+12. Toggle it on and off easily from the pop up menu so you can enable it when
+    you want it.
 
 ## Core Capabilities
 
@@ -22,21 +35,11 @@ Future visits to similar pages can trigger automatic saves based on the rules yo
 
 Create automated save rules for frequently accessed content. The extension can automatically save matching elements when you visit pages, or you can manually trigger saves for disabled rules.
 
+![auto save rules](./docs/auto-save-rules.png)
+
 ### Element Selection
 
 The extension provides visual feedback when selecting elements. Hover over any element to see a blue dashed overlay indicating the save boundary. Click to save the element, or press Escape to cancel selection.
-
-### Markdown Conversion
-
-The extension preserves the structure and formatting of HTML elements during conversion:
-
-- Headers maintain their hierarchy (H1-H6)
-- Text formatting (bold, italic, code, strikethrough) carries over
-- Links and images convert with proper markdown syntax
-- Lists preserve nesting and ordering
-- Tables maintain headers and alignment
-- Blockquotes and code blocks retain their structure
-- Complex nested elements are handled recursively
 
 ### Configuration Options
 
@@ -60,13 +63,9 @@ For technical users, the extension provides additional tools:
 
 ## Installation
 
-### Chrome Web Store
+### Local Dev Mode Installation
 
-The extension will be available on the Chrome Web Store once development stabilizes.
-
-### Local Installation
-
-If you prefer to install from source or want to contribute:
+Load in dev mode with hot reloading of local changes:
 
 1. Clone and build the extension:
 
@@ -74,7 +73,7 @@ If you prefer to install from source or want to contribute:
    git clone https://github.com/your-repo/save-markdown.git
    cd save-markdown
    npm install
-   npm run build
+   npm run dev
    ```
 
 2. Load in Chrome:
@@ -82,6 +81,17 @@ If you prefer to install from source or want to contribute:
    - Enable "Developer mode" (top-right toggle)
    - Click "Load unpacked" and select the `dist/` folder
    - Pin the extension to your toolbar for easy access
+
+### Enabled debug window
+
+- Right Click
+- Save Markdown
+- Edit Options
+- Under Advanced Options -> Debug Mode ; select Yes - Show debug information
+
+This'll give you a debug pane on each page, which can help with any troubleshooting.
+
+![debug pane](./docs/debug-pane.png)
 
 ## Usage
 
@@ -185,43 +195,6 @@ Domain: { domain }
 - Use context menu for quickest access
 - Create save rules for frequently visited content
 - Toggle rules to MANUAL SAVE mode when you want selective saving
-
-## Troubleshooting
-
-### Common Issues
-
-**"Content script not ready" error**
-
-- Solution: Refresh the page and try again
-- Cause: Page loaded before extension was ready
-
-**Element selection not working**
-
-- Check: Some pages (like chrome:// pages) block extensions
-- Try: Regular websites instead of internal Chrome pages
-- Solution: Refresh the page if save rule creation fails
-
-**Files not saving automatically**
-
-- Check: Enable Auto Save in extension settings
-- Enable auto-download: Chrome Settings - Downloads - Turn off "Ask where to save"
-- Verify: Save rules are set to AUTO SAVE mode, not MANUAL SAVE
-- Or: Allow downloads when Chrome prompts you
-
-**Files saving to wrong location**
-
-- Remember: Chrome extensions can only save to Downloads subfolders
-- Solution: Manually move files or use automated file organization tools
-
-### Debug Mode
-
-Enable debug mode in settings to see detailed information about:
-
-- Extension communication between scripts
-- Save rule creation and XPath generation
-- Auto save rule matching and execution
-- Error details and troubleshooting information
-- File save operations and success notifications
 
 ## Privacy and Security
 
