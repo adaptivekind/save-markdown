@@ -35,6 +35,8 @@ Store. It can be if there is interest. To install from source:
 
 Create automated save rules for frequently accessed content. The extension can automatically save matching elements when you visit pages, or you can manually trigger saves for disabled rules.
 
+![auto save rules](./docs/auto-save-rules.png)
+
 ### Element Selection
 
 The extension provides visual feedback when selecting elements. Hover over any element to see a blue dashed overlay indicating the save boundary. Click to save the element, or press Escape to cancel selection.
@@ -79,6 +81,17 @@ Load in dev mode with hot reloading of local changes:
    - Enable "Developer mode" (top-right toggle)
    - Click "Load unpacked" and select the `dist/` folder
    - Pin the extension to your toolbar for easy access
+
+### Enabled debug window
+
+- Right Click
+- Save Markdown
+- Edit Options
+- Under Advanced Options -> Debug Mode ; select Yes - Show debug information
+
+This'll give you a debug pane on each page, which can help with any troubleshooting.
+
+![debug pane](./docs/debug-pane.png)
 
 ## Usage
 
